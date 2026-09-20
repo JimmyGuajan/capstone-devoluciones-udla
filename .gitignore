@@ -1,0 +1,96 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Datos del cliente — NUNCA se versionan
+#
+# Son 5,3 GB y contienen IMEI, ICCID, RUC y direcciones de distribuidores:
+# datos personales bajo la Ley Orgánica de Protección de Datos Personales.
+# Subirlos a un repositorio, aunque sea privado, sería un incidente.
+# ─────────────────────────────────────────────────────────────────────────────
+Data/
+Data2/
+Data tesis/
+*.xlsx
+*.xls
+*.csv
+*.txt.gz
+
+# Excepción: los archivos de ejemplo o plantillas sí pueden versionarse
+!docs/**/*.csv
+!sql/*.sql
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Artefactos generados — se regeneran ejecutando los notebooks
+# ─────────────────────────────────────────────────────────────────────────────
+data/
+*.parquet
+models/
+mlruns/
+.dvc/cache/
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Sí se versionan: las figuras y métricas son el entregable del documento
+#
+# Pesan menos de 1 MB en total y permiten que el tutor vea los resultados sin
+# ejecutar nada. Se dejan fuera del ignore a propósito.
+# ─────────────────────────────────────────────────────────────────────────────
+!reports/
+!reports/figuras/
+!reports/figuras/*.png
+!reports/*.csv
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Python
+# ─────────────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+ENV/
+
+# Credenciales y configuración local
+.env
+.env.*
+!.env.example
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Jupyter
+# ─────────────────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+*-checkpoint.ipynb
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Windows y OneDrive
+#
+# El proyecto vive en una carpeta sincronizada de OneDrive, que deja archivos
+# de control, y Excel crea bloqueos ~$ mientras un libro está abierto.
+# ─────────────────────────────────────────────────────────────────────────────
+~$*
+Thumbs.db
+ehthumbs.db
+desktop.ini
+*.lnk
+$RECYCLE.BIN/
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Editores
+# ─────────────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Documentos de trabajo temporales
+# ─────────────────────────────────────────────────────────────────────────────
+*.bak
+*.tmp
+~*.docx
+~*.pptx

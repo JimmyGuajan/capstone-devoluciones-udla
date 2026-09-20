@@ -1,0 +1,3 @@
+modelo,WMAPE,MAE,RMSE,MASE,sesgo,pct_subestim
+agregado (XGBoost mensual),0.4006,18.591,33.852,0.273,2.892,47.8
+bottom-up (por unidad),0.9617,50.309,106.2,0.739,40.83,53.3

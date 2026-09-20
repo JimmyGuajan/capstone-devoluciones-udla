@@ -1,0 +1,7 @@
+modelo,WMAPE,MAE,RMSE,MASE,sesgo,pct_subestim,MAPE_agg_%
+naive (y[t-1]),,4.167,20.412,3.479,4.167,,
+media histórica,,0.595,2.916,0.497,0.595,,
+Croston/SBA,,0.565,2.77,0.472,0.565,,
+cero constante,,0.0,0.0,0.0,0.0,,
+Random Forest,,4.349,7.615,3.632,4.349,,
+XGBoost Poisson,,3.298,14.686,2.754,3.298,,
