@@ -83,6 +83,17 @@ A ese grano el resultado es:
 | **Volumen mensual — criterio del OE 4** | **5,0 %** | 50,3 | 79,0 | 0,063 |
 | Detalle marca × mes | 17,3 % | 8,2 | 21,9 | 0,114 |
 
+Los tres modelos cumplen el criterio, de modo que el Objetivo 3 queda cubierto en sus propios
+términos:
+
+| Modelo | MAPE del volumen mensual | MAE | RMSE | ¿Cumple ≤ 15 %? |
+|---|---:|---:|---:|:--|
+| **Regla de negocio** | **5,0 %** | 50,3 | 79,0 | sí |
+| Random Forest | 5,3 % | **48,4** | **66,5** | sí |
+| XGBoost Poisson | 10,3 % | 77,1 | 89,5 | sí |
+
+La elección se hizo sobre validación, donde la regla gana con holgura (6,0 % frente a 10,7 %).
+
 **Se cumple el MAPE ≤ 15 % comprometido en el Objetivo 4.** A nivel de celda el MAPE es mayor
 porque seis celdas de menos de 5 unidades —marcas que devuelven uno o dos equipos al mes— fallan
 por 1,6 unidades en promedio y aportan casi un tercio de esa cifra; el MAPE se dispara cuando el
@@ -116,6 +127,14 @@ ventas; y el modelo se elegía mirando el conjunto de prueba.
 `DW_DEVOLUCIONES_HIST` en `(localdb)\MSSQLLocalDB`: 27,9 M de filas en tres esquemas (`dim`,
 `fact`, `mart`) con cinco vistas de negocio. Consultas de ejemplo en `sql/consultas.sql` y
 `sql/antiguedad.sql`.
+
+## Una desviación declarada
+
+El Objetivo 3 enuncia la estimación «por distribuidor y SKU», y el modelo trabaja por **marca ×
+mes**. Medido en el cuaderno 02, marca × mes tiene el 61,6 % de las celdas con dato y SKU × mes
+apenas el 19,8 %: con 269 SKU y 45 distribuidores salen unas 12.000 series casi todas en cero. El
+Plan v4 §5.7 ya contemplaba modelar en el nivel denso y desagregar top-down, y es además el grano
+que pide planificación.
 
 ## Decisiones de datos que hay que conocer
 
