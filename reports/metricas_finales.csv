@@ -1,4 +1,4 @@
 modelo,WMAPE,MAE,RMSE,MASE,sesgo,pct_subestim,MAPE mensual %
-Regla de negocio,0.1203,8.671,19.149,0.102,-4.545,70.5,5.1
+Regla de negocio,0.114,8.216,21.913,0.096,-3.524,54.5,5.0
 Random Forest,0.1227,8.845,21.521,0.104,-3.612,47.7,5.3
 XGBoost Poisson,0.1569,11.314,25.177,0.133,-2.832,40.9,10.3

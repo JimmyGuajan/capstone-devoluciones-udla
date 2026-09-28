@@ -71,13 +71,25 @@ prueba no interviene en ninguna decisión.
 
 | Modelo | WMAPE | MAE | RMSE | MASE | MAPE mensual |
 |---|---:|---:|---:|---:|---:|
-| **Regla de negocio** | **0,120** | **8,67** | **19,15** | **0,102** | **5,1 %** |
-| Random Forest | 0,123 | 8,85 | 21,52 | 0,104 | 5,3 % |
+| **Regla de negocio** | **0,114** | **8,22** | 21,91 | **0,096** | **5,0 %** |
+| Random Forest | 0,123 | 8,85 | **21,52** | 0,104 | 5,3 % |
 | XGBoost Poisson | 0,157 | 11,31 | 25,18 | 0,133 | 10,3 % |
 
-**Se cumple el MAPE ≤ 15 % comprometido en el Objetivo 4.**
+El Objetivo 4 fija el criterio sobre el **volumen mensual** (Plan v4: *"MAPE agregado ≤ 15 %"*).
+A ese grano el resultado es:
 
-El modelo ganador es una regla de un solo parámetro: `predicción = unidades en riesgo × 0,689`.
+| Grano | MAPE | MAE | RMSE | WMAPE |
+|---|---:|---:|---:|---:|
+| **Volumen mensual — criterio del OE 4** | **5,0 %** | 50,3 | 79,0 | 0,063 |
+| Detalle marca × mes | 17,3 % | 8,2 | 21,9 | 0,114 |
+
+**Se cumple el MAPE ≤ 15 % comprometido en el Objetivo 4.** A nivel de celda el MAPE es mayor
+porque seis celdas de menos de 5 unidades —marcas que devuelven uno o dos equipos al mes— fallan
+por 1,6 unidades en promedio y aportan casi un tercio de esa cifra; el MAPE se dispara cuando el
+denominador tiende a cero. Por eso se reporta WMAPE en paralelo, que pondera por volumen.
+
+El modelo ganador es el grupo en riesgo multiplicado por la **tasa de conversión de cada marca**,
+reestimada cada mes con los 9 meses anteriores y encogida hacia la tasa global.
 Las unidades que cumplirán 60 días el mes próximo ya son observables al cierre del mes actual
 —fueron despachadas hace dos meses y se puede ver cuáles siguen en el canal—, y ese **grupo en
 riesgo** correlaciona 0,982 con el resultado. SHAP le atribuye el 70,6 % de la contribución.
@@ -89,9 +101,9 @@ el inventario detenido de forma sistemática.
 
 | | `02_modelo` | `04_modelo_final` |
 |---|---:|---:|
-| WMAPE | 0,401 | **0,120** |
-| MAE | 18,59 | **8,67** |
-| MAPE mensual | 28,3 % | **5,1 %** |
+| WMAPE (marca × mes) | 0,401 | **0,114** |
+| MAE (marca × mes) | 18,59 | **8,22** |
+| MAPE del volumen mensual | 28,3 % | **5,0 %** |
 | Meses de historia | 18 | 31 |
 | Validación contra el negocio | ninguna | 99,75 % |
 
@@ -117,8 +129,12 @@ ventas; y el modelo se elegía mirando el conjunto de prueba.
   unidades que llegaron en ese período.
 - **Las SIM quedan fuera**: su reporte de inventario trae el nombre de la bodega, no el código, y
   no se puede cruzar con el catálogo de ubicaciones.
-- **El parámetro de conversión (0,689) es empírico.** Si cambia el comportamiento comercial del
-  canal, hay que recalibrarlo.
+- **HONOR concentra la mayor parte del error restante.** Su tasa de conversión oscila entre 0,28 y
+  0,85 en siete meses. No es ruido del modelo: son acciones comerciales que movieron el inventario
+  y que **ninguna variable disponible registra**. Es el principal argumento para pedir al cliente
+  el histórico de promociones y cambios de precio por marca y mes.
+- **La tasa de conversión es empírica y se reestima cada mes.** El modelo se adapta solo a cambios
+  del canal, pero un cambio brusco tarda un par de meses en absorberse.
 
 ## Notas técnicas
 
