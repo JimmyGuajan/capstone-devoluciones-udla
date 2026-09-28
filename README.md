@@ -71,7 +71,7 @@ prueba no interviene en ninguna decisión.
 
 | Modelo | WMAPE | MAE | RMSE | MASE | MAPE mensual |
 |---|---:|---:|---:|---:|---:|
-| **Regla de negocio** | **0,114** | **8,22** | 21,91 | **0,096** | **5,0 %** |
+| **Tasa de conversión** | **0,114** | **8,22** | 21,91 | **0,096** | **5,0 %** |
 | Random Forest | 0,123 | 8,85 | **21,52** | 0,104 | 5,3 % |
 | XGBoost Poisson | 0,157 | 11,31 | 25,18 | 0,133 | 10,3 % |
 
@@ -88,7 +88,7 @@ términos:
 
 | Modelo | MAPE del volumen mensual | MAE | RMSE | ¿Cumple ≤ 15 %? |
 |---|---:|---:|---:|:--|
-| **Regla de negocio** | **5,0 %** | 50,3 | 79,0 | sí |
+| **Tasa de conversión** | **5,0 %** | 50,3 | 79,0 | sí |
 | Random Forest | 5,3 % | **48,4** | **66,5** | sí |
 | XGBoost Poisson | 10,3 % | 77,1 | 89,5 | sí |
 
@@ -99,8 +99,19 @@ porque seis celdas de menos de 5 unidades —marcas que devuelven uno o dos equi
 por 1,6 unidades en promedio y aportan casi un tercio de esa cifra; el MAPE se dispara cuando el
 denominador tiende a cero. Por eso se reporta WMAPE en paralelo, que pondera por volumen.
 
-El modelo ganador es el grupo en riesgo multiplicado por la **tasa de conversión de cada marca**,
-reestimada cada mes con los 9 meses anteriores y encogida hacia la tasa global.
+El modelo ganador es una **regresión de Poisson con offset de exposición**: el grupo en riesgo
+entra como exposición y se estima una tasa de conversión por marca.
+
+```
+E[devueltas] = unidades_en_riesgo × tasa_conversión(marca)
+```
+
+Es la forma estándar de modelar conteos cuando el número de casos depende de cuántos estaban
+expuestos —siniestros por póliza-año en seguros, casos por persona-año en epidemiología—, con dos
+refinamientos: la tasa se reestima cada mes con los 9 meses anteriores (parámetro variable en el
+tiempo) y se encoge hacia la tasa global con peso k = 300 (*partial pooling*, como un modelo
+jerárquico). El cuaderno verifica la equivalencia ajustando el GLM de Poisson de `statsmodels`:
+correlación **0,9991** entre ambas predicciones.
 Las unidades que cumplirán 60 días el mes próximo ya son observables al cierre del mes actual
 —fueron despachadas hace dos meses y se puede ver cuáles siguen en el canal—, y ese **grupo en
 riesgo** correlaciona 0,982 con el resultado. SHAP le atribuye el 70,6 % de la contribución.
