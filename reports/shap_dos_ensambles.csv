@@ -1,0 +1,12 @@
+,XGBoost %,Random Forest %
+en_riesgo,70.6,94.2
+desp_lag2,16.5,0.9
+marca,2.8,0.7
+desp_lag1,2.6,0.3
+dev_lag1,2.1,0.8
+dev_mm3,1.6,0.5
+dev_lag2,1.5,0.3
+r_marca,1.2,1.1
+dev_lag3,0.6,0.6
+mes_sin,0.4,0.3
+mes_cos,0.1,0.3

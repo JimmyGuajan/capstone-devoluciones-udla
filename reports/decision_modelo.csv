@@ -1,0 +1,7 @@
+modelo,MAPE %,MAE,RMSE,WMAPE,conjunto,cumple ≤ 15 %
+Tasa de conversión,6.0,94.1,103.9,0.105,validación,
+Random Forest,10.7,184.4,234.9,0.169,validación,
+XGBoost Poisson,11.8,208.5,283.5,0.189,validación,
+Tasa de conversión,5.0,50.3,79.0,0.114,prueba,sí
+Random Forest,5.3,48.4,66.5,0.123,prueba,sí
+XGBoost Poisson,10.3,77.1,89.5,0.157,prueba,sí
