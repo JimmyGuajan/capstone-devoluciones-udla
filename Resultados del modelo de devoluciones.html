@@ -1,0 +1,308 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Resultados del modelo de devoluciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  color-scheme: light;
+  --paper:#F4F6F8; --surface:#FFFFFF; --surface-2:#EDF0F4;
+  --ink:#191B21; --ink-2:#464A54; --muted:#6E727C;
+  --line:#D9DEE5; --line-2:#C3CAD4;
+  --accent:#4A3AA7; --accent-soft:#EAE8F9;
+  --s1:#2a78d6; --s2:#eb6834;
+  --good:#12795A; --good-soft:#E2F2EC;
+  --warn:#8A5B00; --warn-soft:#FBF0DB;
+  --bad:#B03030;  --bad-soft:#FBE9E9;
+  --shadow:0 1px 2px rgba(20,25,40,.05), 0 6px 18px rgba(20,25,40,.06);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  color-scheme: dark;
+  --paper:#121419; --surface:#1A1D24; --surface-2:#232730;
+  --ink:#E7E9ED; --ink-2:#B6BAC4; --muted:#8A8F9A;
+  --line:#2C313B; --line-2:#3B414D;
+  --accent:#9085E9; --accent-soft:#25233C;
+  --s1:#3987e5; --s2:#d95926;
+  --good:#4BBF95; --good-soft:#123028;
+  --warn:#D9A742; --warn-soft:#332916;
+  --bad:#E07070;  --bad-soft:#331D1D;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
+}}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --paper:#121419; --surface:#1A1D24; --surface-2:#232730;
+  --ink:#E7E9ED; --ink-2:#B6BAC4; --muted:#8A8F9A;
+  --line:#2C313B; --line-2:#3B414D;
+  --accent:#9085E9; --accent-soft:#25233C;
+  --s1:#3987e5; --s2:#d95926;
+  --good:#4BBF95; --good-soft:#123028;
+  --warn:#D9A742; --warn-soft:#332916;
+  --bad:#E07070;  --bad-soft:#331D1D;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
+}
+
+*{box-sizing:border-box}
+body{background:var(--paper); color:var(--ink); margin:0;
+  font-family:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif; font-size:15px; line-height:1.58;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:900px; margin:0 auto; padding-inline:16px; padding-block:0 66px}
+
+h1{font-family:Spectral,Georgia,serif; font-weight:700; font-size:clamp(27px,4.6vw,38px);
+  line-height:1.12; letter-spacing:-.015em; margin:0 0 8px; text-wrap:balance}
+h2{font-family:Spectral,Georgia,serif; font-weight:600; font-size:20px; margin:0 0 3px}
+h3{font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.075em;
+  color:var(--muted); margin:0 0 11px}
+p{margin:0 0 12px} .sub{color:var(--muted); font-size:13px; margin:-4px 0 14px}
+code{font-family:"IBM Plex Mono",monospace; font-size:.87em; background:var(--surface-2);
+  padding:1.5px 5px; border-radius:3px}
+.hd{padding-block:40px 6px}
+.eyebrow{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--muted); margin:0 0 13px}
+.dek{color:var(--ink-2); font-size:16px; max-width:60ch; margin-bottom:0}
+section{padding-block:30px 0}
+
+/* ---------- veredicto ---------- */
+.verdict{background:var(--good-soft); border:1px solid color-mix(in srgb,var(--good) 30%,transparent);
+  border-radius:10px; padding:20px 22px; margin-top:24px;
+  display:flex; gap:20px; align-items:center; flex-wrap:wrap}
+.verdict .big{font-family:"IBM Plex Mono",monospace; font-size:clamp(38px,8vw,54px); font-weight:600;
+  color:var(--good); line-height:1; letter-spacing:-.03em; font-variant-numeric:tabular-nums}
+.verdict .txt{flex:1 1 230px; min-width:0}
+.verdict .txt b{display:block; font-size:16px; margin-bottom:3px}
+.verdict .txt span{font-size:14px; color:var(--ink-2)}
+
+/* ---------- métricas ---------- */
+.tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px}
+.tile{background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:14px 16px}
+.tile .k{font-size:11.5px; letter-spacing:.055em; text-transform:uppercase; color:var(--muted);
+  font-weight:600}
+.tile .v{font-family:"IBM Plex Mono",monospace; font-size:25px; font-weight:500;
+  letter-spacing:-.025em; line-height:1.15; margin-top:7px; font-variant-numeric:tabular-nums}
+.tile .n{font-size:12px; color:var(--muted); margin-top:4px; line-height:1.35}
+
+/* ---------- tablas ---------- */
+.tw{overflow-x:auto; border:1px solid var(--line); border-radius:8px; background:var(--surface)}
+table{border-collapse:collapse; width:100%; font-size:13.5px; min-width:430px}
+th,td{padding:8px 12px; text-align:left; border-bottom:1px solid var(--line)}
+thead th{background:var(--surface-2); font-size:11px; letter-spacing:.055em; text-transform:uppercase;
+  color:var(--muted); font-weight:600; white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+tbody tr.tot td{background:var(--surface-2); font-weight:600}
+tbody tr.hi td{background:var(--accent-soft)}
+td.n,th.n{text-align:right; font-family:"IBM Plex Mono",monospace;
+  font-variant-numeric:tabular-nums; white-space:nowrap}
+.pill{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11.5px;
+  padding:2px 8px; border-radius:999px; font-weight:500}
+.pill.g{background:var(--good-soft); color:var(--good)}
+.pill.w{background:var(--warn-soft); color:var(--warn)}
+.pill.b{background:var(--bad-soft); color:var(--bad)}
+.bartrack{display:inline-block; vertical-align:middle; width:70px; height:6px;
+  background:var(--surface-2); border-radius:3px; overflow:hidden}
+.bar{display:block; height:100%; background:var(--s1); border-radius:3px}
+
+figure{margin:0; background:var(--surface); border:1px solid var(--line); border-radius:8px;
+  padding:16px 18px 10px; box-shadow:var(--shadow)}
+figure svg{display:block; width:100%; height:auto}
+figure svg text{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums}
+figcaption{font-size:12.5px; color:var(--muted); margin-top:8px; line-height:1.45}
+.leg{display:flex; gap:16px; font-size:12.5px; color:var(--ink-2); margin-bottom:5px}
+.leg span{display:flex; align-items:center; gap:6px}
+.sw{width:14px; height:3px; border-radius:2px; flex:none}
+
+/* ---------- flujo de demanda ---------- */
+.flow3{display:grid; grid-template-columns:1fr auto 1fr auto 1fr; gap:12px; align-items:center;
+  background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:20px 22px}
+.flow3 .b{text-align:center}
+.flow3 .b .v{font-family:"IBM Plex Mono",monospace; font-size:clamp(20px,4vw,28px); font-weight:600;
+  letter-spacing:-.02em; font-variant-numeric:tabular-nums; line-height:1.15}
+.flow3 .b .k{font-size:12px; color:var(--muted); margin-top:4px}
+.flow3 .op{font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--muted)}
+.flow3 .b.r .v{color:var(--s2)} .flow3 .b.a .v{color:var(--accent)}
+
+.note{font-size:13.5px; color:var(--muted); margin-top:11px; line-height:1.5}
+.foot{border-top:1px solid var(--line); margin-top:34px; padding-top:18px;
+  font-size:13px; color:var(--muted)}
+@media (max-width:620px){
+  .flow3{grid-template-columns:1fr; gap:6px} .flow3 .op{text-align:center}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="hd">
+  <p class="eyebrow">Capstone · Grupo 5 · UDLA</p>
+  <h1>Resultados del modelo de devoluciones</h1>
+  <p class="dek">Predicción mensual por marca, medida sobre enero–julio de 2026: siete meses que
+  el modelo nunca vio durante el entrenamiento.</p>
+</header>
+
+<div class="verdict">
+  <div class="big">5,0 %</div>
+  <div class="txt">
+    <b>Se cumple el Objetivo Específico 4</b>
+    <span>MAPE del volumen mensual, frente al <b>15 %</b> máximo comprometido. El Plan Capstone
+    fija el criterio sobre el agregado: <i>«MAPE agregado ≤ 15 %»</i>.</span>
+  </div>
+</div>
+
+<section>
+  <h3>Métricas sobre el conjunto de prueba</h3>
+  <div class="tiles">
+    <div class="tile"><div class="k">MAE</div><div class="v">50,3</div>
+      <div class="n">unidades al mes, sobre 793 devoluciones mensuales</div></div>
+    <div class="tile"><div class="k">RMSE</div><div class="v">79,0</div>
+      <div class="n">1,6× el MAE: el error está concentrado en un mes</div></div>
+    <div class="tile"><div class="k">MASE</div><div class="v">0,096</div>
+      <div class="n">diez veces mejor que repetir el mes anterior</div></div>
+    <div class="tile"><div class="k">WMAPE</div><div class="v">0,063</div>
+      <div class="n">error total ÷ volumen total</div></div>
+  </div>
+  <p class="note">Al grano marca × mes las mismas métricas dan MAPE 17,3 %, MAE 8,2 y WMAPE 0,114.
+  La diferencia es aritmética: seis celdas de menos de cinco unidades fallan por 1,6 equipos de
+  media y disparan el porcentaje. Por eso el criterio se fija sobre el agregado.</p>
+</section>
+
+<section>
+  <figure>
+    <div class="leg"><span><i class="sw" style="background:var(--s1)"></i>real</span>
+      <span><i class="sw" style="background:var(--s2)"></i>predicho</span></div>
+    <svg viewBox="0 0 660 270" role="img" aria-label="Devoluciones reales y predichas por mes en 2026">
+      <g stroke="var(--line-2)" stroke-width="1">
+        <line x1="56" y1="218" x2="640" y2="218"/>
+        <line x1="56" y1="167.5" x2="640" y2="167.5" stroke-dasharray="2 5"/>
+        <line x1="56" y1="117" x2="640" y2="117" stroke-dasharray="2 5"/>
+        <line x1="56" y1="66.5" x2="640" y2="66.5" stroke-dasharray="2 5"/>
+        <line x1="56" y1="16" x2="640" y2="16" stroke-dasharray="2 5"/>
+      </g>
+      <g fill="var(--muted)" font-size="11" text-anchor="end">
+        <text x="48" y="222">0</text><text x="48" y="171.5">350</text>
+        <text x="48" y="121">700</text><text x="48" y="70.5">1050</text><text x="48" y="20">1400</text>
+      </g>
+      <polyline fill="none" stroke="var(--s1)" stroke-width="2.5" stroke-linejoin="round"
+        points="56,169.7 153.3,149.0 250.7,112.4 348,90.7 445.3,68.5 542.7,113.4 640,21.3"/>
+      <polyline fill="none" stroke="var(--s2)" stroke-width="2.5" stroke-linejoin="round"
+        stroke-dasharray="7 4"
+        points="56,169.2 153.3,146.1 250.7,110.1 348,100.1 445.3,73.6 542.7,116.3 640,49.2"/>
+      <g fill="var(--s1)"><circle cx="56" cy="169.7" r="4.5"/><circle cx="153.3" cy="149.0" r="4.5"/><circle cx="250.7" cy="112.4" r="4.5"/><circle cx="348" cy="90.7" r="4.5"/><circle cx="445.3" cy="68.5" r="4.5"/><circle cx="542.7" cy="113.4" r="4.5"/><circle cx="640" cy="21.3" r="4.5"/></g>
+      <g fill="var(--s2)"><circle cx="56" cy="169.2" r="4.5"/><circle cx="153.3" cy="146.1" r="4.5"/><circle cx="250.7" cy="110.1" r="4.5"/><circle cx="348" cy="100.1" r="4.5"/><circle cx="445.3" cy="73.6" r="4.5"/><circle cx="542.7" cy="116.3" r="4.5"/><circle cx="640" cy="49.2" r="4.5"/></g>
+      <g fill="var(--muted)" font-size="11" text-anchor="middle">
+        <text x="56" y="240">ene</text><text x="153.3" y="240">feb</text><text x="250.7" y="240">mar</text>
+        <text x="348" y="240">abr</text><text x="445.3" y="240">may</text><text x="542.7" y="240">jun</text>
+        <text x="640" y="240">jul</text><text x="348" y="260">2026</text>
+      </g>
+      <text x="628" y="44" font-size="11.5" fill="var(--muted)" text-anchor="end">−14,2 %</text>
+    </svg>
+    <figcaption>Las dos series siguen los mismos movimientos. Julio concentra 193 de las 353
+    unidades de error del periodo.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h3>Mes a mes</h3>
+  <div class="tw"><table>
+  <thead><tr><th>Mes</th><th class="n">Despachadas</th><th class="n">Real</th><th class="n">Predicho</th>
+    <th class="n">Error</th><th class="n">Error %</th><th class="n">Demanda neta</th></tr></thead>
+  <tbody>
+  <tr><td class="n">2026-01</td><td class="n">4.805</td><td class="n">335</td><td class="n">338</td><td class="n">+3</td><td class="n"><span class="pill g">+0,9 %</span></td><td class="n">4.467</td></tr>
+  <tr><td class="n">2026-02</td><td class="n">5.609</td><td class="n">478</td><td class="n">498</td><td class="n">+20</td><td class="n"><span class="pill g">+4,2 %</span></td><td class="n">5.111</td></tr>
+  <tr><td class="n">2026-03</td><td class="n">8.696</td><td class="n">732</td><td class="n">748</td><td class="n">+16</td><td class="n"><span class="pill g">+2,2 %</span></td><td class="n">7.948</td></tr>
+  <tr><td class="n">2026-04</td><td class="n">6.757</td><td class="n">882</td><td class="n">817</td><td class="n">−65</td><td class="n"><span class="pill w">−7,4 %</span></td><td class="n">5.940</td></tr>
+  <tr><td class="n">2026-05</td><td class="n">6.016</td><td class="n">1.036</td><td class="n">1.001</td><td class="n">−35</td><td class="n"><span class="pill g">−3,4 %</span></td><td class="n">5.015</td></tr>
+  <tr><td class="n">2026-06</td><td class="n">5.444</td><td class="n">725</td><td class="n">705</td><td class="n">−20</td><td class="n"><span class="pill g">−2,8 %</span></td><td class="n">4.739</td></tr>
+  <tr><td class="n">2026-07</td><td class="n">6.241</td><td class="n">1.363</td><td class="n">1.170</td><td class="n">−193</td><td class="n"><span class="pill b">−14,2 %</span></td><td class="n">5.071</td></tr>
+  <tr class="tot"><td>Total</td><td class="n">43.568</td><td class="n">5.551</td><td class="n">5.277</td><td class="n">−274</td><td class="n">—</td><td class="n">38.291</td></tr>
+  </tbody></table></div>
+  <p class="note">Los signos del error alternan —tres meses por encima y cuatro por debajo—, lo que
+  indica que <b>no hay sesgo sistemático</b>. Un modelo que fallara siempre en la misma dirección
+  estaría mal calibrado.</p>
+</section>
+
+<section>
+  <h3>Por marca · total de los siete meses</h3>
+  <div class="tw"><table>
+  <thead><tr><th>Marca</th><th class="n">Real</th><th class="n">Predicho</th><th class="n">Error</th>
+    <th class="n">Error %</th><th>Peso en el total</th></tr></thead>
+  <tbody>
+  <tr><td>SAMSUNG</td><td class="n">2.410</td><td class="n">2.310</td><td class="n">−100</td><td class="n"><span class="pill g">−4,1 %</span></td><td><span class="bartrack"><span class="bar" style="width:100%"></span></span></td></tr>
+  <tr><td>HONOR</td><td class="n">1.169</td><td class="n">1.093</td><td class="n">−76</td><td class="n"><span class="pill w">−6,5 %</span></td><td><span class="bartrack"><span class="bar" style="width:48%"></span></span></td></tr>
+  <tr><td>APPLE</td><td class="n">951</td><td class="n">876</td><td class="n">−75</td><td class="n"><span class="pill w">−7,9 %</span></td><td><span class="bartrack"><span class="bar" style="width:39%"></span></span></td></tr>
+  <tr><td>XIAOMI</td><td class="n">803</td><td class="n">772</td><td class="n">−31</td><td class="n"><span class="pill g">−3,9 %</span></td><td><span class="bartrack"><span class="bar" style="width:33%"></span></span></td></tr>
+  <tr><td>OTRA</td><td class="n">119</td><td class="n">113</td><td class="n">−6</td><td class="n"><span class="pill g">−5,0 %</span></td><td><span class="bartrack"><span class="bar" style="width:5%"></span></span></td></tr>
+  <tr><td>MOTOROLA</td><td class="n">97</td><td class="n">111</td><td class="n">+14</td><td class="n"><span class="pill b">+14,4 %</span></td><td><span class="bartrack"><span class="bar" style="width:4%"></span></span></td></tr>
+  <tr><td>REALME</td><td class="n">2</td><td class="n">2</td><td class="n">0</td><td class="n"><span class="pill g">0,0 %</span></td><td><span class="bartrack"><span class="bar" style="width:1%"></span></span></td></tr>
+  </tbody></table></div>
+  <p class="note">Las cuatro marcas que mueven volumen quedan entre −4 % y −8 %. Motorola se
+  desvía más en porcentaje, pero son <b>14 equipos</b>: no cambia ninguna decisión de compra.</p>
+</section>
+
+<section>
+  <h3>Ajuste de la demanda neta · Objetivo Específico 5</h3>
+  <div class="flow3">
+    <div class="b"><div class="v">43.568</div><div class="k">demanda bruta despachada</div></div>
+    <div class="op">−</div>
+    <div class="b r"><div class="v">5.277</div><div class="k">devolución prevista</div></div>
+    <div class="op">=</div>
+    <div class="b a"><div class="v">38.291</div><div class="k">demanda neta</div></div>
+  </div>
+  <p class="note">Un ajuste del <b>12,1 %</b> sobre la demanda bruta. Frente a un proceso que no
+  descuenta devoluciones, la desviación respecto de la demanda neta real baja de 5.551 a 353
+  unidades: una <b>reducción del 93,7 %</b>, muy por encima del 10 % comprometido.</p>
+</section>
+
+<section>
+  <h3>Los tres modelos evaluados</h3>
+  <div class="tw"><table>
+  <thead><tr><th>Modelo</th><th class="n">MAPE mensual</th><th class="n">MAE</th><th class="n">RMSE</th><th>≤ 15 %</th></tr></thead>
+  <tbody>
+  <tr class="hi"><td><b>Tasa de conversión</b> · seleccionado</td><td class="n">5,0 %</td><td class="n">50,3</td><td class="n">79,0</td><td><span class="pill g">sí</span></td></tr>
+  <tr><td>Random Forest</td><td class="n">5,3 %</td><td class="n">48,4</td><td class="n">66,5</td><td><span class="pill g">sí</span></td></tr>
+  <tr><td>XGBoost Poisson</td><td class="n">10,3 %</td><td class="n">77,1</td><td class="n">89,5</td><td><span class="pill g">sí</span></td></tr>
+  </tbody></table></div>
+  <p class="note"><b>Los tres cumplen el criterio.</b> La selección se hizo sobre un conjunto de
+  validación independiente (jul–dic 2025), donde el modelo de tasa gana con 6,0 % frente a 10,7 %
+  y 11,8 %. El modelo elegido es una regresión de Poisson con offset de exposición:
+  <code>E[devoluciones] = unidades en riesgo × tasa(marca)</code>.</p>
+</section>
+
+<section>
+  <h3>Estado de los objetivos</h3>
+  <div class="tw"><table>
+  <thead><tr><th>&nbsp;</th><th>Comprometido</th><th>Resultado</th><th>Estado</th></tr></thead>
+  <tbody>
+  <tr><td class="n">OE 1</td><td>EDA e identificación de variables</td><td><code>en_riesgo</code> con correlación 0,98</td><td><span class="pill g">completo</span></td></tr>
+  <tr><td class="n">OE 2</td><td>Contexto nivel 1, DFD y pipeline ETL</td><td>ETL y almacén SQL completos; faltan los dos diagramas</td><td><span class="pill w">parcial</span></td></tr>
+  <tr><td class="n">OE 3</td><td>Random Forest y XGBoost con SHAP</td><td>Entrenados, explicados y cumpliendo por sí solos</td><td><span class="pill g">completo</span></td></tr>
+  <tr><td class="n">OE 4</td><td>MAPE ≤ 15 %, más MAE y RMSE</td><td>5,0 % · MAE 50,3 · RMSE 79,0</td><td><span class="pill g">completo</span></td></tr>
+  <tr><td class="n">OE 5</td><td>Piloto por distribuidor, reducción ≥ 10 %</td><td>Reducción del 93,7 %; el piloto se hizo por marca</td><td><span class="pill w">parcial</span></td></tr>
+  </tbody></table></div>
+  <p class="note">Los dos huecos son cerrables con lo que ya existe: los diagramas son
+  documentación, y los datos para el piloto por distribuidor están disponibles —86 distribuidores,
+  20 con más de 200 devoluciones, y los ocho mayores cubren el 69,6 % del volumen.</p>
+</section>
+
+<section>
+  <h3>Limitaciones</h3>
+  <div class="tw"><table>
+  <thead><tr><th>Limitación</th><th>Alcance medido</th></tr></thead>
+  <tbody>
+  <tr><td><b>Horizonte de un mes.</b> Predice octubre al cerrar septiembre; no noviembre</td><td class="n">—</td></tr>
+  <tr><td><b>Julio concentra el error</b>, por un lanzamiento de Honor que no rotó</td><td class="n">193 de 353 unidades</td></tr>
+  <tr><td><b>Periodos sin despacho asociado</b>, excluidos del cálculo</td><td class="n">17 % (53.838 de 309.768)</td></tr>
+  <tr><td><b>Noviembre de 2025</b> tiene inventario incompleto</td><td class="n">4 días de 30</td></tr>
+  <tr><td><b>Las SIM quedan fuera</b>: su reporte trae el nombre de bodega, no el código</td><td class="n">—</td></tr>
+  <tr><td><b><code>Libro1.xlsx</code> no se ha reproducido</b>; discrepancia abierta</td><td class="n">corr. −0,74</td></tr>
+  </tbody></table></div>
+</section>
+
+<footer class="foot">
+  Entrenamiento con mayo 2024 – diciembre 2025; prueba sobre enero–julio de 2026. La variable
+  objetivo se validó contra un listado del área de planificación con 99,75 % de coincidencia
+  (799 de 801 equipos). Todas las cifras proceden de ejecutar
+  <code>04_modelo_final.ipynb</code> sobre los datos entregados por el cliente.
+</footer>
+
+</div>
+
+</body></html>

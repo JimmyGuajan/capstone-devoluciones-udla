@@ -1,0 +1,516 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>El camino hasta el modelo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+:root{
+  color-scheme: light;
+  --paper:#F4F6F8; --surface:#FFFFFF; --surface-2:#EDF0F4;
+  --ink:#191B21; --ink-2:#464A54; --muted:#6E727C;
+  --line:#D9DEE5; --line-2:#C3CAD4;
+  --accent:#4A3AA7; --accent-soft:#EAE8F9;
+  --s1:#2a78d6; --s2:#eb6834;
+  --good:#12795A; --good-soft:#E2F2EC;
+  --warn:#8A5B00; --warn-soft:#FBF0DB;
+  --bad:#B03030;  --bad-soft:#FBE9E9;
+  --shadow:0 1px 2px rgba(20,25,40,.05), 0 6px 18px rgba(20,25,40,.06);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  color-scheme: dark;
+  --paper:#121419; --surface:#1A1D24; --surface-2:#232730;
+  --ink:#E7E9ED; --ink-2:#B6BAC4; --muted:#8A8F9A;
+  --line:#2C313B; --line-2:#3B414D;
+  --accent:#9085E9; --accent-soft:#25233C;
+  --s1:#3987e5; --s2:#d95926;
+  --good:#4BBF95; --good-soft:#123028;
+  --warn:#D9A742; --warn-soft:#332916;
+  --bad:#E07070;  --bad-soft:#331D1D;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
+}}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --paper:#121419; --surface:#1A1D24; --surface-2:#232730;
+  --ink:#E7E9ED; --ink-2:#B6BAC4; --muted:#8A8F9A;
+  --line:#2C313B; --line-2:#3B414D;
+  --accent:#9085E9; --accent-soft:#25233C;
+  --s1:#3987e5; --s2:#d95926;
+  --good:#4BBF95; --good-soft:#123028;
+  --warn:#D9A742; --warn-soft:#332916;
+  --bad:#E07070;  --bad-soft:#331D1D;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.25);
+}
+
+*{box-sizing:border-box}
+body{background:var(--paper); color:var(--ink); margin:0;
+  font-family:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif; font-size:15.5px; line-height:1.62;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:860px; margin:0 auto; padding-inline:16px; padding-block:0 70px}
+
+h1{font-family:Spectral,Georgia,serif; font-weight:700; font-size:clamp(28px,5vw,42px);
+  line-height:1.12; letter-spacing:-.015em; margin:0 0 12px; text-wrap:balance}
+h2{font-family:Spectral,Georgia,serif; font-weight:700; font-size:22px; margin:0 0 4px;
+  text-wrap:balance; letter-spacing:-.005em}
+h3{font-size:12.5px; font-weight:600; text-transform:uppercase; letter-spacing:.07em;
+  color:var(--muted); margin:26px 0 10px}
+p{margin:0 0 13px}
+ul{margin:0 0 14px; padding-left:19px} li{margin-bottom:6px}
+code{font-family:"IBM Plex Mono",monospace; font-size:.87em; background:var(--surface-2);
+  padding:1.5px 5px; border-radius:3px}
+.hd{padding-block:44px 8px}
+.dek{color:var(--ink-2); font-size:17px; max-width:60ch}
+.eyebrow{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--muted); margin:0 0 14px}
+
+/* ---------- línea de tiempo ---------- */
+.flow{position:relative; margin-top:14px; padding-left:46px}
+.flow::before{content:""; position:absolute; left:15px; top:12px; bottom:40px; width:2px;
+  background:linear-gradient(var(--line-2), var(--line))}
+.step{position:relative; margin-bottom:26px}
+.step::before{content:attr(data-n); position:absolute; left:-46px; top:1px; width:32px; height:32px;
+  border-radius:50%; background:var(--surface); border:2px solid var(--line-2); color:var(--muted);
+  font-family:"IBM Plex Mono",monospace; font-size:13px; font-weight:500;
+  display:grid; place-items:center; z-index:2}
+.step.key::before{border-color:var(--accent); color:var(--accent); background:var(--accent-soft)}
+.step.bad::before{border-color:var(--bad); color:var(--bad); background:var(--bad-soft)}
+.step.ok::before{border-color:var(--good); color:var(--good); background:var(--good-soft)}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:9px;
+  padding:18px 20px; box-shadow:var(--shadow)}
+.card>*:last-child{margin-bottom:0}
+.when{font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--muted);
+  letter-spacing:.04em; margin-bottom:7px}
+
+/* ---------- piezas ---------- */
+.quote{border-left:2px solid var(--line-2); padding:2px 0 2px 14px; margin:0 0 14px;
+  color:var(--ink-2); font-size:14.5px}
+.quote b{color:var(--ink)}
+.verdict{display:flex; gap:10px; align-items:flex-start; border-radius:7px; padding:11px 14px;
+  margin:14px 0 0; font-size:14px; line-height:1.5}
+.verdict.no{background:var(--bad-soft); color:var(--bad)}
+.verdict.si{background:var(--good-soft); color:var(--good)}
+.verdict.hm{background:var(--warn-soft); color:var(--warn)}
+.verdict .ic{font-family:"IBM Plex Mono",monospace; font-weight:600; flex:none}
+.verdict b{font-weight:600}
+.nums{display:grid; grid-template-columns:repeat(auto-fit,minmax(118px,1fr)); gap:9px; margin:14px 0}
+.num{background:var(--surface-2); border-radius:6px; padding:10px 12px}
+.num .v{font-family:"IBM Plex Mono",monospace; font-size:19px; font-weight:500;
+  letter-spacing:-.02em; font-variant-numeric:tabular-nums; line-height:1.2}
+.num .k{font-size:11.5px; color:var(--muted); margin-top:3px; line-height:1.3}
+.num.g .v{color:var(--good)} .num.r .v{color:var(--bad)} .num.a .v{color:var(--accent)}
+
+.tw{overflow-x:auto; margin:14px 0; border:1px solid var(--line); border-radius:7px}
+table{border-collapse:collapse; width:100%; font-size:13.5px; min-width:380px; background:var(--surface)}
+th,td{padding:7px 11px; text-align:left; border-bottom:1px solid var(--line)}
+thead th{background:var(--surface-2); font-size:11px; letter-spacing:.055em; text-transform:uppercase;
+  color:var(--muted); font-weight:600; white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right; font-family:"IBM Plex Mono",monospace;
+  font-variant-numeric:tabular-nums; white-space:nowrap}
+tbody tr.hi td{background:var(--accent-soft)}
+
+figure{margin:16px 0 0; background:var(--surface-2); border-radius:7px; padding:14px 14px 9px}
+figure svg{display:block; width:100%; height:auto}
+figure svg text{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums}
+figcaption{font-size:12.5px; color:var(--muted); margin-top:7px; line-height:1.45}
+.leg{display:flex; gap:15px; font-size:12.5px; color:var(--ink-2); margin-bottom:4px}
+.leg span{display:flex; align-items:center; gap:6px}
+.sw{width:14px; height:3px; border-radius:2px; flex:none}
+.duo{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+.duo figure{margin-top:0}
+
+.final{background:var(--accent-soft); border:1px solid color-mix(in srgb,var(--accent) 28%,transparent);
+  border-radius:9px; padding:22px 24px; margin-top:8px}
+.final h2{margin-bottom:10px}
+.foot{border-top:1px solid var(--line); margin-top:34px; padding-top:20px;
+  font-size:13px; color:var(--muted)}
+
+@media (max-width:640px){
+  .flow{padding-left:34px} .flow::before{left:11px}
+  .step::before{left:-34px; width:24px; height:24px; font-size:11.5px}
+  .card{padding:15px 16px}
+  .duo{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="hd">
+  <p class="eyebrow">Capstone · Grupo 5 · UDLA</p>
+  <h1>El camino hasta el modelo</h1>
+  <p class="dek">Qué se hizo primero, qué falló, y en qué momento exacto los datos obligaron a
+  cambiar de rumbo. Diez pasos, en orden, con la evidencia de cada uno.</p>
+</header>
+
+<div class="flow">
+
+<!-- 0 -->
+<div class="step" data-n="0">
+<div class="card">
+  <div class="when">Punto de partida</div>
+  <h2>Lo que se comprometió</h2>
+  <p>El <b>Objetivo General</b> del capstone fija el tipo de solución:</p>
+  <div class="quote">Desarrollar mediante <b>algoritmos de aprendizaje supervisado</b> un modelo
+  que prediga el volumen esperado de devoluciones de SIMs y equipos móviles… para ajustar la
+  demanda neta.</div>
+  <p>El compromiso de fondo es <b>aprendizaje supervisado</b>. Los nombres concretos aparecen un
+  nivel más abajo, en el Objetivo 3, y la tabla de fases los sitúa como punto de partida:</p>
+  <div class="quote">Fase 3 · ML Model Building — Entrenamiento de modelos <b>baseline</b>:
+  Random Forest y XGBoost.<br>
+  Fase 3 — …<b>selección del modelo candidato</b> y análisis de explicabilidad (SHAP).<br>
+  Fase 4 · Model Evaluation — <b>Ajuste final según resultados</b>.</div>
+  <p>Conviene retener eso: los dos algoritmos están escritos como <b>baseline</b>, y hay dos pasos
+  explícitos que presuponen que medir puede cambiar la elección.</p>
+</div>
+</div>
+
+<!-- 1 -->
+<div class="step" data-n="1">
+<div class="card">
+  <div class="when">Fases 1 y 2 de CRISP-ML(Q) · cuaderno 01</div>
+  <h2>Limpieza y comprensión de los datos</h2>
+  <p>El cliente entregó seis fuentes. Antes de modelar nada hubo que resolver cosas que, sin
+  corregir, rompían el cálculo de los 60 días:</p>
+  <ul>
+    <li>IMEI exportados como <code>="350135179665922"</code>, que no cruzaban con nada</li>
+    <li>El texto <code>"NULL"</code> contando como valor válido</li>
+    <li><b>Cuatro convenciones de fecha</b> distintas: el 03/04 leído como 4 de marzo</li>
+    <li>Tres esquemas de despachos según el año, y la cabecera del inventario en filas distintas</li>
+  </ul>
+  <p>Después, la compresión que hace el problema tratable: el inventario diario es repetitivo
+  —la misma unidad en la misma bodega cuarenta días son cuarenta filas idénticas—, así que se
+  reduce a <b>estadías</b>, un registro por <code>(imei, bodega, desde, hasta)</code>.</p>
+  <div class="nums">
+    <div class="num a"><div class="v">13,8 M</div><div class="k">filas de inventario</div></div>
+    <div class="num a"><div class="v">764.009</div><div class="k">estadías</div></div>
+    <div class="num"><div class="v">18,1×</div><div class="k">compresión</div></div>
+    <div class="num r"><div class="v">8,2 %</div><div class="k">unidades no rastreables, excluidas</div></div>
+  </div>
+</div>
+</div>
+
+<!-- 2 -->
+<div class="step" data-n="2">
+<div class="card">
+  <div class="when">Cuaderno 01</div>
+  <h2>Construir la variable que no existía</h2>
+  <p>Aquí está el obstáculo que define el proyecto entero: <b>no hay ningún registro de
+  devoluciones</b>. Hay despachos, inventario diario y ventas. La variable a predecir hubo que
+  fabricarla.</p>
+  <p>La primera definición fue la intuitiva: una unidad llega a un local y cumple 60 días ahí sin
+  venderse ni volver a central. El umbral no se eligió por convención — se barrieron valores de 30
+  a 150 días contra el retorno físico a bodega central, que sí es observable, y 60 maximizó el F1.</p>
+</div>
+</div>
+
+<!-- 3 -->
+<div class="step bad" data-n="3">
+<div class="card">
+  <div class="when">Fases 3 y 4 · cuaderno 02</div>
+  <h2>El primer modelo: Random Forest y XGBoost</h2>
+  <p>Con esa variable se entrenó exactamente lo comprometido, contra cinco baselines
+  estadísticos.</p>
+
+  <div class="tw"><table>
+  <thead><tr><th>Modelo</th><th class="n">WMAPE</th><th class="n">MAPE mensual</th><th>≤ 15 %</th></tr></thead>
+  <tbody>
+  <tr class="hi"><td>XGBoost Poisson</td><td class="n">0,401</td><td class="n">28,3 %</td><td>no</td></tr>
+  <tr><td>naive (mes anterior)</td><td class="n">0,453</td><td class="n">21,2 %</td><td>no</td></tr>
+  <tr><td>media móvil 3m</td><td class="n">0,489</td><td class="n">22,9 %</td><td>no</td></tr>
+  <tr><td>Random Forest</td><td class="n">0,765</td><td class="n">76,4 %</td><td>no</td></tr>
+  <tr><td>Croston/SBA</td><td class="n">1,107</td><td class="n">111,0 %</td><td>no</td></tr>
+  </tbody></table></div>
+
+  <figure>
+    <div class="leg"><span><i class="sw" style="background:var(--s1)"></i>real</span>
+      <span><i class="sw" style="background:var(--s2)"></i>predicho</span></div>
+    <svg viewBox="0 0 520 260" role="img" aria-label="Primer modelo: real y predicho por mes, las líneas se cruzan">
+      <g stroke="var(--line-2)" stroke-width="1">
+        <line x1="52" y1="214" x2="504" y2="214"/>
+        <line x1="52" y1="164.5" x2="504" y2="164.5" stroke-dasharray="2 5"/>
+        <line x1="52" y1="115" x2="504" y2="115" stroke-dasharray="2 5"/>
+        <line x1="52" y1="65.5" x2="504" y2="65.5" stroke-dasharray="2 5"/>
+        <line x1="52" y1="16" x2="504" y2="16" stroke-dasharray="2 5"/>
+      </g>
+      <g fill="var(--muted)" font-size="11" text-anchor="end">
+        <text x="44" y="218">0</text><text x="44" y="168.5">200</text>
+        <text x="44" y="119">400</text><text x="44" y="69.5">600</text><text x="44" y="20">800</text>
+      </g>
+      <polyline fill="none" stroke="var(--s1)" stroke-width="2.5" stroke-linejoin="round"
+        points="52,119.5 202.7,53.9 353.3,76.2 504,101.2"/>
+      <polyline fill="none" stroke="var(--s2)" stroke-width="2.5" stroke-linejoin="round"
+        stroke-dasharray="7 4" points="52,103.4 202.7,112.3 353.3,41.3 504,62.3"/>
+      <g fill="var(--s1)"><circle cx="52" cy="119.5" r="4.5"/><circle cx="202.7" cy="53.9" r="4.5"/>
+        <circle cx="353.3" cy="76.2" r="4.5"/><circle cx="504" cy="101.2" r="4.5"/></g>
+      <g fill="var(--s2)"><circle cx="52" cy="103.4" r="4.5"/><circle cx="202.7" cy="112.3" r="4.5"/>
+        <circle cx="353.3" cy="41.3" r="4.5"/><circle cx="504" cy="62.3" r="4.5"/></g>
+      <g fill="var(--muted)" font-size="11" text-anchor="middle">
+        <text x="52" y="234">mar</text><text x="202.7" y="234">abr</text>
+        <text x="353.3" y="234">may</text><text x="504" y="234">jun</text>
+        <text x="278" y="252">2026</text>
+      </g>
+      <text x="198" y="132" font-size="11.5" fill="var(--bad)" text-anchor="middle">−36,5 %</text>
+    </svg>
+    <figcaption>Las líneas se cruzan dos veces. En abril el real se dispara a 647 y la predicción
+    <b>baja</b> a 411.</figcaption>
+  </figure>
+
+  <div class="verdict no"><span class="ic">✗</span><span><b>No se cumple el objetivo.</b>
+  El mejor queda en 28,3 % frente al 15 % comprometido. Y Random Forest pierde contra repetir el
+  mes anterior, que es una señal de que algo más grave pasa.</span></div>
+</div>
+</div>
+
+<!-- 4 -->
+<div class="step key" data-n="4">
+<div class="card">
+  <div class="when">La decisión que cambió el proyecto</div>
+  <h2>El diagnóstico: no era el algoritmo</h2>
+  <p>En este punto había dos caminos: cambiar de modelo, o sospechar del dato. Se eligió el
+  segundo, por el indicio del paso anterior — cuando un ensamble pierde contra el naive, el
+  problema no suele estar en el ensamble.</p>
+  <p>Se pidieron listados reales al área de planificación y se contrastó equipo por equipo. La
+  definición inicial fallaba en tres reglas:</p>
+  <ul>
+    <li>Los días se cuentan desde la <b>fecha de despacho</b>, no desde la llegada al local</li>
+    <li>El reloj <b>no se reinicia</b> al mover la unidad entre locales del canal</li>
+    <li>Es un <b>flujo</b>: cada unidad se cuenta una vez, el mes que cruza el umbral</li>
+  </ul>
+  <div class="verdict si"><span class="ic">✓</span><span>Corregidas las tres, la coincidencia con
+  un listado real de 801 equipos es del <b>99,75 %</b> — 799 de 801.</span></div>
+</div>
+</div>
+
+<!-- 5 -->
+<div class="step" data-n="5">
+<div class="card">
+  <div class="when">Efecto secundario, y muy grande</div>
+  <h2>El histórico se duplica</h2>
+  <p>La definición corregida ya no necesita el reporte de ventas, al que le faltan siete meses de
+  2024. Solo usa despachos e inventario. Así que 2024 vuelve a ser utilizable.</p>
+  <div class="tw"><table>
+  <thead><tr><th>&nbsp;</th><th class="n">Definición inicial</th><th class="n">Definición corregida</th></tr></thead>
+  <tbody>
+  <tr><td>Meses de historia</td><td class="n">18</td><td class="n">31</td></tr>
+  <tr><td>Eventos en la serie</td><td class="n">12.982</td><td class="n">39.355</td></tr>
+  <tr><td>Validación contra el negocio</td><td class="n">ninguna</td><td class="n">99,75 %</td></tr>
+  </tbody></table></div>
+  <p>Y aparece algo que antes no podía verse. Si los 60 días cuentan desde el despacho, la fecha
+  de vencimiento es <b>determinista</b>: se conoce el día que el equipo sale de bodega. Eso hace
+  que las unidades que vencerán el mes próximo <b>ya sean contables hoy</b>. Es el
+  <b>grupo en riesgo</b>, y con la definición anterior no existía.</p>
+</div>
+</div>
+
+<!-- 6 -->
+<div class="step ok" data-n="6">
+<div class="card">
+  <div class="when">Cuaderno 04 · el paso que no hay que saltarse al contarlo</div>
+  <h2>Los mismos dos modelos, con los datos corregidos</h2>
+  <p>No se cambió de familia ni se abandonó nada: se volvieron a entrenar <b>exactamente</b> los
+  dos algoritmos comprometidos, sobre la variable objetivo corregida.</p>
+  <div class="tw"><table>
+  <thead><tr><th>Modelo</th><th class="n">Antes</th><th class="n">Ahora</th><th>≤ 15 %</th></tr></thead>
+  <tbody>
+  <tr><td>Random Forest</td><td class="n">76,4 %</td><td class="n">5,3 %</td><td>sí</td></tr>
+  <tr><td>XGBoost Poisson</td><td class="n">28,3 %</td><td class="n">10,3 %</td><td>sí</td></tr>
+  </tbody></table></div>
+  <div class="verdict si"><span class="ic">✓</span><span><b>Los dos cumplen el objetivo por sí
+  solos.</b> Queda demostrado que lo que fallaba era el dato, no el algoritmo — y el Objetivo 3
+  queda cubierto con independencia de lo que venga después.</span></div>
+</div>
+</div>
+
+<!-- 7 -->
+<div class="step key" data-n="7">
+<div class="card">
+  <div class="when">El momento en que SHAP deja de ser un trámite</div>
+  <h2>SHAP, y el hallazgo que redirigió el trabajo</h2>
+  <p>El capstone incorpora SHAP para explicabilidad. Aplicado sobre los dos modelos ya corregidos,
+  lo que devolvió no fue una explicación: fue un hallazgo sobre la estructura del problema.</p>
+
+  <figure>
+    <div class="leg"><span><i class="sw" style="background:var(--s1)"></i>XGBoost</span>
+      <span><i class="sw" style="background:var(--s2)"></i>Random Forest</span></div>
+    <svg viewBox="0 0 620 230" role="img" aria-label="Importancia SHAP en los dos ensambles">
+      <g fill="var(--ink-2)" font-size="11.5" text-anchor="end">
+        <text x="92" y="42">en_riesgo</text><text x="92" y="73">desp_lag2</text>
+        <text x="92" y="104">marca</text><text x="92" y="135">desp_lag1</text>
+        <text x="92" y="166">dev_lag1</text><text x="92" y="197">r_marca</text>
+      </g>
+      <g fill="var(--s1)">
+        <rect x="100" y="22" width="338.9" height="11" rx="3"/>
+        <rect x="100" y="53" width="79.2" height="11" rx="3"/>
+        <rect x="100" y="84" width="13.4" height="11" rx="3"/>
+        <rect x="100" y="115" width="12.5" height="11" rx="3"/>
+        <rect x="100" y="146" width="10.1" height="11" rx="3"/>
+        <rect x="100" y="177" width="5.8" height="11" rx="3"/>
+      </g>
+      <g fill="var(--s2)">
+        <rect x="100" y="35" width="452.2" height="11" rx="3"/>
+        <rect x="100" y="66" width="4.3" height="11" rx="3"/>
+        <rect x="100" y="97" width="3.4" height="11" rx="3"/>
+        <rect x="100" y="128" width="1.4" height="11" rx="3"/>
+        <rect x="100" y="159" width="3.8" height="11" rx="3"/>
+        <rect x="100" y="190" width="5.3" height="11" rx="3"/>
+      </g>
+      <g fill="var(--muted)" font-size="11">
+        <text x="446" y="32">70,6 %</text><text x="560" y="45">94,2 %</text>
+        <text x="187" y="63">16,5 %</text><text x="112" y="76">0,9 %</text>
+      </g>
+      <text x="310" y="222" font-size="11" fill="var(--muted)" text-anchor="middle">% de la contribución total</text>
+    </svg>
+    <figcaption>Dos familias de modelos distintas, dos análisis independientes, el mismo
+    veredicto.</figcaption>
+  </figure>
+
+  <p>Random Forest lo dice todavía más fuerte que XGBoost: <b>94,2 %</b> de la contribución en una
+  sola variable. La diferencia entre ambos tiene explicación — XGBoost usa
+  <code>colsample_bytree = 0,8</code>, así que en uno de cada cinco árboles no dispone de
+  <code>en_riesgo</code> y recurre a <code>desp_lag2</code>, que es su sustituto más parecido.</p>
+
+  <h3>Por qué esto cambió el modelo</h3>
+  <p>La revisión de literatura del capstone justifica la elección de los ensambles con una
+  condición:</p>
+  <div class="quote">…superioridad de los algoritmos de ensamblado frente a los métodos
+  estadísticos clásicos, <b>especialmente cuando se dispone de múltiples variables explicativas y
+  relaciones no lineales entre ellas</b>.</div>
+  <div class="verdict hm"><span class="ic">!</span><span>SHAP acaba de mostrar que
+  <b>esa condición no se cumple</b>. No hay múltiples variables: hay una. Y la relación es
+  multiplicativa, no una interacción compleja. <b>Fue el propio instrumento que la propuesta
+  mandaba usar el que lo detectó.</b></span></div>
+</div>
+</div>
+
+<!-- 8 -->
+<div class="step" data-n="8">
+<div class="card">
+  <div class="when">Lo que la estructura dicta</div>
+  <h2>El modelo de tasa de conversión</h2>
+  <p>Si una variable es una <b>exposición</b> —cuántas unidades están en riesgo— y lo único
+  incierto es qué fracción cae, el modelo que corresponde no es un ensamble:</p>
+  <figure style="text-align:center; padding:18px 14px">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:15px; line-height:1.9">
+      E[devoluciones] = <b style="color:var(--s1)">unidades en riesgo</b> ×
+      <b style="color:var(--s2)">tasa(marca)</b>
+    </div>
+  </figure>
+  <p style="margin-top:14px">Escrito así es una <b>regresión de Poisson con offset de
+  exposición</b>: la forma estándar de modelar conteos cuando los casos dependen de cuántos
+  estaban expuestos — siniestros por póliza-año en seguros, casos por persona-año en
+  epidemiología. Está en <code>scikit-learn</code> como <code>PoissonRegressor</code>.</p>
+  <p>No se eligió por preferencia. <b>Lo dictó la estructura que SHAP reveló.</b></p>
+  <div class="verdict si"><span class="ic">✓</span><span>Comprobado contra el GLM de Poisson de
+  <code>statsmodels</code>: correlación <b>0,9991</b> entre ambas predicciones.</span></div>
+</div>
+</div>
+
+<!-- 9 -->
+<div class="step" data-n="9">
+<div class="card">
+  <div class="when">Fase 4 · donde se decide</div>
+  <h2>La comparación, sobre validación</h2>
+  <p>La elección se toma sobre julio–diciembre de 2025. El conjunto de prueba no interviene en
+  ninguna decisión.</p>
+  <div class="tw"><table>
+  <thead><tr><th>Modelo</th><th class="n">MAPE mensual</th><th class="n">WMAPE</th></tr></thead>
+  <tbody>
+  <tr class="hi"><td>Tasa de conversión</td><td class="n">6,0 %</td><td class="n">0,105</td></tr>
+  <tr><td>Random Forest</td><td class="n">10,7 %</td><td class="n">0,169</td></tr>
+  <tr><td>XGBoost Poisson</td><td class="n">11,8 %</td><td class="n">0,189</td></tr>
+  </tbody></table></div>
+  <p>Gana con holgura. <b>Ahí queda tomada la decisión</b>, seis meses antes de mirar 2026.</p>
+</div>
+</div>
+
+<!-- 10 -->
+<div class="step ok" data-n="10">
+<div class="card">
+  <div class="when">Fase 4 · la medición única</div>
+  <h2>El resultado sobre prueba</h2>
+  <p>Reentrenando con entrenamiento + validación y midiendo una sola vez sobre enero–julio de
+  2026, meses que ningún modelo vio.</p>
+
+  <figure>
+    <div class="leg"><span><i class="sw" style="background:var(--s1)"></i>real</span>
+      <span><i class="sw" style="background:var(--s2)"></i>predicho</span></div>
+    <svg viewBox="0 0 520 260" role="img" aria-label="Modelo final: real y predicho por mes, las líneas coinciden">
+      <g stroke="var(--line-2)" stroke-width="1">
+        <line x1="52" y1="214" x2="504" y2="214"/>
+        <line x1="52" y1="164.5" x2="504" y2="164.5" stroke-dasharray="2 5"/>
+        <line x1="52" y1="115" x2="504" y2="115" stroke-dasharray="2 5"/>
+        <line x1="52" y1="65.5" x2="504" y2="65.5" stroke-dasharray="2 5"/>
+        <line x1="52" y1="16" x2="504" y2="16" stroke-dasharray="2 5"/>
+      </g>
+      <g fill="var(--muted)" font-size="11" text-anchor="end">
+        <text x="44" y="218">0</text><text x="44" y="168.5">350</text>
+        <text x="44" y="119">700</text><text x="44" y="69.5">1050</text><text x="44" y="20">1400</text>
+      </g>
+      <polyline fill="none" stroke="var(--s1)" stroke-width="2.5" stroke-linejoin="round"
+        points="52,166.6 127.3,146.4 202.7,110.5 278,89.3 353.3,67.5 428.7,111.5 504,21.2"/>
+      <polyline fill="none" stroke="var(--s2)" stroke-width="2.5" stroke-linejoin="round"
+        stroke-dasharray="7 4"
+        points="52,166.1 127.3,143.6 202.7,108.2 278,98.4 353.3,72.4 428.7,114.3 504,48.5"/>
+      <g fill="var(--s1)"><circle cx="52" cy="166.6" r="4"/><circle cx="127.3" cy="146.4" r="4"/>
+        <circle cx="202.7" cy="110.5" r="4"/><circle cx="278" cy="89.3" r="4"/>
+        <circle cx="353.3" cy="67.5" r="4"/><circle cx="428.7" cy="111.5" r="4"/>
+        <circle cx="504" cy="21.2" r="4"/></g>
+      <g fill="var(--s2)"><circle cx="52" cy="166.1" r="4"/><circle cx="127.3" cy="143.6" r="4"/>
+        <circle cx="202.7" cy="108.2" r="4"/><circle cx="278" cy="98.4" r="4"/>
+        <circle cx="353.3" cy="72.4" r="4"/><circle cx="428.7" cy="114.3" r="4"/>
+        <circle cx="504" cy="48.5" r="4"/></g>
+      <g fill="var(--muted)" font-size="11" text-anchor="middle">
+        <text x="52" y="234">ene</text><text x="127.3" y="234">feb</text><text x="202.7" y="234">mar</text>
+        <text x="278" y="234">abr</text><text x="353.3" y="234">may</text><text x="428.7" y="234">jun</text>
+        <text x="504" y="234">jul</text><text x="278" y="252">2026</text>
+      </g>
+      <text x="492" y="40" font-size="11.5" fill="var(--muted)" text-anchor="end">−14,2 %</text>
+    </svg>
+    <figcaption>Las dos líneas acompañan los mismos movimientos. Julio es el peor mes y la causa
+    está identificada: Honor pone 151 de las 193 unidades de error.</figcaption>
+  </figure>
+
+  <div class="nums">
+    <div class="num g"><div class="v">5,0 %</div><div class="k">MAPE mensual · objetivo ≤ 15 %</div></div>
+    <div class="num"><div class="v">50,3</div><div class="k">MAE, unidades/mes</div></div>
+    <div class="num"><div class="v">79,0</div><div class="k">RMSE</div></div>
+    <div class="num g"><div class="v">0,096</div><div class="k">MASE · 10× mejor que el naive</div></div>
+  </div>
+</div>
+</div>
+
+</div><!-- /flow -->
+
+<div class="final">
+  <h2>El antes y el después</h2>
+  <div class="tw" style="margin-top:12px"><table>
+  <thead><tr><th>&nbsp;</th><th class="n">Primer modelo</th><th class="n">Modelo final</th></tr></thead>
+  <tbody>
+  <tr><td>Definición del objetivo</td><td class="n">propia, sin contrastar</td><td class="n">la del negocio, verificada</td></tr>
+  <tr><td>Validación externa</td><td class="n">ninguna</td><td class="n">99,75 %</td></tr>
+  <tr><td>Meses de historia</td><td class="n">18</td><td class="n">31</td></tr>
+  <tr><td>WMAPE</td><td class="n">0,401</td><td class="n">0,114</td></tr>
+  <tr class="hi"><td>MAPE del volumen mensual</td><td class="n">28,3 %</td><td class="n">5,0 %</td></tr>
+  </tbody></table></div>
+
+  <h3 style="margin-top:22px">¿Y es aprendizaje supervisado?</h3>
+  <p>Sí, y es el compromiso del Objetivo General. El modelo tiene datos etiquetados
+  <code>(en_riesgo, devueltas)</code>, parámetros aprendidos por máxima verosimilitud —nadie
+  escribió que Samsung fuera 0,733: eso salió de 4.023 observaciones—, regularización, y
+  evaluación sobre datos no vistos. Está en <code>scikit-learn</code> como
+  <code>PoissonRegressor</code>, que hereda de <code>RegressorMixin</code>, la clase base de los
+  estimadores supervisados de regresión.</p>
+  <p style="margin-bottom:0">Los tres candidatos pertenecen a la misma familia. Lo que distingue
+  al elegido es la parsimonia: <b>seis parámetros frente a seiscientos árboles</b>.</p>
+</div>
+
+<footer class="foot">
+  Todas las cifras proceden de ejecutar los cuadernos sobre los datos del cliente. El primer
+  modelo se reprodujo con sus parámetros originales para obtener su detalle mensual: WMAPE 0,4006
+  y MAPE 28,3 %, idénticos a los que reporta el cuaderno 02.
+</footer>
+
+</div>
+
+</body></html>
