@@ -1,0 +1,5 @@
+modelo,MAPE %,IC95 inferior,IC95 superior,amplitud
+Tasa de conversión,5.26,3.62,7.19,3.57
+Random Forest,7.17,5.21,9.36,4.15
+XGBoost Poisson,10.56,7.6,13.73,6.13
+Naive (mes anterior),34.96,22.28,54.01,31.74

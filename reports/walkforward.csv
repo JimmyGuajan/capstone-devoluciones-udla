@@ -1,0 +1,5 @@
+modelo,MAPE_medio,mediana,desv,p10,p90,peor,MAE
+Tasa de conversión,5.26,4.24,4.35,1.12,10.89,17.52,76.7
+Random Forest,7.17,5.77,5.06,1.79,11.26,23.41,103.23
+XGBoost Poisson,10.56,9.44,7.3,1.91,18.97,28.11,142.63
+Naive (mes anterior),34.96,28.43,39.67,9.03,46.85,196.12,360.67
