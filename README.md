@@ -1,10 +1,14 @@
-# Predicción de devoluciones de inventario y ajuste de la demanda neta
+# Predicción de devoluciones de inventario de equipos móviles
 
 Capstone — Maestría en Inteligencia Artificial Aplicada, Universidad de Las Américas.
 Grupo 5: Guaján Perugachi Jimmy Israel · Martínez Ortega Jorge Washington · Vásquez Chávez Marco Vinicio.
 
-Predice el volumen mensual de devoluciones de equipos móviles por marca, para ajustar la demanda
-neta de un operador de telefonía con presencia en Ecuador.
+Predice el volumen mensual de devoluciones de equipos móviles por marca en un operador de
+telefonía con presencia en Ecuador.
+
+**Alcance.** El proyecto cubre la **predicción del volumen de devoluciones**. El ajuste de la
+demanda neta, que en los cuadernos 04 y 06 aparece como cálculo derivado, queda fuera del alcance
+de esta fase.
 
 ## Definición del target
 
@@ -49,7 +53,7 @@ de enero de 2025 entregado por el negocio: **99,75 % de coincidencia** (799 de 8
 │   ├── 01_limpieza_y_eda.ipynb        fases 1-2 CRISP-ML(Q) · Objetivo 1
 │   ├── 02_modelo.ipynb                primer modelo — se conserva como trazabilidad
 │   ├── 03_antiguedad_inventario.ipynb validación contra los reportes del negocio
-│   └── 04_modelo_final.ipynb          fases 3-4 CRISP-ML(Q) · Objetivos 3, 4 y 5
+│   ├── 04_modelo_final.ipynb          fases 3-4 CRISP-ML(Q) · Objetivos 3 y 4
 ├── sql/consultas.sql, sql/antiguedad.sql
 └── reports/                    métricas y figuras
 ```
@@ -71,7 +75,7 @@ Orden de ejecución de los cuadernos:
 | 1 | `01_limpieza_y_eda` | limpieza, estadías y paneles — **genera los parquet que leen los demás** |
 | 2 | `02_modelo` | primer modelo; se conserva como trazabilidad |
 | 3 | `03_antiguedad_inventario` | validación contra los listados del negocio |
-| 4 | `04_modelo_final` | modelo final, Objetivos 3, 4 y 5 |
+| 4 | `04_modelo_final` | modelo final, Objetivos 3 y 4 |
 | 5 | `05_decision_modelo` | por qué se eligió ese modelo |
 | 6 | `06_extension_agosto_septiembre` | entrega complementaria, prueba de 9 meses |
 | 7 | `07_validacion_estadistica` | walk-forward, bootstrap e incertidumbre |
