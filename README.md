@@ -1,17 +1,21 @@
-# Predicción de devoluciones de inventario y ajuste de la demanda neta
+# Predicción de devoluciones de inventario de equipos móviles
 
 Capstone — Maestría en Inteligencia Artificial Aplicada, Universidad de Las Américas.
 Grupo 5: Guaján Perugachi Jimmy Israel · Martínez Ortega Jorge Washington · Vásquez Chávez Marco Vinicio.
 
-Predice el volumen mensual de devoluciones de equipos móviles por marca, para ajustar la demanda
-neta de un operador de telefonía con presencia en Ecuador.
+Predice el volumen mensual de devoluciones de equipos móviles por marca en un operador de
+telefonía con presencia en Ecuador.
+
+**Alcance.** El proyecto cubre la **predicción del volumen de devoluciones**. El ajuste de la
+demanda neta, que en los cuadernos 04 y 06 aparece como cálculo derivado, queda fuera del alcance
+de esta fase.
 
 ## Definición del target
 
 ```
 DEVOLUCIÓN := unidad que cumple 60 días desde su fecha de despacho y sigue
               en poder del canal al cierre del mes
-GRANO      : marca × mes      VENTANA: 2024-05 a 2026-07 (31 meses)
+GRANO      : marca × mes      VENTANA: 2024-05 a 2026-09 (29 meses de panel)
 ```
 
 Es la definición que usa el área de planificación del cliente, con tres reglas que se verificaron
@@ -31,7 +35,7 @@ de enero de 2025 entregado por el negocio: **99,75 % de coincidencia** (799 de 8
 ## Estructura
 
 ```
-├── Data tesis/                 entrega del cliente, 2024-2026 (solo lectura, no versionado)
+├── Data tesis/ · Data/ · Data2/ · data 3/   entregas del cliente (no versionadas)
 ├── data/processed/             parquet generado — no versionar
 ├── src/
 │   ├── config.py               rutas, umbral, marcas, ventana limpia
@@ -41,18 +45,28 @@ de enero de 2025 entregado por el negocio: **99,75 % de coincidencia** (799 de 8
 │   ├── ciclo.py                primera definición del target (despachos + ventas)
 │   ├── antiguedad.py           segunda definición (días en la misma bodega)
 │   ├── permanencia.py          definición final, confirmada con el negocio
+│   ├── extension.py            lector de la entrega complementaria (hoja TIGO)
+│   ├── panel.py · events.py    utilidades de panel y eventos
 │   ├── modelo.py               baselines, métricas, RF y XGBoost
 │   └── warehouse.py            carga a SQL Server
 ├── notebooks/
-│   ├── 01_limpieza_y_eda.ipynb        fases 1-2 CRISP-ML(Q) · Objetivo 1
-│   ├── 02_modelo.ipynb                primer modelo — se conserva como trazabilidad
-│   ├── 03_antiguedad_inventario.ipynb validación contra los reportes del negocio
-│   └── 04_modelo_final.ipynb          fases 3-4 CRISP-ML(Q) · Objetivos 3, 4 y 5
-├── sql/consultas.sql, sql/antiguedad.sql
-└── reports/                    métricas y figuras
+│   ├── 01_limpieza_y_eda.ipynb              limpieza, estadías y paneles
+│   ├── 02_modelo.ipynb                      primer modelo — trazabilidad
+│   ├── 03_antiguedad_inventario.ipynb       validación contra los reportes del negocio
+│   ├── 04_modelo_final.ipynb                modelo final
+│   ├── 05_decision_modelo.ipynb             por qué se eligió ese modelo
+│   ├── 06_extension_agosto_septiembre.ipynb entrega complementaria
+│   └── 07_validacion_estadistica.ipynb      walk-forward, bootstrap e incertidumbre
+├── sql/                        consultas.sql · antiguedad.sql
+├── docs/                       documento de entrega · solicitud de datos al cliente
+├── reports/                    métricas en CSV, figuras y reportes HTML
+├── CHANGELOG.md                bitácora del proyecto
+└── .claude/agents/             agente de revisión de entregables
 ```
 
 ## Ejecución
+
+Requiere **Python 3.12**.
 
 ```bash
 pip install -r requirements.txt
@@ -60,84 +74,99 @@ jupyter lab notebooks/01_limpieza_y_eda.ipynb   # ejecutar 01 antes que el resto
 python -m src.warehouse                          # opcional: cargar a SQL Server
 ```
 
-La primera corrida lee 1.015 snapshots y 33 archivos de despachos: unos 15 minutos. Después queda
+Orden de ejecución de los cuadernos:
+
+| | Cuaderno | Qué hace |
+|---|---|---|
+| 1 | `01_limpieza_y_eda` | limpieza, estadías y paneles — **genera los parquet que leen los demás** |
+| 2 | `02_modelo` | primer modelo; se conserva como trazabilidad |
+| 3 | `03_antiguedad_inventario` | validación contra los listados del negocio |
+| 4 | `04_modelo_final` | modelo final, Objetivos 3 y 4 |
+| 5 | `05_decision_modelo` | por qué se eligió ese modelo |
+| 6 | `06_extension_agosto_septiembre` | entrega complementaria, prueba de 9 meses |
+| 7 | `07_validacion_estadistica` | walk-forward, bootstrap e incertidumbre |
+
+### Dependencias y versiones
+
+| Paquete | Versión | Para qué |
+|---|---|---|
+| `pandas` | 2.2.3 | manipulación de datos |
+| `numpy` | 2.0.2 | cálculo numérico |
+| `scikit-learn` | ≥ 1.5 | Random Forest, `PoissonRegressor`, utilidades |
+| `xgboost` | 2.1.3 | XGBoost con objetivo Poisson |
+| `statsmodels` | ≥ 0.14 | GLM de Poisson de referencia |
+| `shap` | ≥ 0.46 | explicabilidad |
+| `pyarrow` | ≥ 15.0 | caché en parquet |
+| `python-calamine` | ≥ 0.2 | lectura de Excel, 6× más rápida |
+| `openpyxl` | 3.1.5 | respaldo de lectura de Excel |
+| `matplotlib` | ≥ 3.8 | figuras |
+| `duckdb` | — | consultas sobre parquet |
+| `jupyterlab`, `nbformat` | — | cuadernos |
+
+La primera corrida lee 1.075 snapshots y 35 archivos de despachos: unos 15 minutos. Después queda
 todo cacheado en parquet.
 
 ## Resultado
 
-Entrenamiento con 2024-2025, prueba sobre enero–julio de 2026 en el panel marca × mes. La
-selección entre modelos se hace sobre un conjunto de validación intermedio (jul–dic 2025); el de
-prueba no interviene en ninguna decisión.
+Entrenamiento con mayo 2024 – diciembre 2025, prueba sobre **enero–septiembre de 2026** en el
+panel marca × mes. La selección entre modelos se hace sobre un conjunto de validación intermedio
+(jul–dic 2025); el de prueba no interviene en ninguna decisión.
 
-| Modelo | WMAPE | MAE | RMSE | MASE | MAPE mensual |
-|---|---:|---:|---:|---:|---:|
-| **Tasa de conversión** | **0,114** | **8,22** | 21,91 | **0,096** | **5,0 %** |
-| Random Forest | 0,123 | 8,85 | **21,52** | 0,104 | 5,3 % |
-| XGBoost Poisson | 0,157 | 11,31 | 25,18 | 0,133 | 10,3 % |
+El Objetivo 4 fija el criterio sobre el **volumen mensual** (Plan v4: *«MAPE agregado ≤ 15 %»*):
 
-El Objetivo 4 fija el criterio sobre el **volumen mensual** (Plan v4: *"MAPE agregado ≤ 15 %"*).
-A ese grano el resultado es:
-
-| Grano | MAPE | MAE | RMSE | WMAPE |
-|---|---:|---:|---:|---:|
-| **Volumen mensual — criterio del OE 4** | **5,0 %** | 50,3 | 79,0 | 0,063 |
-| Detalle marca × mes | 17,3 % | 8,2 | 21,9 | 0,114 |
-
-Los tres modelos cumplen el criterio, de modo que el Objetivo 3 queda cubierto en sus propios
-términos:
-
-| Modelo | MAPE del volumen mensual | MAE | RMSE | ¿Cumple ≤ 15 %? |
+| Modelo | MAPE mensual | MAE | RMSE | ¿Cumple ≤ 15 %? |
 |---|---:|---:|---:|:--|
-| **Tasa de conversión** | **5,0 %** | 50,3 | 79,0 | sí |
-| Random Forest | 5,3 % | **48,4** | **66,5** | sí |
-| XGBoost Poisson | 10,3 % | 77,1 | 89,5 | sí |
+| **Tasa de conversión** | **4,1 %** | **41,0** | **69,9** | sí |
+| Random Forest | 5,2 % | 49,0 | 63,6 | sí |
+| XGBoost Poisson | 9,5 % | 76,4 | 89,7 | sí |
 
-La elección se hizo sobre validación, donde la regla gana con holgura (6,0 % frente a 10,7 %).
+**Se cumple el MAPE ≤ 15 % comprometido en el Objetivo 4**, y los tres modelos lo cumplen por su
+cuenta. A nivel de celda marca × mes el MAPE es mayor (17,3 %) porque unas pocas celdas de menos
+de cinco unidades disparan el porcentaje; por eso se reporta WMAPE en paralelo (0,116).
 
-**Se cumple el MAPE ≤ 15 % comprometido en el Objetivo 4.** A nivel de celda el MAPE es mayor
-porque seis celdas de menos de 5 unidades —marcas que devuelven uno o dos equipos al mes— fallan
-por 1,6 unidades en promedio y aportan casi un tercio de esa cifra; el MAPE se dispara cuando el
-denominador tiende a cero. Por eso se reporta WMAPE en paralelo, que pondera por volumen.
-
-El modelo ganador es una **regresión de Poisson con offset de exposición**: el grupo en riesgo
-entra como exposición y se estima una tasa de conversión por marca.
+El modelo ganador es una **regresión de Poisson con offset de exposición**:
 
 ```
-E[devueltas] = unidades_en_riesgo × tasa_conversión(marca)
+E[devoluciones] = unidades_en_riesgo × tasa_conversión(marca)
 ```
 
-Es la forma estándar de modelar conteos cuando el número de casos depende de cuántos estaban
-expuestos —siniestros por póliza-año en seguros, casos por persona-año en epidemiología—, con dos
-refinamientos: la tasa se reestima cada mes con los 9 meses anteriores (parámetro variable en el
-tiempo) y se encoge hacia la tasa global con peso k = 300 (*partial pooling*, como un modelo
-jerárquico). El cuaderno verifica la equivalencia ajustando el GLM de Poisson de `statsmodels`:
-correlación **0,9991** entre ambas predicciones.
-Las unidades que cumplirán 60 días el mes próximo ya son observables al cierre del mes actual
-—fueron despachadas hace dos meses y se puede ver cuáles siguen en el canal—, y ese **grupo en
-riesgo** correlaciona 0,982 con el resultado. SHAP le atribuye el 70,6 % de la contribución.
+La tasa se reestima cada mes con los 9 anteriores y se encoge hacia la tasa global con peso
+k = 300. El cuaderno 04 verifica la equivalencia con el GLM de `statsmodels`: correlación 0,9991.
 
-El aporte del trabajo no fue elegir el algoritmo, sino construir esa variable: la empresa no medía
-el inventario detenido de forma sistemática.
+### Validación estadística
+
+Validación **walk-forward** de 21 orígenes (cuaderno 07), que es el equivalente correcto a la
+validación cruzada en series temporales:
+
+| Modelo | MAPE medio | IC 95 % (bootstrap) | Peor origen |
+|---|---:|---|---:|
+| **Tasa de conversión** | **5,26 %** | [3,62 – 7,19] | 17,5 % |
+| Random Forest | 7,17 % | [5,21 – 9,36] | 23,4 % |
+| XGBoost Poisson | 10,56 % | [7,60 – 13,73] | 28,1 % |
+| Naive (mes anterior) | 34,96 % | [22,28 – 54,01] | 196,1 % |
+
+Dos matices que conviene leer: el intervalo del modelo elegido **se solapa con el de Random
+Forest**, de modo que su ventaja es consistente pero no estadísticamente concluyente; y **1 de
+los 21 orígenes supera el 15 %**, así que el criterio se cumple de media y en el periodo de
+prueba, no en todos los meses posibles.
+
+La dispersión de Pearson da **φ = 8,9**: hay sobredispersión de factor 9 frente al supuesto de
+Poisson puro, cuyos intervalos cubrirían solo el 57 %. Corregidos (*quasi-Poisson*) la cobertura
+sube al 95,2 %, y permiten reportar cada mes como un rango —por ejemplo, septiembre entre 718 y
+1.066 unidades— en vez de un valor puntual.
 
 ### Qué cambió respecto de `02_modelo`
 
-| | `02_modelo` | `04_modelo_final` |
+| | `02_modelo` | actual |
 |---|---:|---:|
-| WMAPE (marca × mes) | 0,401 | **0,114** |
-| MAE (marca × mes) | 18,59 | **8,22** |
-| MAPE del volumen mensual | 28,3 % | **5,0 %** |
-| Meses de historia | 18 | 31 |
+| Meses de prueba | 4 | 9 |
+| WMAPE (marca × mes) | 0,401 | **0,116** |
+| MAPE del volumen mensual | 28,3 % | **4,1 %** |
 | Validación contra el negocio | ninguna | 99,75 % |
 
 Cuatro correcciones: la definición del target no era la del negocio; faltaba la variable
-predictora principal; el histórico estaba recortado por una dependencia innecesaria del reporte de
-ventas; y el modelo se elegía mirando el conjunto de prueba.
-
-## Almacén SQL Server
-
-`DW_DEVOLUCIONES_HIST` en `(localdb)\MSSQLLocalDB`: 27,9 M de filas en tres esquemas (`dim`,
-`fact`, `mart`) con cinco vistas de negocio. Consultas de ejemplo en `sql/consultas.sql` y
-`sql/antiguedad.sql`.
+predictora principal; el histórico estaba recortado por una dependencia innecesaria del reporte
+de ventas; y el modelo se elegía mirando el conjunto de prueba.
 
 ## Una desviación declarada
 
@@ -152,17 +181,23 @@ que pide planificación.
 - **Se excluye el 17 % de los periodos** (53.838 de 309.768) por no tener despacho asociado: son
   unidades que ya estaban en tienda cuando arranca el histórico, o cuyo IMEI no aparece en ningún
   despacho. Incluirlas usando la fecha de llegada infla los primeros meses de la serie.
-- **Agosto y septiembre de 2026 quedan fuera de la evaluación.** Una unidad despachada el 20 de
-  julio cumple 60 días el 18 de septiembre, un día después del último inventario disponible;
-  incluirlos produce una caída artificial al final de la serie.
+- **Octubre de 2026 en adelante queda fuera de la evaluación.** Con inventario hasta el 30 de
+  septiembre, una unidad despachada el 2 de agosto cumple 60 días el 1 de octubre y ya no se
+  puede observar. Agosto y septiembre sí son medibles gracias a la entrega complementaria
+  (cuaderno 06).
 - **Noviembre de 2025 tiene 4 días de inventario de 30.** Afecta el cálculo de antigüedad de las
   unidades que llegaron en ese período.
-- **Las SIM quedan fuera**: su reporte de inventario trae el nombre de la bodega, no el código, y
-  no se puede cruzar con el catálogo de ubicaciones.
-- **HONOR concentra la mayor parte del error restante.** Su tasa de conversión oscila entre 0,28 y
-  0,85 en siete meses. No es ruido del modelo: son acciones comerciales que movieron el inventario
-  y que **ninguna variable disponible registra**. Es el principal argumento para pedir al cliente
-  el histórico de promociones y cambios de precio por marca y mes.
+- **El alcance son los equipos móviles con IMEI**, que es la unidad trazable a lo largo de toda la
+  cadena: despacho, inventario diario y permanencia en el canal. Sobre esa base se construyen el
+  objetivo y las métricas.
+- **El error se concentra en julio de 2026**, que aporta 193 de las 369 unidades de error de los
+  nueve meses. Dentro de julio, HONOR pone 151. El diagnóstico de los cuadernos 06 y 07 apunta a
+  una causa única y repetida en los tres meses analizados a fondo: un modelo de equipo recién
+  lanzado, despachado en volumen, que no rota en sus primeros sesenta días. En septiembre fueron
+  171 iPhone 17 Pro de los que se quedaron 169.
+- **Qué pediríamos al cliente para cerrarlo.** No el modelo de equipo en sí, que deja de existir al
+  descontinuarse, sino atributos que persisten entre generaciones: fecha de lanzamiento al
+  catálogo, precio y gama, y calendario de acciones comerciales.
 - **La tasa de conversión es empírica y se reestima cada mes.** El modelo se adapta solo a cambios
   del canal, pero un cambio brusco tarda un par de meses en absorberse.
 
