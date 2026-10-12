@@ -35,7 +35,7 @@ de enero de 2025 entregado por el negocio: **99,75 % de coincidencia** (799 de 8
 ## Estructura
 
 ```
-├── Data tesis/                 entrega del cliente, 2024-2026 (solo lectura, no versionado)
+├── Data tesis/ · Data/ · Data2/ · data 3/   entregas del cliente (no versionadas)
 ├── data/processed/             parquet generado — no versionar
 ├── src/
 │   ├── config.py               rutas, umbral, marcas, ventana limpia
@@ -46,16 +46,22 @@ de enero de 2025 entregado por el negocio: **99,75 % de coincidencia** (799 de 8
 │   ├── antiguedad.py           segunda definición (días en la misma bodega)
 │   ├── permanencia.py          definición final, confirmada con el negocio
 │   ├── extension.py            lector de la entrega complementaria (hoja TIGO)
-│   ├── panel.py, events.py     utilidades de panel y eventos
+│   ├── panel.py · events.py    utilidades de panel y eventos
 │   ├── modelo.py               baselines, métricas, RF y XGBoost
 │   └── warehouse.py            carga a SQL Server
 ├── notebooks/
-│   ├── 01_limpieza_y_eda.ipynb        fases 1-2 CRISP-ML(Q) · Objetivo 1
-│   ├── 02_modelo.ipynb                primer modelo — se conserva como trazabilidad
-│   ├── 03_antiguedad_inventario.ipynb validación contra los reportes del negocio
-│   ├── 04_modelo_final.ipynb          fases 3-4 CRISP-ML(Q) · Objetivos 3 y 4
-├── sql/consultas.sql, sql/antiguedad.sql
-└── reports/                    métricas y figuras
+│   ├── 01_limpieza_y_eda.ipynb              limpieza, estadías y paneles
+│   ├── 02_modelo.ipynb                      primer modelo — trazabilidad
+│   ├── 03_antiguedad_inventario.ipynb       validación contra los reportes del negocio
+│   ├── 04_modelo_final.ipynb                modelo final
+│   ├── 05_decision_modelo.ipynb             por qué se eligió ese modelo
+│   ├── 06_extension_agosto_septiembre.ipynb entrega complementaria
+│   └── 07_validacion_estadistica.ipynb      walk-forward, bootstrap e incertidumbre
+├── sql/                        consultas.sql · antiguedad.sql
+├── docs/                       documento de entrega · solicitud de datos al cliente
+├── reports/                    métricas en CSV, figuras y reportes HTML
+├── CHANGELOG.md                bitácora del proyecto
+└── .claude/agents/             agente de revisión de entregables
 ```
 
 ## Ejecución
@@ -97,7 +103,7 @@ Orden de ejecución de los cuadernos:
 | `duckdb` | — | consultas sobre parquet |
 | `jupyterlab`, `nbformat` | — | cuadernos |
 
-La primera corrida lee 1.015 snapshots y 33 archivos de despachos: unos 15 minutos. Después queda
+La primera corrida lee 1.075 snapshots y 35 archivos de despachos: unos 15 minutos. Después queda
 todo cacheado en parquet.
 
 ## Resultado
@@ -184,10 +190,14 @@ que pide planificación.
 - **El alcance son los equipos móviles con IMEI**, que es la unidad trazable a lo largo de toda la
   cadena: despacho, inventario diario y permanencia en el canal. Sobre esa base se construyen el
   objetivo y las métricas.
-- **HONOR concentra la mayor parte del error restante.** Su tasa de conversión oscila entre 0,28 y
-  0,85 en siete meses. No es ruido del modelo: son acciones comerciales que movieron el inventario
-  y que **ninguna variable disponible registra**. Es el principal argumento para pedir al cliente
-  el histórico de promociones y cambios de precio por marca y mes.
+- **El error se concentra en julio de 2026**, que aporta 193 de las 369 unidades de error de los
+  nueve meses. Dentro de julio, HONOR pone 151. El diagnóstico de los cuadernos 06 y 07 apunta a
+  una causa única y repetida en los tres meses analizados a fondo: un modelo de equipo recién
+  lanzado, despachado en volumen, que no rota en sus primeros sesenta días. En septiembre fueron
+  171 iPhone 17 Pro de los que se quedaron 169.
+- **Qué pediríamos al cliente para cerrarlo.** No el modelo de equipo en sí, que deja de existir al
+  descontinuarse, sino atributos que persisten entre generaciones: fecha de lanzamiento al
+  catálogo, precio y gama, y calendario de acciones comerciales.
 - **La tasa de conversión es empírica y se reestima cada mes.** El modelo se adapta solo a cambios
   del canal, pero un cambio brusco tarda un par de meses en absorberse.
 
