@@ -27,3 +27,6 @@ Cada entrada corresponde a un commit del repositorio.
 | `f91bb0a` | 2026-09-28 | Nombrar el modelo por lo que es: Poisson con offset de exposición |
 | `44654d0` | 2026-10-05 | Cuaderno 05: trazabilidad de la decisión de modelado |
 | `ef515d3` | 2026-10-05 | Extensión a septiembre: prueba de 7 a 9 meses, MAPE 5,0 % -> 4,1 % |
+| `daf022c` | 2026-10-11 | Validación estadística, bitácora y consolidación del repositorio |
+| `d941697` | 2026-10-11 | Documento de entrega: ajustes, validación estadística y repositorio |
+| `658f872` | 2026-10-11 | Documento: alcance en equipos móviles y cierre dirigido al revisor |

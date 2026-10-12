@@ -42,6 +42,7 @@ de enero de 2025 entregado por el negocio: **99,75 % de coincidencia** (799 de 8
 │   ├── antiguedad.py           segunda definición (días en la misma bodega)
 │   ├── permanencia.py          definición final, confirmada con el negocio
 │   ├── extension.py            lector de la entrega complementaria (hoja TIGO)
+│   ├── panel.py, events.py     utilidades de panel y eventos
 │   ├── modelo.py               baselines, métricas, RF y XGBoost
 │   └── warehouse.py            carga a SQL Server
 ├── notebooks/
@@ -170,9 +171,10 @@ que pide planificación.
 - **Se excluye el 17 % de los periodos** (53.838 de 309.768) por no tener despacho asociado: son
   unidades que ya estaban en tienda cuando arranca el histórico, o cuyo IMEI no aparece en ningún
   despacho. Incluirlas usando la fecha de llegada infla los primeros meses de la serie.
-- **Agosto y septiembre de 2026 quedan fuera de la evaluación.** Una unidad despachada el 20 de
-  julio cumple 60 días el 18 de septiembre, un día después del último inventario disponible;
-  incluirlos produce una caída artificial al final de la serie.
+- **Octubre de 2026 en adelante queda fuera de la evaluación.** Con inventario hasta el 30 de
+  septiembre, una unidad despachada el 2 de agosto cumple 60 días el 1 de octubre y ya no se
+  puede observar. Agosto y septiembre sí son medibles gracias a la entrega complementaria
+  (cuaderno 06).
 - **Noviembre de 2025 tiene 4 días de inventario de 30.** Afecta el cálculo de antigüedad de las
   unidades que llegaron en ese período.
 - **El alcance son los equipos móviles con IMEI**, que es la unidad trazable a lo largo de toda la
