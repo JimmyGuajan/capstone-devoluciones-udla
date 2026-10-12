@@ -175,8 +175,9 @@ que pide planificación.
   incluirlos produce una caída artificial al final de la serie.
 - **Noviembre de 2025 tiene 4 días de inventario de 30.** Afecta el cálculo de antigüedad de las
   unidades que llegaron en ese período.
-- **Las SIM quedan fuera**: su reporte de inventario trae el nombre de la bodega, no el código, y
-  no se puede cruzar con el catálogo de ubicaciones.
+- **El alcance son los equipos móviles con IMEI**, que es la unidad trazable a lo largo de toda la
+  cadena: despacho, inventario diario y permanencia en el canal. Sobre esa base se construyen el
+  objetivo y las métricas.
 - **HONOR concentra la mayor parte del error restante.** Su tasa de conversión oscila entre 0,28 y
   0,85 en siete meses. No es ruido del modelo: son acciones comerciales que movieron el inventario
   y que **ninguna variable disponible registra**. Es el principal argumento para pedir al cliente
