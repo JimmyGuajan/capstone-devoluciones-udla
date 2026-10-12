@@ -14,6 +14,7 @@ Cada entrada corresponde a un commit del repositorio.
 | **H5 · Hiperparámetros** | Ventana W = 9 meses y encogimiento k = 300, ajustados sobre validación | elimina el sesgo sistemático |
 | **H6 · Extensión de datos** | Entrega complementaria de agosto y septiembre de 2026 | prueba de 7 a 9 meses · MAPE **4,1 %** |
 | **H7 · Validación estadística** | Walk-forward de 21 orígenes, bootstrap y corrección de sobredispersión | IC 95 % [3,62 – 7,19] · cobertura 95,2 % |
+| **H8 · Interpretabilidad y equidad** | SHAP sobre los dos ensambles y auditoría de trato por ciudad y distribuidor | sesgo geográfico de −0,024 a +0,134 |
 
 ## Historial de commits
 

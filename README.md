@@ -56,7 +56,8 @@ de enero de 2025 entregado por el negocio: **99,75 % de coincidencia** (799 de 8
 │   ├── 04_modelo_final.ipynb                modelo final
 │   ├── 05_decision_modelo.ipynb             por qué se eligió ese modelo
 │   ├── 06_extension_agosto_septiembre.ipynb entrega complementaria
-│   └── 07_validacion_estadistica.ipynb      walk-forward, bootstrap e incertidumbre
+│   ├── 07_validacion_estadistica.ipynb      walk-forward, bootstrap e incertidumbre
+│   └── 08_interpretabilidad_y_equidad.ipynb SHAP y auditoría de trato por territorio
 ├── sql/                        consultas.sql · antiguedad.sql
 ├── docs/                       documento de entrega · solicitud de datos al cliente
 ├── reports/                    métricas en CSV, figuras y reportes HTML
@@ -85,6 +86,7 @@ Orden de ejecución de los cuadernos:
 | 5 | `05_decision_modelo` | por qué se eligió ese modelo |
 | 6 | `06_extension_agosto_septiembre` | entrega complementaria, prueba de 9 meses |
 | 7 | `07_validacion_estadistica` | walk-forward, bootstrap e incertidumbre |
+| 8 | `08_interpretabilidad_y_equidad` | SHAP y auditoría de equidad por ciudad y distribuidor |
 
 ### Dependencias y versiones
 
@@ -198,6 +200,11 @@ que pide planificación.
 - **Qué pediríamos al cliente para cerrarlo.** No el modelo de equipo en sí, que deja de existir al
   descontinuarse, sino atributos que persisten entre generaciones: fecha de lanzamiento al
   catálogo, precio y gama, y calendario de acciones comerciales.
+- **El modelo presenta un sesgo geográfico medido** (cuaderno 08). Asigna la tasa de la marca sin
+  mirar el destino, y eso subestima entre 10 y 13 puntos a las ciudades intermedias —Machala
+  +0,134, Ambato +0,117— frente a Quito y Guayaquil, que quedan en −0,02. El MAPE agregado del
+  4,1 % no lo revela. Mientras no se incorpore el destino como dimensión, conviene reportar el
+  error desagregado y no usar la predicción para evaluar al canal.
 - **La tasa de conversión es empírica y se reestima cada mes.** El modelo se adapta solo a cambios
   del canal, pero un cambio brusco tarda un par de meses en absorberse.
 
