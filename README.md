@@ -60,7 +60,7 @@ de enero de 2025 entregado por el negocio: **99,75 % de coincidencia** (799 de 8
 │   └── 08_interpretabilidad_y_equidad.ipynb SHAP y auditoría de trato por territorio
 ├── sql/                        consultas.sql · antiguedad.sql
 ├── docs/                       documento de entrega · solicitud de datos al cliente
-├── reports/                    métricas en CSV, figuras y reportes HTML
+├── reports/                    métricas en CSV, figuras y reportes HTML navegables
 ├── CHANGELOG.md                bitácora del proyecto
 └── .claude/agents/             agente de revisión de entregables
 ```

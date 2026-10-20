@@ -1,4 +1,3 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>El camino hasta el modelo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -316,6 +315,10 @@ figcaption{font-size:12.5px; color:var(--muted); margin-top:7px; line-height:1.4
   <tr><td>Random Forest</td><td class="n">76,4 %</td><td class="n">5,3 %</td><td>sí</td></tr>
   <tr><td>XGBoost Poisson</td><td class="n">28,3 %</td><td class="n">10,3 %</td><td>sí</td></tr>
   </tbody></table></div>
+  <p style="font-size:13.5px; color:var(--muted)"><b>Una precisión necesaria:</b> las dos columnas
+  no son la misma medición repetida. «Antes» corresponde a marzo–junio de 2026 con la definición
+  inicial del objetivo; «ahora», a enero–julio de 2026 con la del negocio. Como cambió la variable
+  a predecir, lo que compara la tabla es el <b>pipeline completo</b>, no el algoritmo aislado.</p>
   <div class="verdict si"><span class="ic">✓</span><span><b>Los dos cumplen el objetivo por sí
   solos.</b> Queda demostrado que lo que fallaba era el dato, no el algoritmo — y el Objetivo 3
   queda cubierto con independencia de lo que venga después.</span></div>
@@ -429,13 +432,16 @@ figcaption{font-size:12.5px; color:var(--muted); margin-top:7px; line-height:1.4
 <div class="card">
   <div class="when">Fase 4 · la medición única</div>
   <h2>El resultado sobre prueba</h2>
-  <p>Reentrenando con entrenamiento + validación y midiendo una sola vez sobre enero–julio de
-  2026, meses que ningún modelo vio.</p>
+  <p>Reentrenando con entrenamiento + validación y midiendo sobre enero–septiembre de 2026,
+  meses que ningún modelo vio. La partición de entrenamiento y validación no se toca, así que
+  ampliar la prueba no reabre la selección del modelo.</p>
 
   <figure>
     <div class="leg"><span><i class="sw" style="background:var(--s1)"></i>real</span>
       <span><i class="sw" style="background:var(--s2)"></i>predicho</span></div>
-    <svg viewBox="0 0 520 260" role="img" aria-label="Modelo final: real y predicho por mes, las líneas coinciden">
+    <svg viewBox="0 0 520 260" role="img" aria-label="Modelo final: real y predicho por mes, nueve meses">
+      <rect x="419.0" y="16" width="99.0" height="198" fill="var(--accent)" opacity=".06"/>
+      <text x="475.8" y="28" font-size="10.5" fill="var(--accent)" text-anchor="middle">añadidos</text>
       <g stroke="var(--line-2)" stroke-width="1">
         <line x1="52" y1="214" x2="504" y2="214"/>
         <line x1="52" y1="164.5" x2="504" y2="164.5" stroke-dasharray="2 5"/>
@@ -447,36 +453,109 @@ figcaption{font-size:12.5px; color:var(--muted); margin-top:7px; line-height:1.4
         <text x="44" y="218">0</text><text x="44" y="168.5">350</text>
         <text x="44" y="119">700</text><text x="44" y="69.5">1050</text><text x="44" y="20">1400</text>
       </g>
-      <polyline fill="none" stroke="var(--s1)" stroke-width="2.5" stroke-linejoin="round"
-        points="52,166.6 127.3,146.4 202.7,110.5 278,89.3 353.3,67.5 428.7,111.5 504,21.2"/>
+      <polyline fill="none" stroke="var(--s1)" stroke-width="2.5" stroke-linejoin="round" points="52.0,166.6 108.5,146.4 165.0,110.5 221.5,89.3 278.0,67.5 334.5,111.5 391.0,21.1 447.5,58.4 504.0,86.9"/>
       <polyline fill="none" stroke="var(--s2)" stroke-width="2.5" stroke-linejoin="round"
-        stroke-dasharray="7 4"
-        points="52,166.1 127.3,143.6 202.7,108.2 278,98.4 353.3,72.4 428.7,114.3 504,48.5"/>
-      <g fill="var(--s1)"><circle cx="52" cy="166.6" r="4"/><circle cx="127.3" cy="146.4" r="4"/>
-        <circle cx="202.7" cy="110.5" r="4"/><circle cx="278" cy="89.3" r="4"/>
-        <circle cx="353.3" cy="67.5" r="4"/><circle cx="428.7" cy="111.5" r="4"/>
-        <circle cx="504" cy="21.2" r="4"/></g>
-      <g fill="var(--s2)"><circle cx="52" cy="166.1" r="4"/><circle cx="127.3" cy="143.6" r="4"/>
-        <circle cx="202.7" cy="108.2" r="4"/><circle cx="278" cy="98.4" r="4"/>
-        <circle cx="353.3" cy="72.4" r="4"/><circle cx="428.7" cy="114.3" r="4"/>
-        <circle cx="504" cy="48.5" r="4"/></g>
-      <g fill="var(--muted)" font-size="11" text-anchor="middle">
-        <text x="52" y="234">ene</text><text x="127.3" y="234">feb</text><text x="202.7" y="234">mar</text>
-        <text x="278" y="234">abr</text><text x="353.3" y="234">may</text><text x="428.7" y="234">jun</text>
-        <text x="504" y="234">jul</text><text x="278" y="252">2026</text>
-      </g>
-      <text x="492" y="40" font-size="11.5" fill="var(--muted)" text-anchor="end">−14,2 %</text>
+        stroke-dasharray="7 4" points="52.0,166.1 108.5,143.6 165.0,108.2 221.5,98.5 278.0,72.4 334.5,114.2 391.0,48.4 447.5,59.8 504.0,87.8"/>
+      <g fill="var(--s1)"><circle cx="52.0" cy="166.6" r="4"/><circle cx="108.5" cy="146.4" r="4"/><circle cx="165.0" cy="110.5" r="4"/><circle cx="221.5" cy="89.3" r="4"/><circle cx="278.0" cy="67.5" r="4"/><circle cx="334.5" cy="111.5" r="4"/><circle cx="391.0" cy="21.1" r="4"/><circle cx="447.5" cy="58.4" r="4"/><circle cx="504.0" cy="86.9" r="4"/></g>
+      <g fill="var(--s2)"><circle cx="52.0" cy="166.1" r="4"/><circle cx="108.5" cy="143.6" r="4"/><circle cx="165.0" cy="108.2" r="4"/><circle cx="221.5" cy="98.5" r="4"/><circle cx="278.0" cy="72.4" r="4"/><circle cx="334.5" cy="114.2" r="4"/><circle cx="391.0" cy="48.4" r="4"/><circle cx="447.5" cy="59.8" r="4"/><circle cx="504.0" cy="87.8" r="4"/></g>
+      <g fill="var(--muted)" font-size="11" text-anchor="middle"><text x="52.0" y="234">ene</text><text x="108.5" y="234">feb</text><text x="165.0" y="234">mar</text><text x="221.5" y="234">abr</text><text x="278.0" y="234">may</text><text x="334.5" y="234">jun</text><text x="391.0" y="234">jul</text><text x="447.5" y="234">ago</text><text x="504.0" y="234">sep</text>
+        <text x="278" y="252">2026</text></g>
+      <text x="383.0" y="13.100000000000001" font-size="11" fill="var(--bad)" text-anchor="end">−14,1 %</text>
     </svg>
-    <figcaption>Las dos líneas acompañan los mismos movimientos. Julio es el peor mes y la causa
-    está identificada: Honor pone 151 de las 193 unidades de error.</figcaption>
+    <figcaption>Nueve meses de prueba. Agosto y septiembre proceden de una entrega posterior
+    del cliente y resultan los dos meses más certeros del periodo.</figcaption>
   </figure>
 
   <div class="nums">
-    <div class="num g"><div class="v">5,0 %</div><div class="k">MAPE mensual · objetivo ≤ 15 %</div></div>
-    <div class="num"><div class="v">50,3</div><div class="k">MAE, unidades/mes</div></div>
-    <div class="num"><div class="v">79,0</div><div class="k">RMSE</div></div>
-    <div class="num g"><div class="v">0,096</div><div class="k">MASE · 10× mejor que el naive</div></div>
+    <div class="num g"><div class="v">4,1 %</div><div class="k">MAPE mensual · objetivo ≤ 15 %</div></div>
+    <div class="num"><div class="v">41,0</div><div class="k">MAE, unidades/mes</div></div>
+    <div class="num"><div class="v">69,9</div><div class="k">RMSE</div></div>
+    <div class="num g"><div class="v">0,098</div><div class="k">MASE · 10× mejor que el naive</div></div>
   </div>
+
+  <h3>Qué pasó en julio</h3>
+  <p>Julio concentra 193 de las 369 unidades de error del periodo. Honor pone 151 de esas 193.</p>
+  <div class="tw"><table>
+  <thead><tr><th>Honor</th><th class="n">Despachos</th><th class="n">En riesgo</th><th class="n">Tasa real</th></tr></thead>
+  <tbody>
+  <tr><td>2026-05</td><td class="n">2.482</td><td class="n">493</td><td class="n">0,568</td></tr>
+  <tr><td>2026-06</td><td class="n">333</td><td class="n">169</td><td class="n">0,604</td></tr>
+  <tr class="hi"><td>2026-07</td><td class="n">436</td><td class="n">831</td><td class="n">0,774</td></tr>
+  </tbody></table></div>
+  <p>En mayo se despacharon <b>2.482 unidades de Honor</b>. Esas unidades cumplen 60 días en
+  julio, y por eso el grupo en riesgo salta de 169 a 831. <b>El modelo sí vio venir el
+  volumen</b>: predijo 1.171 frente a 706 el mes anterior. Lo que falló fue la tasa.</p>
+
+  <h3>Y aquí está la evidencia que lo explica</h3>
+  <p>Si se parten esas 831 unidades de Honor en dos grupos:</p>
+  <div class="tw"><table>
+  <thead><tr><th>&nbsp;</th><th class="n">Unidades</th><th class="n">Se quedan</th><th class="n">Tasa</th></tr></thead>
+  <tbody>
+  <tr class="hi"><td><b>Honor 600E</b></td><td class="n">495</td><td class="n">465</td><td class="n">0,939</td></tr>
+  <tr><td>Resto de Honor</td><td class="n">336</td><td class="n">178</td><td class="n">0,530</td></tr>
+  <tr><td>Tasa que aplicó el modelo</td><td class="n">—</td><td class="n">—</td><td class="n">0,592</td></tr>
+  </tbody></table></div>
+  <div class="verdict si"><span class="ic">✓</span><span><b>El modelo tenía razón sobre Honor.</b>
+  Estimó 0,592 y el resto de Honor se comportó al 0,530: seis centésimas de diferencia. Todo el
+  error está en el 600E, que era el <b>60 % del grupo en riesgo</b> y se comportó al 0,939.
+  <br><br>Si ese lote se hubiera comportado como el resto, las devoluciones habrían sido 440 en
+  vez de 643, y la predicción de 492 habría fallado por <b>+52 en vez de −151</b>.</span></div>
+  <div class="verdict hm"><span class="ic">!</span><span>El panel ve la <b>marca</b>, no el
+  producto. Dentro de «Honor» había dos cosas distintas: un catálogo que rota con normalidad y un
+  lanzamiento que no se movió. <b>Eso no se arregla con otro algoritmo.</b></span></div>
+</div>
+</div>
+</div>
+
+
+<!-- 11 -->
+<div class="step key" data-n="11">
+<div class="card">
+  <div class="when">Entrega posterior del cliente · cuaderno 06</div>
+  <h2>La extensión a septiembre, y lo que dejó demostrado</h2>
+  <p>El cliente entregó después los despachos e inventario de agosto y septiembre. Incorporarlos
+  amplía la prueba de siete meses a nueve sin tocar entrenamiento ni validación.</p>
+  <div class="tw"><table>
+  <thead><tr><th>&nbsp;</th><th class="n">7 meses</th><th class="n">9 meses</th></tr></thead>
+  <tbody>
+  <tr class="hi"><td>MAPE del volumen mensual</td><td class="n">5,0 %</td><td class="n">4,1 %</td></tr>
+  <tr><td>MAE</td><td class="n">50,3</td><td class="n">41,0</td></tr>
+  <tr><td>RMSE</td><td class="n">79,0</td><td class="n">69,9</td></tr>
+  <tr><td>Último mes medible</td><td class="n">julio</td><td class="n">septiembre</td></tr>
+  </tbody></table></div>
+  <p>Agosto (−0,9 %) y septiembre (−0,8 %) resultan <b>los dos meses más certeros de todo el
+  periodo</b>. Conviene decirlo con precisión: el resultado no mejora por haber elegido meses
+  favorables, sino porque los que faltaban resultaron fáciles de predecir. La decisión de ampliar
+  se tomó antes de ver el resultado.</p>
+
+  <h3>Una corrección sobre lo que se afirmó antes</h3>
+  <div class="verdict hm"><span class="ic">!</span><span>Se había escrito que agosto y septiembre
+  quedaban fuera porque el inventario se cortaba el 17 de septiembre. <b>Eso era cierto solo para
+  septiembre.</b> Agosto ya tenía su inventario completo y sus despachos cargados —3.908 equipos,
+  los mismos que trae la entrega nueva— y se excluyó aplicando una regla más estricta de lo
+  necesario. Se perdió un mes de evaluación que estaba disponible.</span></div>
+
+  <h3>La evidencia principal: una sola causa, repetida</h3>
+  <p>Con tres meses analizados a fondo, el error del modelo tiene siempre el mismo origen: <b>un
+  modelo de equipo recién lanzado, despachado en volumen, que no rota en sus primeros sesenta
+  días</b>.</p>
+  <div class="tw"><table>
+  <thead><tr><th>Mes</th><th>Producto que concentra el error</th><th class="n">Unidades</th><th class="n">Tasa</th></tr></thead>
+  <tbody>
+  <tr><td>Julio</td><td>Honor 600E (gris y dorado)</td><td class="n">495</td><td class="n">0,939</td></tr>
+  <tr><td>Agosto</td><td>Motorola Edge 70 Fusion<br>Xiaomi 17T</td><td class="n">311<br>125</td><td class="n">0,871<br>0,944</td></tr>
+  <tr class="hi"><td>Septiembre</td><td><b>iPhone 17 Pro 256GB Silver</b></td><td class="n">171</td><td class="n">0,988</td></tr>
+  </tbody></table></div>
+  <p>En septiembre se despacharon 171 iPhone 17 Pro y <b>se quedaron 169</b>. Prácticamente
+  ninguno se vendió en sus primeros sesenta días.</p>
+
+  <h3>Por qué julio falla y los otros dos no</h3>
+  <p>No porque el modelo acierte más en agosto y septiembre, sino porque <b>allí los errores se
+  cancelan</b>. En septiembre, Samsung sobra +55 y Apple falta −55: el total queda en −7, pero la
+  suma de los errores por marca es de 114. En julio no hay nada que compense a Honor.</p>
+  <div class="verdict si"><span class="ic">✓</span><span>Esa compensación es real y es útil para
+  planificación —por eso el criterio del Objetivo 4 se fija sobre el volumen mensual—, pero no
+  debe leerse como que el modelo acierta marca por marca.</span></div>
 </div>
 </div>
 
@@ -490,8 +569,9 @@ figcaption{font-size:12.5px; color:var(--muted); margin-top:7px; line-height:1.4
   <tr><td>Definición del objetivo</td><td class="n">propia, sin contrastar</td><td class="n">la del negocio, verificada</td></tr>
   <tr><td>Validación externa</td><td class="n">ninguna</td><td class="n">99,75 %</td></tr>
   <tr><td>Meses de historia</td><td class="n">18</td><td class="n">31</td></tr>
-  <tr><td>WMAPE</td><td class="n">0,401</td><td class="n">0,114</td></tr>
-  <tr class="hi"><td>MAPE del volumen mensual</td><td class="n">28,3 %</td><td class="n">5,0 %</td></tr>
+  <tr><td>Meses de prueba</td><td class="n">4</td><td class="n">9</td></tr>
+  <tr><td>WMAPE (marca × mes)</td><td class="n">0,401</td><td class="n">0,116</td></tr>
+  <tr class="hi"><td>MAPE del volumen mensual</td><td class="n">28,3 %</td><td class="n">4,1 %</td></tr>
   </tbody></table></div>
 
   <h3 style="margin-top:22px">¿Y es aprendizaje supervisado?</h3>
@@ -512,5 +592,3 @@ figcaption{font-size:12.5px; color:var(--muted); margin-top:7px; line-height:1.4
 </footer>
 
 </div>
-
-</body></html>

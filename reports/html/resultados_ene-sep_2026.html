@@ -1,0 +1,365 @@
+<title>Resultados ampliados a septiembre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  color-scheme: light;
+  --paper:#F4F6F8; --surface:#FFFFFF; --surface-2:#EDF0F4;
+  --ink:#191B21; --ink-2:#464A54; --muted:#6E727C;
+  --line:#D9DEE5; --line-2:#C3CAD4;
+  --accent:#4A3AA7; --accent-soft:#EAE8F9;
+  --s1:#2a78d6; --s2:#eb6834;
+  --good:#12795A; --good-soft:#E2F2EC;
+  --warn:#8A5B00; --warn-soft:#FBF0DB;
+  --bad:#B03030;  --bad-soft:#FBE9E9;
+  --shadow:0 1px 2px rgba(20,25,40,.05), 0 8px 22px rgba(20,25,40,.06);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  color-scheme: dark;
+  --paper:#121419; --surface:#1A1D24; --surface-2:#232730;
+  --ink:#E7E9ED; --ink-2:#B6BAC4; --muted:#8A8F9A;
+  --line:#2C313B; --line-2:#3B414D;
+  --accent:#9085E9; --accent-soft:#25233C;
+  --s1:#3987e5; --s2:#d95926;
+  --good:#4BBF95; --good-soft:#123028;
+  --warn:#D9A742; --warn-soft:#332916;
+  --bad:#E07070;  --bad-soft:#331D1D;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 22px rgba(0,0,0,.25);
+}}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --paper:#121419; --surface:#1A1D24; --surface-2:#232730;
+  --ink:#E7E9ED; --ink-2:#B6BAC4; --muted:#8A8F9A;
+  --line:#2C313B; --line-2:#3B414D;
+  --accent:#9085E9; --accent-soft:#25233C;
+  --s1:#3987e5; --s2:#d95926;
+  --good:#4BBF95; --good-soft:#123028;
+  --warn:#D9A742; --warn-soft:#332916;
+  --bad:#E07070;  --bad-soft:#331D1D;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 22px rgba(0,0,0,.25);
+}
+
+*{box-sizing:border-box}
+body{background:var(--paper); color:var(--ink); margin:0;
+  font-family:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif; font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:960px; margin:0 auto; padding-inline:16px; padding-block:0 60px}
+
+h1{font-family:Spectral,Georgia,serif; font-weight:700; font-size:clamp(26px,4.4vw,36px);
+  line-height:1.12; letter-spacing:-.015em; margin:0 0 7px; text-wrap:balance}
+h2{font-family:Spectral,Georgia,serif; font-weight:600; font-size:18px; margin:0}
+.eyebrow{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--muted); margin:0 0 12px}
+.dek{color:var(--ink-2); font-size:15.5px; max-width:60ch; margin:0}
+.hd{padding-block:40px 22px}
+code{font-family:"IBM Plex Mono",monospace; font-size:.87em; background:var(--surface-2);
+  padding:1.5px 5px; border-radius:3px}
+
+.tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(136px,1fr)); gap:10px;
+  margin-bottom:12px}
+.tile{background:var(--surface); border:1px solid var(--line); border-radius:9px; padding:14px 16px}
+.tile .k{font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted);
+  font-weight:600}
+.tile .v{font-family:"IBM Plex Mono",monospace; font-size:26px; font-weight:500;
+  letter-spacing:-.03em; line-height:1.12; margin-top:8px; font-variant-numeric:tabular-nums}
+.tile .n{font-size:12px; color:var(--muted); margin-top:5px; line-height:1.35}
+.tile .d{font-size:11.5px; margin-top:4px; font-family:"IBM Plex Mono",monospace}
+.tile .d.up{color:var(--good)}
+.tile.ok{border-color:color-mix(in srgb,var(--good) 45%,var(--line)); background:var(--good-soft)}
+.tile.ok .v,.tile.ok .k{color:var(--good)}
+
+.card{background:var(--surface); border:1px solid var(--line); border-radius:10px;
+  padding:18px 20px 12px; box-shadow:var(--shadow); margin-bottom:18px}
+.chart-hd{display:flex; justify-content:space-between; align-items:baseline; gap:14px;
+  flex-wrap:wrap; margin-bottom:6px}
+.leg{display:flex; gap:16px; font-size:13px; color:var(--ink-2)}
+.leg span{display:flex; align-items:center; gap:6px}
+.sw{width:15px; height:3px; border-radius:2px; flex:none}
+.cw{position:relative}
+#viz{display:block; width:100%; height:auto; touch-action:pan-y; cursor:pointer}
+#viz text{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums}
+.hint{font-size:12.5px; color:var(--muted); margin:4px 0 0}
+.tip{position:absolute; pointer-events:none; background:var(--surface);
+  border:1px solid var(--line-2); border-radius:7px; padding:10px 12px; font-size:12.5px;
+  box-shadow:var(--shadow); min-width:170px; line-height:1.55; z-index:5}
+.tip .m{font-weight:600; font-size:13.5px; margin-bottom:6px; padding-bottom:5px;
+  border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:12px}
+.tip .m em{font-style:normal; font-family:"IBM Plex Mono",monospace; font-weight:500; font-size:12px}
+.tip .r{display:flex; justify-content:space-between; gap:16px}
+.tip .r b{font-family:"IBM Plex Mono",monospace; font-weight:500; font-variant-numeric:tabular-nums}
+.tip .pie{margin-top:6px; padding-top:5px; border-top:1px solid var(--line);
+  font-size:11.5px; color:var(--accent)}
+
+/* panel de explicación */
+.exp{border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-bottom:20px;
+  background:var(--surface); box-shadow:var(--shadow)}
+.exp header{display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+  padding:15px 20px; border-bottom:1px solid var(--line); background:var(--surface-2)}
+.exp header .mes{font-family:"IBM Plex Mono",monospace; font-size:17px; font-weight:600}
+.exp header .err{font-family:"IBM Plex Mono",monospace; font-size:13px; padding:3px 10px;
+  border-radius:999px; font-weight:500}
+.exp header .err.g{background:var(--good-soft); color:var(--good)}
+.exp header .err.b{background:var(--bad-soft); color:var(--bad)}
+.exp header .tit{flex:1 1 220px; font-size:14.5px; color:var(--ink-2); min-width:0}
+.exp .body{padding:17px 20px 4px}
+.exp p{margin:0 0 13px; max-width:72ch}
+.exp .cols{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+.exp h3{font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:.07em;
+  color:var(--muted); margin:0 0 9px}
+@media (max-width:700px){ .exp .cols{grid-template-columns:1fr} }
+
+.tw{overflow-x:auto; border:1px solid var(--line); border-radius:9px; background:var(--surface)}
+.exp .tw{box-shadow:none}
+table{border-collapse:collapse; width:100%; font-size:13.5px; min-width:300px}
+#tabla table,.tw>table{min-width:470px}
+th,td{padding:8px 12px; text-align:left; border-bottom:1px solid var(--line)}
+thead th{background:var(--surface-2); font-size:11px; letter-spacing:.055em; text-transform:uppercase;
+  color:var(--muted); font-weight:600; white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+tbody tr.on td{background:var(--accent-soft)}
+tbody tr.tot td{background:var(--surface-2); font-weight:600}
+tbody tr.foco td{background:var(--bad-soft)}
+td.n,th.n{text-align:right; font-family:"IBM Plex Mono",monospace;
+  font-variant-numeric:tabular-nums; white-space:nowrap}
+.pill{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11.5px;
+  padding:2px 8px; border-radius:999px; font-weight:500}
+.pill.g{background:var(--good-soft); color:var(--good)}
+.pill.w{background:var(--warn-soft); color:var(--warn)}
+.pill.b{background:var(--bad-soft); color:var(--bad)}
+.nuevo{font-family:"IBM Plex Mono",monospace; font-size:10.5px; padding:1px 6px;
+  border-radius:3px; background:var(--accent-soft); color:var(--accent); margin-left:7px}
+.foot{border-top:1px solid var(--line); margin-top:26px; padding-top:16px;
+  font-size:13px; color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="hd">
+  <p class="eyebrow">Capstone · Grupo 5 · UDLA</p>
+  <h1>Resultados ampliados a septiembre</h1>
+  <p class="dek">Nueve meses de prueba, de enero a septiembre de 2026. Ninguno de ellos se usó
+  para entrenar ni para elegir el modelo.</p>
+</header>
+
+<div class="tiles" id="tiles"></div>
+
+<div class="card">
+  <div class="chart-hd">
+    <h2>Devoluciones por mes</h2>
+    <div class="leg">
+      <span><i class="sw" style="background:var(--s1)"></i>real</span>
+      <span><i class="sw" style="background:var(--s2)"></i>predicho</span>
+    </div>
+  </div>
+  <div class="cw"><svg id="viz" viewBox="0 0 820 370" preserveAspectRatio="xMidYMid meet"
+    role="img" aria-label="Devoluciones reales y predichas por mes en 2026"></svg>
+    <div class="tip" id="tip" hidden></div></div>
+  <p class="hint">Los meses marcados tienen un análisis del error. Pasa el ratón para ver las cifras; toca un punto o una fila
+  para abrir el análisis.</p>
+</div>
+
+<div class="exp" id="exp"></div>
+
+<div class="tw" id="tabla"></div>
+
+<footer class="foot">
+  Modelo de tasa de conversión: <code>E[devoluciones] = unidades en riesgo × tasa(marca)</code>,
+  entrenado con mayo 2024 – diciembre 2025. Agosto y septiembre proceden de la entrega
+  complementaria <code>data 3</code>; la selección del modelo se hizo sobre validación y no se
+  modificó al añadirlos. Solo equipos: las SIM quedan fuera del alcance.
+  Las métricas se calculan aquí sobre las cifras redondeadas de la tabla y al grano del volumen
+  mensual, que es donde el Objetivo 4 fija el criterio; por eso pueden diferir una décima de las
+  del cuaderno, que usa los valores exactos (RMSE 69,9).
+</footer>
+
+</div>
+
+<script>
+const D=[
+ {mes:"2026-01",desp:4805,riesgo: 484,real: 335,pred: 339},
+ {mes:"2026-02",desp:5609,riesgo: 680,real: 478,pred: 498},
+ {mes:"2026-03",desp:8696,riesgo:1017,real: 732,pred: 748},
+ {mes:"2026-04",desp:6757,riesgo:1155,real: 882,pred: 817},
+ {mes:"2026-05",desp:6016,riesgo:1446,real:1036,pred:1001},
+ {mes:"2026-06",desp:5444,riesgo: 999,real: 725,pred: 706},
+ {mes:"2026-07",desp:6241,riesgo:1767,real:1364,pred:1171},
+ {mes:"2026-08",desp:3176,riesgo:1488,real:1100,pred:1090,nuevo:true},
+ {mes:"2026-09",desp:4683,riesgo:1188,real: 899,pred: 892,nuevo:true},
+];
+const MASE=0.098;
+const MES={"01":"ene","02":"feb","03":"mar","04":"abr","05":"may",
+           "06":"jun","07":"jul","08":"ago","09":"sep"};
+
+/* explicaciones: solo los meses analizados a fondo */
+const EXP={
+ 6:{tit:"Un error que no se compensa",
+    txt:`El modelo <b>sí vio venir el volumen</b>: predijo 1.171 frente a 706 el mes anterior,
+      porque en mayo se despacharon 2.482 unidades de Honor y todas vencían ahora. Lo que falló
+      fue la <b>tasa</b>: aplicó 0,592, el promedio histórico de Honor, y la real fue 0,774.
+      <br><br>La causa está dentro de la tanda: casi 500 unidades del <b>Honor 600E</b>, un
+      lanzamiento que no rotó. Honor aporta <b>−151 de los −193</b> del mes; las demás marcas
+      suman −42 entre todas. Es un error en una sola dirección y de una sola marca, y por eso
+      no se cancela.`,
+    marcas:[["HONOR",831,643,492,-151,0.774],["SAMSUNG",548,412,402,-10,0.752],
+            ["XIAOMI",251,189,172,-17,0.753],["APPLE",114,102,88,-14,0.895]],
+    modelos:[["HONOR 600E 8+512GB GREY",272,259,0.952],["HONOR 600E 8+512GB GOLD",223,206,0.924],
+             ["HONOR MAGIC 8 LITE BLACK",198,101,0.510],["XIAOMI NOTE 15 5G NEGRO",143,102,0.713]]},
+ 7:{tit:"Acierta porque los errores se cancelan",
+    txt:`El error del total es de solo 10 unidades, pero <b>la suma de los errores por marca es
+      de 124</b>. Samsung se sobreestima en +57 porque su tasa cayó a 0,611, mientras Motorola y
+      Xiaomi se subestiman en −26 y −23 porque la suya subió.
+      <br><br>Dentro hay el mismo fenómeno que en julio: 311 unidades del <b>Motorola Edge 70
+      Fusion</b> al 87 % y 125 del <b>Xiaomi 17T</b> al 94 %, dos lanzamientos que tampoco
+      rotaron. La diferencia es que esta vez la caída de Samsung los compensó.`,
+    marcas:[["SAMSUNG",442,270,327,57,0.611],["XIAOMI",401,308,285,-23,0.768],
+            ["MOTOROLA",316,274,248,-26,0.867],["APPLE",209,167,154,-13,0.799]],
+    modelos:[["MOTOROLA EDGE 70 FUSION AZUL",311,271,0.871],["XIAOMI 17T 12+512GB BLACK",125,118,0.944],
+             ["XIAOMI NOTE 15 5G NEGRO",113,70,0.619],["SAMSUNG A17 8+256GB GRAY",110,89,0.809]]},
+ 8:{tit:"El caso más claro de compensación",
+    txt:`Siete unidades de error en el total, y sin embargo Samsung sobra +55 y Apple falta −55:
+      <b>se anulan casi exactamente</b>.
+      <br><br>Lo de Apple es el ejemplo más nítido de todo el periodo: <b>171 iPhone 17 Pro
+      despachados, de los que se quedaron 169</b>. Una tasa del 98,8 %: prácticamente ninguno se
+      vendió en sus primeros sesenta días. El modelo le aplicó la tasa media de Apple, sin poder
+      saber que dentro había un lanzamiento de gama alta sin rotación.`,
+    marcas:[["SAMSUNG",402,241,296,55,0.600],["APPLE",377,353,298,-55,0.936],
+            ["XIAOMI",160,119,116,-3,0.744],["MOTOROLA",140,109,110,1,0.779]],
+    modelos:[["IPHONE 17 PRO 256GB SILVER",171,169,0.988],["HONOR 600E 8+512GB GREY",86,61,0.709],
+             ["XIAOMI NOTE 15 5G NEGRO",79,62,0.785],["SAMSUNG A37 8+256GB GRAY",73,54,0.740]]},
+};
+const nf=(x,d=0)=>x.toLocaleString("es-EC",{minimumFractionDigits:d,maximumFractionDigits:d});
+
+/* métricas */
+const ae=D.map(r=>Math.abs(r.pred-r.real));
+const mae=ae.reduce((a,b)=>a+b,0)/D.length;
+const rmse=Math.sqrt(D.reduce((a,r)=>a+(r.pred-r.real)**2,0)/D.length);
+const mape=D.reduce((a,r)=>a+Math.abs(r.pred-r.real)/r.real,0)/D.length*100;
+const wmape=ae.reduce((a,b)=>a+b,0)/D.reduce((a,r)=>a+r.real,0);
+document.getElementById("tiles").innerHTML=`
+ <div class="tile ok"><div class="k">MAPE mensual</div><div class="v">${nf(mape,1)} %</div>
+   <div class="n">objetivo ≤ 15 %</div><div class="d up">antes 5,0 % con 7 meses</div></div>
+ <div class="tile"><div class="k">MAE</div><div class="v">${nf(mae,1)}</div>
+   <div class="n">unidades al mes</div><div class="d up">antes 50,3</div></div>
+ <div class="tile"><div class="k">RMSE</div><div class="v">${nf(rmse,1)}</div>
+   <div class="n">${(rmse/mae).toFixed(1)}× el MAE</div><div class="d up">antes 79,0</div></div>
+ <div class="tile"><div class="k">MASE</div><div class="v">${MASE.toFixed(3)}</div>
+   <div class="n">10× mejor que el naive</div></div>
+ <div class="tile"><div class="k">WMAPE mensual</div><div class="v">${wmape.toFixed(3)}</div>
+   <div class="n">error total ÷ volumen · a nivel marca × mes es 0,116</div></div>`;
+
+/* gráfico */
+const VB={w:820,h:370,l:58,r:22,t:50,b:62};
+const iw=VB.w-VB.l-VB.r, ih=VB.h-VB.t-VB.b;
+const tope=Math.ceil(Math.max(...D.flatMap(r=>[r.real,r.pred]))/350)*350;
+const X=i=>VB.l+i*iw/(D.length-1);
+const Y=v=>VB.t+ih-(v/tope)*ih;
+const svg=document.getElementById("viz");
+let sel=6;
+
+function pinta(){
+ const ejes=[0,.25,.5,.75,1].map(f=>{const v=Math.round(tope*f);return `
+  <line x1="${VB.l}" y1="${Y(v).toFixed(1)}" x2="${VB.w-VB.r}" y2="${Y(v).toFixed(1)}"
+   stroke="var(--line)" stroke-width="1" ${v?'stroke-dasharray="2 6"':''}/>
+  <text x="${VB.l-10}" y="${(Y(v)+4).toFixed(1)}" font-size="11.5" fill="var(--muted)"
+   text-anchor="end">${nf(v)}</text>`;}).join("");
+ const zona=`<rect x="${(X(6.5)).toFixed(1)}" y="${VB.t}" width="${(X(8)-X(6.5)+14).toFixed(1)}"
+   height="${ih}" fill="var(--accent)" opacity=".05"/>
+   <text x="${X(7.5).toFixed(1)}" y="${(VB.t+14)}" font-size="11" fill="var(--accent)"
+   text-anchor="middle">meses añadidos</text>`;
+ const lin=(k,c,dash)=>`<polyline fill="none" stroke="${c}" stroke-width="2.5"
+   stroke-linejoin="round" stroke-linecap="round" ${dash?'stroke-dasharray="7 4"':''}
+   points="${D.map((r,i)=>`${X(i).toFixed(1)},${Y(r[k]).toFixed(1)}`).join(" ")}"/>`;
+ const pts=D.map((r,i)=>{const act=i===sel, tiene=EXP[i];
+   return `<circle class="pt" data-i="${i}" cx="${X(i).toFixed(1)}" cy="${Y(r.real).toFixed(1)}"
+     r="${act?7:5}" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"/>
+    <circle class="pt" data-i="${i}" cx="${X(i).toFixed(1)}" cy="${Y(r.pred).toFixed(1)}"
+     r="${act?7:5}" fill="var(--s2)" stroke="var(--surface)" stroke-width="2"/>` +
+    (tiene?`<circle cx="${X(i).toFixed(1)}" cy="${(Math.min(Y(r.real),Y(r.pred))-20).toFixed(1)}"
+      r="9" fill="${act?'var(--accent)':'var(--surface)'}" stroke="var(--accent)" stroke-width="1.5"/>
+     <text x="${X(i).toFixed(1)}" y="${(Math.min(Y(r.real),Y(r.pred))-16).toFixed(1)}"
+      font-size="11" font-weight="600" text-anchor="middle"
+      fill="${act?'#fff':'var(--accent)'}">?</text>`:"");}).join("");
+ const etq=D.map((r,i)=>{const e=(r.pred-r.real)/r.real*100;
+   return `<text x="${X(i).toFixed(1)}" y="${(VB.h-34)}" font-size="11.5"
+     fill="${i===sel?'var(--ink)':'var(--muted)'}" font-weight="${i===sel?600:400}"
+     text-anchor="middle">${MES[r.mes.slice(5)]}</text>
+    <text x="${X(i).toFixed(1)}" y="${(VB.h-18)}" font-size="10.5"
+     fill="${Math.abs(e)>10?'var(--bad)':'var(--muted)'}" text-anchor="middle">${e>=0?"+":"−"}${nf(Math.abs(e),1)}%</text>`;}).join("");
+ svg.innerHTML=zona+ejes+lin("real","var(--s1)",0)+lin("pred","var(--s2)",1)+pts+etq+
+  `<rect id="hit" x="${VB.l-20}" y="${VB.t}" width="${iw+40}" height="${ih+30}" fill="transparent"/>`;
+ const hit=svg.querySelector("#hit");
+ const idx=ev=>{const bb=svg.getBoundingClientRect();
+   const px=ev.clientX ?? ev.touches?.[0]?.clientX; if(px==null) return null;
+   const vx=(px-bb.left)*(VB.w/bb.width);
+   return Math.max(0,Math.min(D.length-1,Math.round((vx-VB.l)/(iw/(D.length-1)))));};
+ hit.addEventListener("pointerdown",ev=>{const i=idx(ev); if(i!=null) marcar(i);});
+ hit.addEventListener("pointermove",ev=>{const i=idx(ev); if(i!=null) recuadro(i);});
+ svg.addEventListener("pointerleave",()=>{document.getElementById("tip").hidden=true;});
+}
+
+function recuadro(i){
+ const r=D[i], e=r.pred-r.real, pc=e/r.real*100, tip=document.getElementById("tip");
+ tip.hidden=false;
+ tip.innerHTML=`<div class="m"><span>${r.mes}</span><em>${r.riesgo} en riesgo</em></div>
+  <div class="r"><span>real</span><b>${nf(r.real)}</b></div>
+  <div class="r"><span>predicho</span><b>${nf(r.pred)}</b></div>
+  <div class="r"><span>error</span><b>${e>=0?"+":"−"}${nf(Math.abs(e))} · ${pc>=0?"+":"−"}${nf(Math.abs(pc),1)} %</b></div>
+  <div class="r"><span>conversión real</span><b>${(r.real/r.riesgo).toFixed(3)}</b></div>
+  <div class="r"><span>demanda neta</span><b>${nf(r.desp-r.pred)}</b></div>`
+  + (EXP[i]?`<div class="pie">toca para ver el análisis</div>`:"");
+ const bb=svg.getBoundingClientRect(), wr=svg.parentElement.getBoundingClientRect();
+ const cx=bb.left-wr.left+X(i)*(bb.width/VB.w);
+ tip.style.left=Math.max(0,Math.min(wr.width-tip.offsetWidth,cx-tip.offsetWidth/2))+"px";
+ tip.style.top="4px";
+}
+
+function panel(){
+ const r=D[sel], e=r.pred-r.real, pc=e/r.real*100, x=EXP[sel];
+ const cab=`<header><span class="mes">${r.mes}</span>
+   <span class="err ${Math.abs(pc)>10?'b':'g'}">${e>=0?"+":"−"}${nf(Math.abs(e))} · ${pc>=0?"+":"−"}${nf(Math.abs(pc),1)} %</span>
+   <span class="tit">${x?x.tit:"Mes sin desviación relevante"}</span></header>`;
+ if(!x){ document.getElementById("exp").innerHTML=cab+`<div class="body"><p>
+   En riesgo ${nf(r.riesgo)} unidades, de las que se devolvieron ${nf(r.real)}. El modelo predijo
+   ${nf(r.pred)}. El análisis detallado está hecho sobre julio, agosto y septiembre, que son los
+   meses donde el comportamiento cambia.</p></div>`; return; }
+ const tm=`<div class="tw"><table><thead><tr><th>Marca</th><th class="n">Riesgo</th>
+   <th class="n">Real</th><th class="n">Pred.</th><th class="n">Error</th><th class="n">Tasa</th>
+   </tr></thead><tbody>`+x.marcas.map(m=>`<tr${Math.abs(m[4])>=50?' class="foco"':''}>
+   <td>${m[0]}</td><td class="n">${nf(m[1])}</td><td class="n">${nf(m[2])}</td>
+   <td class="n">${nf(m[3])}</td><td class="n">${m[4]>=0?"+":"−"}${nf(Math.abs(m[4]))}</td>
+   <td class="n">${m[5].toFixed(3)}</td></tr>`).join("")+`</tbody></table></div>`;
+ const tp=`<div class="tw"><table><thead><tr><th>Modelo de equipo</th><th class="n">Uds.</th>
+   <th class="n">Quedan</th><th class="n">Tasa</th></tr></thead><tbody>`+
+   x.modelos.map(m=>`<tr${m[3]>=.9?' class="foco"':''}><td>${m[0]}</td>
+   <td class="n">${nf(m[1])}</td><td class="n">${nf(m[2])}</td>
+   <td class="n">${m[3].toFixed(3)}</td></tr>`).join("")+`</tbody></table></div>`;
+ document.getElementById("exp").innerHTML=cab+`<div class="body"><p>${x.txt}</p>
+   <div class="cols"><div><h3>Por marca</h3>${tm}</div>
+   <div><h3>Qué había dentro del grupo en riesgo</h3>${tp}</div></div></div>`;
+}
+
+const sum=k=>D.reduce((a,r)=>a+r[k],0);
+function tabla(){
+ document.getElementById("tabla").innerHTML=`<table><thead><tr><th>Mes</th>
+  <th class="n">En riesgo</th><th class="n">Real</th><th class="n">Predicho</th>
+  <th class="n">Error</th><th class="n">Error %</th><th class="n">Demanda neta</th></tr></thead><tbody>`+
+ D.map((r,i)=>{const e=r.pred-r.real,pc=e/r.real*100;
+  const c=Math.abs(pc)<5?"g":Math.abs(pc)<10?"w":"b";
+  return `<tr data-i="${i}" class="${i===sel?'on':''}"><td class="n">${r.mes}${r.nuevo?'<span class="nuevo">nuevo</span>':''}</td>
+   <td class="n">${nf(r.riesgo)}</td><td class="n">${nf(r.real)}</td><td class="n">${nf(r.pred)}</td>
+   <td class="n">${e>=0?"+":"−"}${nf(Math.abs(e))}</td>
+   <td class="n"><span class="pill ${c}">${pc>=0?"+":"−"}${nf(Math.abs(pc),1)} %</span></td>
+   <td class="n">${nf(r.desp-r.pred)}</td></tr>`;}).join("")+
+ `<tr class="tot"><td>Total</td><td class="n">${nf(sum("riesgo"))}</td>
+   <td class="n">${nf(sum("real"))}</td><td class="n">${nf(sum("pred"))}</td>
+   <td class="n">−${nf(sum("real")-sum("pred"))}</td><td class="n">—</td>
+   <td class="n">${nf(sum("desp")-sum("pred"))}</td></tr></tbody></table>`;
+ document.querySelectorAll("#tabla tbody tr[data-i]").forEach(f=>
+   f.addEventListener("pointerdown",()=>marcar(+f.dataset.i)));
+}
+function marcar(i){ sel=i; pinta(); panel(); tabla(); }
+marcar(6);
+</script>
