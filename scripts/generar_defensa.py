@@ -253,6 +253,8 @@ def datos_camino(panel: pd.DataFrame, comun: dict) -> dict:
 def render(archivo: str, titulo: str, fuente: str, datos: dict) -> str:
     esqueleto = (PLANTILLAS / "pagina.html").read_text(encoding="utf-8")
     cuerpo, script = (PLANTILLAS / fuente).read_text(encoding="utf-8").split("=====SCRIPT=====")
+    # un SVG no tiene offsetParent: usarlo para decidir si dibujar deja el grafico en blanco sin avisar
+    assert ".offsetParent" not in cuerpo + script, f"{fuente}: use visible(el), no el.offsetParent"
     nav = "".join(f'<a href="{a}"{" aria-current=\"page\"" if a == archivo else ""}>{n}</a>' for a, n, _ in PAGINAS)
     js = json.dumps(datos, ensure_ascii=False, default=lambda o: o.item() if hasattr(o, "item") else str(o))
     css = (PLANTILLAS / "comun.css").read_text(encoding="utf-8")

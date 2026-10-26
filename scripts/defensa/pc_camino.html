@@ -46,6 +46,7 @@
   <svg class="chart" id="def-chart" viewBox="0 0 720 280" role="img" aria-label="Devoluciones mensuales según cada definición"></svg>
   <details class="mas"><summary>La prueba del umbral: ¿de dónde sale el 60?</summary>
     <p style="margin-top:0">Se barrieron umbrales de 30 a 150 días contra el retorno físico a bodega central, que es lo único observable de una devolución real.</p>
+    <div class="legend" style="display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;margin:0 0 4px"><span style="color:var(--c5)">╍ precisión (de lo marcado, cuánto volvió)</span><span style="color:var(--c3)">╍ cobertura (de lo que volvió, cuánto se marcó)</span><span style="color:var(--c2)">━ F1</span></div>
     <svg class="chart" id="umbral" viewBox="0 0 720 240" role="img" aria-label="Precisión, cobertura y F1 por umbral"></svg>
     <div class="callout aviso" id="umbral-texto"></div>
   </details>
@@ -215,12 +216,12 @@ function serDef() {
   $$('#series-def .chip').forEach(b => b.onclick = () => { actD[b.dataset.k] = !actD[b.dataset.k]; if (!Object.values(actD).some(Boolean)) actD[b.dataset.k] = true; serDef(); redibujables.forEach(f => f()); });
 }
 serDef();
-redibujables.push(() => { if ($('#def-chart').offsetParent) lineas($('#def-chart'), {
+redibujables.push(() => { if (visible($('#def-chart'))) lineas($('#def-chart'), {
   etiquetas: D.def.meses.map(corta),
   series: SD.filter(s => actD[s[1]]).map(s => ({valores: D.def[s[1]], k: s[2], trazo: s[3], puntos: s[1] === 'd3'})),
   titulo: i => `${etiqueta(D.def.meses[i])}: ` + SD.filter(s => actD[s[1]]).map(s => `${s[0]} ${fmt(D.def[s[1]][i])}`).join(' · ')
 }); });
-redibujables.push(() => { if ($('#umbral').offsetParent) lineas($('#umbral'), {
+redibujables.push(() => { if (visible($('#umbral'))) lineas($('#umbral'), {
   etiquetas: D.umbral.map(r => r.dias + ' d'), yfmt: v => v + ' %', alto: 240,
   series: [{valores: D.umbral.map(r => r.precision * 100), k: 5, trazo: 'dash'}, {valores: D.umbral.map(r => r.cobertura * 100), k: 3, trazo: 'dash'}, {valores: D.umbral.map(r => r.f1 * 100), k: 2}],
   sel: D.umbral.findIndex(r => r.f1 === Math.max(...D.umbral.map(x => x.f1))),
@@ -230,6 +231,8 @@ redibujables.push(() => { if ($('#umbral').offsetParent) lineas($('#umbral'), {
   const mx = D.umbral.reduce((a, r) => r.f1 > a.f1 ? r : a), r60 = D.umbral.find(r => r.dias === 60);
   $('#umbral-texto').innerHTML = `<b>Este barrido no fija el 60.</b> El F1 máximo está en ${mx.dias} días (${fmt(mx.f1, 3)}); a 60 días vale ${fmt(r60.f1, 3)}, y la precisión no pasa del ${fmt(Math.max(...D.umbral.map(r => r.precision)) * 100)} % en ningún umbral. El retorno físico a central es raro: la mayoría de las unidades paradas no vuelve, se queda en el canal. Por eso no sirve de vara para el umbral. Los <b>60 días son la regla del negocio</b>, y es esa regla la que se contrasta con sus listados (parada 4).`;
 }
+
+$('#parada-2 details.mas').addEventListener('toggle', () => redibujables.forEach(f => f()));   // el gráfico del umbral se dibuja al abrir
 
 /* ---------- 3 · primer intento ---------- */
 let m1 = 0;

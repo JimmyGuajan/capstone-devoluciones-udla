@@ -12,6 +12,8 @@ const redibujables = [];
 function registrar(fn) { redibujables.push(fn); fn(); }
 let _t; addEventListener('resize', () => { clearTimeout(_t); _t = setTimeout(() => redibujables.forEach(f => f()), 120); });
 
+/* Un SVG no tiene offsetParent: la visibilidad se mide con sus rectángulos de dibujo. */
+const visible = el => el.getClientRects().length > 0;
 const ancho = el => Math.max(300, Math.round(el.getBoundingClientRect().width || el.parentElement.clientWidth));
 function escala(max) {
   for (const base of [1, 2, 5, 10, 20, 50, 100, 200, 250, 500, 1000, 2000, 5000]) {
