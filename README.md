@@ -70,6 +70,9 @@ completa está en [`reports/html/el_camino_hasta_el_modelo.html`](reports/html/e
 
 ## Estructura
 
+Dónde está cada cosa: **datos** en `data/` (local, no versionado) y `docs/muestra/` (muestra sin
+identificadores); **código** en `src/` y `scripts/`; **cuadernos** en `notebooks/`; **resultados** en `reports/`.
+
 ```
 ├── Data tesis/ · Data/ · Data2/ · data 3/   entregas del cliente (no versionadas)
 ├── data/processed/             parquet generado por los scripts y cuadernos — no versionado
@@ -96,6 +99,7 @@ completa está en [`reports/html/el_camino_hasta_el_modelo.html`](reports/html/e
 │   ├── walk_forward.py         validación walk-forward y líneas base
 │   ├── entrenar_y_evaluar.py   entrena, evalúa en la prueba y guarda el modelo
 │   ├── predecir.py             demo: predicción de un mes con su intervalo
+│   ├── generar_demo_html.py    genera la demo visual (plantilla: demo_plantilla.html)
 │   └── seudonimizar_artefactos.py · verificar_equivalencia.py
 ├── notebooks/
 │   ├── 01_limpieza_y_eda.ipynb              limpieza, estadías y paneles
@@ -220,6 +224,11 @@ Para un mes futuro se entregan las unidades en riesgo de cada marca (CSV `marca,
 ```bash
 python scripts/predecir.py --en-riesgo docs/muestra/en_riesgo_ejemplo.csv
 ```
+
+**Demo visual:** [`reports/html/demo_prediccion.html`](reports/html/demo_prediccion.html) es una página
+autocontenida (se abre con doble clic) que muestra lo mismo: elegir uno de los nueve meses de prueba y ver
+predicción, intervalo, valor real y detalle por marca, o ingresar unidades en riesgo para predecir un mes
+futuro. Se regenera con `python scripts/generar_demo_html.py`.
 
 ## Pruebas
 
@@ -375,12 +384,28 @@ en esta fase: la clasificación central/canal depende de ellos.
 | Robustez: walk-forward, intervalos de confianza, cobertura | [`reports/walkforward.csv`](reports/walkforward.csv) · [`ic_bootstrap.csv`](reports/ic_bootstrap.csv) · [`intervalos_prueba.csv`](reports/intervalos_prueba.csv) · [`walkforward_con_lineas_base.csv`](reports/walkforward_con_lineas_base.csv) |
 | Qué variables pesan en cada modelo (SHAP) | [`reports/shap_dos_ensambles.csv`](reports/shap_dos_ensambles.csv) · cuaderno `08` |
 | Equidad por ciudad y distribuidor | [`reports/equidad_ciudad.csv`](reports/equidad_ciudad.csv) · [`reports/equidad_destino.csv`](reports/equidad_destino.csv) (los destinos son clientes identificables: se publican con alias `DEST_01…` ordenados por desviación) |
-| Pruebas automáticas | `python -m pytest tests` — 33 pruebas |
+| Pruebas automáticas | `python -m pytest tests` — 33 pruebas · salida de la última corrida en [`reports/pruebas_finales.txt`](reports/pruebas_finales.txt) |
+| Resumen de la entrega técnica (3 páginas) | [`docs/Entrega_tecnica_prototipo_Grupo5.pdf`](docs/Entrega_tecnica_prototipo_Grupo5.pdf) · [`.docx`](docs/Entrega_tecnica_prototipo_Grupo5.docx) |
+| Demo visual del resultado | [`reports/html/demo_prediccion.html`](reports/html/demo_prediccion.html) |
 | Resultados enero–septiembre de 2026, navegables | [`reports/html/resultados_ene-sep_2026.html`](reports/html/resultados_ene-sep_2026.html) |
 | Cómo se llegó al modelo, paso a paso | [`reports/html/el_camino_hasta_el_modelo.html`](reports/html/el_camino_hasta_el_modelo.html) |
 | Ajustes y validación del prototipo (informe) | [`docs/Ajustes_prototipo_y_validacion_Grupo5.pdf`](docs/Ajustes_prototipo_y_validacion_Grupo5.pdf) |
 | Interpretabilidad y ética (informe) | [`docs/Interpretabilidad_y_etica_Grupo5.docx`](docs/Interpretabilidad_y_etica_Grupo5.docx) |
 | Historia de los cambios | [`CHANGELOG.md`](CHANGELOG.md) · historial de Git |
+
+### Anexos técnicos del informe y dónde está su evidencia
+
+El informe del proyecto desarrolla siete anexos técnicos. Esto es lo que respalda a cada uno en el repositorio:
+
+| Anexo del informe | Evidencia en el repositorio |
+|---|---|
+| 1 · Diccionario de datos de las fuentes | Lectores y mapeo de columnas en `src/fuentes.py` y `src/sources.py`; diccionario del panel en [`docs/muestra/README.md`](docs/muestra/README.md); [`docs/solicitud_datos.md`](docs/solicitud_datos.md) |
+| 2 · Especificación de la definición operativa de devolución | «Definición del target» de este README · `src/permanencia.py` |
+| 3 · Acta de validación de la definición (99,75 %) | Cuaderno `03_antiguedad_inventario` |
+| 4 · Estructura del flujo reproducible | «El pipeline» y «Ejecución paso a paso» de este README · `scripts/` |
+| 5 · Explicabilidad (SHAP) | Cuaderno `08_interpretabilidad_y_equidad` · [`reports/shap_dos_ensambles.csv`](reports/shap_dos_ensambles.csv) |
+| 6 · Error por marca y por modelo de equipo | Cuadernos `06` y `07` · [`reports/cuadro_v6.csv`](reports/cuadro_v6.csv) · tabla por marca de la [demo](reports/html/demo_prediccion.html) |
+| 7 · Líneas base y alternativas | Cuadernos `05` y `07` · [`reports/decision_modelo.csv`](reports/decision_modelo.csv) · [`reports/walkforward_con_lineas_base.csv`](reports/walkforward_con_lineas_base.csv) |
 
 ## Licencia
 
