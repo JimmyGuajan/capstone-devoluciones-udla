@@ -374,7 +374,7 @@ en esta fase: la clasificación central/canal depende de ellos.
 | Comparativa entre modelos y por qué se eligió el ganador | [`reports/decision_modelo.csv`](reports/decision_modelo.csv) · cuaderno `05_decision_modelo` (es el corte de la decisión, con 7 meses de prueba: las cifras finales con 9 meses son las de `metricas_v6.csv`) |
 | Robustez: walk-forward, intervalos de confianza, cobertura | [`reports/walkforward.csv`](reports/walkforward.csv) · [`ic_bootstrap.csv`](reports/ic_bootstrap.csv) · [`intervalos_prueba.csv`](reports/intervalos_prueba.csv) · [`walkforward_con_lineas_base.csv`](reports/walkforward_con_lineas_base.csv) |
 | Qué variables pesan en cada modelo (SHAP) | [`reports/shap_dos_ensambles.csv`](reports/shap_dos_ensambles.csv) · cuaderno `08` |
-| Equidad por ciudad y distribuidor | [`reports/equidad_ciudad.csv`](reports/equidad_ciudad.csv) · [`reports/equidad_destino.csv`](reports/equidad_destino.csv) |
+| Equidad por ciudad y distribuidor | [`reports/equidad_ciudad.csv`](reports/equidad_ciudad.csv) · [`reports/equidad_destino.csv`](reports/equidad_destino.csv) (los destinos son clientes identificables: se publican con alias `DEST_01…` ordenados por desviación) |
 | Pruebas automáticas | `python -m pytest tests` — 33 pruebas |
 | Resultados enero–septiembre de 2026, navegables | [`reports/html/resultados_ene-sep_2026.html`](reports/html/resultados_ene-sep_2026.html) |
 | Cómo se llegó al modelo, paso a paso | [`reports/html/el_camino_hasta_el_modelo.html`](reports/html/el_camino_hasta_el_modelo.html) |
