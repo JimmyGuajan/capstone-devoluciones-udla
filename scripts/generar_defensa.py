@@ -36,8 +36,10 @@ SALIDA = RAIZ / "reports" / "html" / "defensa"
 REPORTES = RAIZ / "reports"
 MESES_ES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
 PAGINAS = [("index.html", "El problema", "p1_problema.html"),
+           ("camino.html", "El camino", "pc_camino.html"),
            ("solucion.html", "La solución", "p2_solucion.html"),
            ("evidencia.html", "La evidencia", "p3_evidencia.html")]
+CUADERNOS = RAIZ / "notebooks"
 
 # Volumen de la cadena, medido sobre los artefactos v6 (ver README, "El pipeline").
 VOLUMEN = {"inventario": 14_007_314, "despachos": 6_383_678, "estadias": 775_024,
@@ -143,12 +145,120 @@ def pagina3(panel, comun, wf, cob, hor) -> dict:
             "pruebas": pruebas, "scripts": len(glob.glob(str(RAIZ / "scripts" / "*.py"))), "hor": hor}
 
 
+def salida_celda(cuaderno: str, contiene_fuente: str = "", contiene_salida: str = "") -> str:
+    """Texto de salida de la ultima celda de codigo del cuaderno que cumple las condiciones."""
+    nb = json.loads((CUADERNOS / f"{cuaderno}.ipynb").read_text(encoding="utf-8"))
+    hallado = None
+    for c in nb["cells"]:
+        if c["cell_type"] != "code":
+            continue
+        fuente = "".join(c["source"])
+        partes = []
+        for o in c.get("outputs", []):
+            t = o.get("text") if o.get("output_type") == "stream" else o.get("data", {}).get("text/plain", "")
+            partes.append("".join(t) if isinstance(t, list) else str(t))
+        salida = "".join(partes)
+        if contiene_fuente in fuente and contiene_salida in salida and (contiene_fuente or contiene_salida):
+            hallado = salida
+    if hallado is None:
+        sys.exit(f"No se encontro la celda en {cuaderno}: {contiene_fuente!r} / {contiene_salida!r}")
+    return hallado
+
+
+def datos_camino(panel: pd.DataFrame, comun: dict) -> dict:
+    # barrido de umbral (cuaderno 01)
+    umbral = []
+    for l in salida_celda("01_limpieza_y_eda", "barrido_umbral", "umbral_dias").splitlines():
+        m = re.match(r"^\d+\s+(\d+)\s+(\d+)\s+(\d+)\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*$", l)
+        if m:
+            umbral.append({"dias": int(m[1]), "marcadas": int(m[2]), "aciertos": int(m[3]), "precision": float(m[4]),
+                           "cobertura": float(m[5]), "f1": float(m[6])})
+    assert len(umbral) == 9, umbral
+    # primer modelo (cuaderno 02): WMAPE de cada candidato y error mensual del volumen
+    wmape, vistos = [], set()
+    for l in salida_celda("02_modelo", "preparar_X", "Random Forest").splitlines():
+        m = re.match(r"^\d+\s+(.+?)\s+(\d\.\d{4})\s+", l)
+        if m and m[1] not in vistos:
+            vistos.add(m[1]); wmape.append({"modelo": m[1], "v": float(m[2])})
+    mape = []
+    for l in salida_celda("02_modelo", "", "MAPE total mensual").splitlines():
+        m = re.match(r"^\d+\s+(.+?)\s+([\d.]+)\s+([\d.]+)\s+(sí|no)\s*$", l)
+        if m:
+            mape.append({"modelo": m[1], "mape": float(m[3]), "cumple": m[4]})
+    assert len(wmape) == 7 and len(mape) == 7, (wmape, mape)
+    antes = {r["modelo"]: r["mape"] for r in mape}
+    # definiciones (cuaderno 03): serie mensual de las definiciones 1 y 2, y su contraste con el negocio
+    d1, d2, meses = [], [], []
+    for l in salida_celda("03_antiguedad_inventario", "def. despacho", "def. despacho").splitlines():
+        m = re.match(r"^(\d{4}-\d{2})-\d{2}\s+(\d+)\s+(\d+)\s*$", l)
+        if m:
+            meses.append(m[1]); d1.append(int(m[2])); d2.append(int(m[3]))
+    assert len(meses) == 18
+    tot = {"d1": int(re.search(r"definición anterior\s*:\s*([\d,]+)", salida_celda("03_antiguedad_inventario", "def. despacho", "Total con")).group(1).replace(",", "")),
+           "d2": int(re.search(r"negocio: ([\d,]+)", salida_celda("03_antiguedad_inventario", "def. despacho", "Total con")).group(1).replace(",", ""))}
+    assert tot["d1"] == sum(d1) and tot["d2"] == sum(d2), (tot, sum(d1), sum(d2))
+    pm = panel.groupby("mes").devueltas.sum()
+    d3 = [int(pm[pd.Timestamp(m + "-01")]) for m in meses]
+    t3 = salida_celda("03_antiguedad_inventario", "tabla = A.validar", "Coincidencia global")
+    cont2 = {"aciertos": int(re.search(r"(\d+)/(\d+) = ", t3).group(1)), "total": int(re.search(r"(\d+)/(\d+) = ", t3).group(2)),
+             "capturados": int(re.search(r"capturamos : (\d+)/(\d+)", t3).group(1)), "listado": int(re.search(r"capturamos : (\d+)/(\d+)", t3).group(2))}
+    t4 = salida_celda("04_modelo_final", "P.validar", "cobertura")
+    num = lambda k: float(re.search(rf"^{k}\s+([\d.]+)", t4, re.M).group(1))
+    cont3 = {"listado": int(num("listado")), "nuestro": int(num("nuestro")), "coinciden": int(num("coinciden")),
+             "solo_nuestro": int(num("solo_nuestro")), "cobertura": num("cobertura")}
+    # eleccion del modelo (reportes)
+    dec = pd.read_csv(REPORTES / "decision_modelo.csv")
+    val = dec[dec.conjunto == "validación"].sort_values("MAPE %")
+    p7 = dec[dec.conjunto == "prueba"].sort_values("MAPE %")
+    p9 = pd.read_csv(REPORTES / "metricas_v6.csv").sort_values("MAPE %")
+    despues = {r.modelo: float(r["MAPE %"]) for _, r in p7.iterrows()}
+    # Honor en julio (cuaderno 06) y la misma causa en agosto y septiembre
+    bloque, filas = None, {}
+    for l in salida_celda("06_extension_agosto_septiembre", "def dentro(", "JULIO").splitlines():
+        m = re.match(r"^(JULIO|AGOSTO|SEPTIEMBRE)\s", l)
+        if m:
+            bloque = m[1]; filas[bloque] = []; continue
+        m = re.match(r"^(LTE .+?)\s+(\d+)\s+(\d+)\s+(\d\.\d+)\s*$", l)
+        if m and bloque:
+            filas[bloque].append((m[1], int(m[2]), int(m[3]), float(m[4])))
+    j600 = [r for r in filas["JULIO"] if "HONOR 600E" in r[0]]
+    u600, c600 = sum(r[1] for r in j600), sum(r[2] for r in j600)
+    jul = next(m for m in comun["meses"] if m["mes"] == "2026-07")
+    h = next(r for r in jul["marcas"] if r["marca"] == "HONOR")
+    resto_u, resto_c = h["en_riesgo"] - u600, h["real"] - c600
+    limpia = lambda t: t.replace("LTE ", "")
+    ago = {r[0]: r for r in filas["AGOSTO"]}; sep = filas["SEPTIEMBRE"][0]
+    causas = [{"mes": "Julio", "modelo": "HONOR 600E 8+512GB 5G (gris y dorado)", "unidades": u600, "tasa": c600 / u600},
+              {"mes": "Agosto", "modelo": limpia(filas["AGOSTO"][0][0]), "unidades": filas["AGOSTO"][0][1], "tasa": filas["AGOSTO"][0][3]},
+              {"mes": "Agosto", "modelo": limpia(filas["AGOSTO"][1][0]), "unidades": filas["AGOSTO"][1][1], "tasa": filas["AGOSTO"][1][3]},
+              {"mes": "Septiembre", "modelo": limpia(sep[0]), "unidades": sep[1], "tasa": sep[3]}]
+    shap = pd.read_csv(REPORTES / "shap_dos_ensambles.csv", index_col=0).head(7)
+    return {"vol": VOLUMEN, "umbral": umbral, "v1": {"wmape": wmape, "mape": mape},
+            "def": {"meses": meses, "d1": d1, "d2": d2, "d3": d3, "tot": {**tot, "d3": sum(d3)}},
+            "cont2": cont2, "cont3": cont3,
+            "ad": [{"modelo": m, "antes": antes[m], "despues": despues[m]} for m in ("Random Forest", "XGBoost Poisson")],
+            "termo": [antes["XGBoost Poisson"], despues["Random Forest"], float(p7.iloc[0]["MAPE %"]), float(p9.iloc[0]["MAPE %"])],
+            "shap": [{"v": v, "vals": [float(r["XGBoost %"]), float(r["Random Forest %"])]} for v, r in shap.iterrows()],
+            "dec": {"val": [{"modelo": r.modelo, "mape": float(r["MAPE %"]), "wmape": float(r.WMAPE)} for _, r in val.iterrows()],
+                    "p7": [{"modelo": r.modelo, "mape": float(r["MAPE %"])} for _, r in p7.iterrows()],
+                    "p9": [{"modelo": r.modelo, "mape": float(r["MAPE %"])} for _, r in p9.iterrows()]},
+            "honor": {"en_riesgo": h["en_riesgo"], "prediccion": h["prediccion"], "tasa_modelo": h["tasa"], "u600": u600,
+                      "cumplen600": c600, "tasa_real_600": c600 / u600, "resto_unid": resto_u, "resto_cumplen": resto_c,
+                      "resto_tasa": resto_c / resto_u, "real": h["real"]},
+            "causas": causas,
+            "holdout": [{"mes": {"2026-08": "Agosto", "2026-09": "Septiembre"}[r.mes], "predicho": float(r.predicho), "real": float(r.real), "error_pct": float(r["error_%"])}
+                        for _, r in pd.read_csv(REPORTES / "cuadro_v6.csv").iterrows() if r.mes in ("2026-08", "2026-09")]}
+
+
 def render(archivo: str, titulo: str, fuente: str, datos: dict) -> str:
     esqueleto = (PLANTILLAS / "pagina.html").read_text(encoding="utf-8")
     cuerpo, script = (PLANTILLAS / fuente).read_text(encoding="utf-8").split("=====SCRIPT=====")
     nav = "".join(f'<a href="{a}"{" aria-current=\"page\"" if a == archivo else ""}>{n}</a>' for a, n, _ in PAGINAS)
     js = json.dumps(datos, ensure_ascii=False, default=lambda o: o.item() if hasattr(o, "item") else str(o))
-    return (esqueleto.replace("/*CSS*/", (PLANTILLAS / "comun.css").read_text(encoding="utf-8"))
+    css = (PLANTILLAS / "comun.css").read_text(encoding="utf-8")
+    oscuro = re.search(r'@media \(prefers-color-scheme: dark\)\{ :root:not\(\[data-theme="light"\]\)\{(.*?)\}\}', css, re.S)
+    css += f'\n:root[data-theme="dark"]{{{oscuro.group(1)}}}\n'   # el mismo tema, activable con el boton
+    return (esqueleto.replace("/*CSS*/", css)
             .replace("/*JS*/", (PLANTILLAS / "comun.js").read_text(encoding="utf-8"))
             .replace("{{TITULO}}", f"{titulo} · Predicción de devoluciones").replace("{{NAV}}", nav)
             .replace("{{PAGINA}}", cuerpo.strip()).replace("{{SCRIPT}}", script.strip())
@@ -168,7 +278,8 @@ def main() -> int:
     wf, cob = walk_forward(panel, comun["phi"])
     p2 = pagina2(panel, comun, exposicion)
     hor = [h["mape_medio"] for h in p2["fut"]["hor"]]
-    datos = {"index.html": pagina1(panel, comun, wf), "solucion.html": p2, "evidencia.html": pagina3(panel, comun, wf, cob, hor)}
+    datos = {"index.html": pagina1(panel, comun, wf), "camino.html": datos_camino(panel, comun), "solucion.html": p2,
+             "evidencia.html": pagina3(panel, comun, wf, cob, hor)}
     a.salida.mkdir(parents=True, exist_ok=True)
     for archivo, titulo, fuente in PAGINAS:
         html = render(archivo, titulo, fuente, datos[archivo])

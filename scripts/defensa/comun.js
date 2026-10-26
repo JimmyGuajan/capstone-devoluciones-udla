@@ -67,7 +67,7 @@ function lineas(el, c) {
 /* Columnas con una linea opcional encima. */
 function columnas(el, c) {
   const W = ancho(el), H = c.alto || (W < 520 ? 220 : 270), L = 44, R = 10, T = 14, B = 30, n = c.etiquetas.length;
-  const vs = c.valores.concat(c.linea ? c.linea.valores : []).filter(v => v != null);
+  const vs = c.valores.concat(c.linea ? c.linea.valores : []).concat(c.ref ? [c.ref.y] : []).filter(v => v != null);
   const [tope, paso] = escala(Math.max(...vs) * 1.06);
   const x = i => L + (W - L - R) * (i + .5) / n, y = v => T + (H - T - B) * (1 - v / tope), w = (W - L - R) / n;
   let s = '';
@@ -78,6 +78,8 @@ function columnas(el, c) {
     s += `<rect class="colb f${c.k || 1}" x="${x(i) - w * .36}" y="${y(v)}" width="${w * .72}" height="${y(0) - y(v)}" rx="2" opacity="${c.sel == null || sel ? .92 : .45}"/>`;
   });
   if (c.linea) s += `<polyline class="ln l${c.linea.k} ${c.linea.trazo || ''}" points="${c.linea.valores.map((v, i) => `${x(i)},${y(v)}`).join(' ')}"/>`;
+  if (c.ref) s += `<line class="ref" x1="${L}" x2="${W - R}" y1="${y(c.ref.y)}" y2="${y(c.ref.y)}"/><text class="reft" x="${W - R}" y="${y(c.ref.y) - 5}" text-anchor="end">${c.ref.texto}</text>`;
+  if (c.etiquetasValor) c.valores.forEach((v, i) => { s += `<text x="${x(i)}" y="${y(v) - 6}" text-anchor="middle" style="fill:var(--ink);font-weight:600">${c.etiquetasValor(v)}</text>`; });
   const salto = Math.ceil(n / Math.max(1, Math.floor((W - L) / 40)));
   c.etiquetas.forEach((e, i) => {
     if (i % salto === 0) s += `<text class="xl" x="${x(i)}" y="${H - 9}" text-anchor="middle">${e}</text>`;
@@ -106,3 +108,18 @@ function pastillas(el, etiquetas, sel, alSel) {
   el.innerHTML = etiquetas.map((e, i) => `<button type="button" data-i="${i}" aria-pressed="${i === sel}">${e}</button>`).join('');
   $$('button', el).forEach(b => b.onclick = () => alSel(+b.dataset.i));
 }
+
+/* Modo claro / oscuro: respeta la preferencia del sistema hasta que la persona elige. */
+(function () {
+  const raiz = document.documentElement, btn = $('#tema'), sis = matchMedia('(prefers-color-scheme: dark)');
+  const actual = () => raiz.getAttribute('data-theme') || (sis.matches ? 'dark' : 'light');
+  const pintar = () => { const t = actual(); btn.textContent = t === 'dark' ? '☀ Claro' : '☾ Oscuro'; btn.setAttribute('aria-pressed', t === 'dark'); };
+  btn.onclick = () => {
+    const n = actual() === 'dark' ? 'light' : 'dark';
+    raiz.setAttribute('data-theme', n);
+    try { localStorage.setItem('tema', n); } catch (e) {}
+    pintar();
+  };
+  if (sis.addEventListener) sis.addEventListener('change', () => { if (!raiz.getAttribute('data-theme')) pintar(); });
+  pintar();
+})();

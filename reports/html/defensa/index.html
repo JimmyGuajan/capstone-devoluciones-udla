@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<script>try{var t=localStorage.getItem('tema');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <style>
 :root{
   color-scheme: light;
@@ -95,7 +96,7 @@ svg.chart{width:100%; height:auto; display:block; overflow:visible}
 
 .bars{display:grid; gap:8px}
 .bar{display:grid; grid-template-columns:minmax(110px,190px) 1fr 88px; gap:10px; align-items:center; font-size:13.5px}
-.bar .nom{color:var(--ink-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.bar .nom{color:var(--ink-2); white-space:normal; line-height:1.25; overflow-wrap:anywhere}
 .bar .pista{position:relative; height:16px; background:var(--surface-2); border-radius:8px}
 .bar .rel{position:absolute; top:0; bottom:0; border-radius:8px; transition:width .35s}
 .bar .val{font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-align:right; white-space:nowrap}
@@ -145,13 +146,62 @@ footer{margin-top:18px; font-size:12.5px; color:var(--muted)}
 }
 @media (prefers-reduced-motion:reduce){ *{transition:none!important; scroll-behavior:auto!important} }
 
+.tema{font:inherit; font-size:13px; padding:6px 12px; border-radius:999px; cursor:pointer; border:1px solid var(--line-2); background:var(--surface); color:var(--ink-2); margin-left:4px}
+.tema:hover{border-color:var(--accent)}
+/* camino */
+.rail{display:flex; gap:6px; list-style:none; padding:0; margin:0 0 6px; overflow-x:auto}
+.rail li{flex:1 0 auto}
+.rail button{width:100%; font:inherit; font-size:12.5px; cursor:pointer; text-align:left; padding:8px 10px; border-radius:10px; border:1px solid var(--line-2); background:var(--surface); color:var(--ink-2); display:flex; gap:8px; align-items:center}
+.rail button .n{display:inline-flex; width:22px; height:22px; border-radius:50%; align-items:center; justify-content:center; background:var(--surface-2); font-weight:600; flex:none}
+.rail button[aria-current="step"]{border-color:var(--accent); background:var(--accent-soft); color:var(--ink)}
+.rail button[aria-current="step"] .n{background:var(--accent); color:#fff}
+.rail button.hecho .n{background:var(--good-soft); color:var(--good)}
+.rail .t{white-space:nowrap}
+.mandos{display:flex; justify-content:space-between; gap:10px; margin:14px 0 0}
+.btn.pri{background:var(--accent); border-color:var(--accent); color:#fff}
+.btn[disabled]{opacity:.4; cursor:default}
+.celdas{display:flex; flex-wrap:wrap; gap:3px; max-width:340px}
+.celdas i{width:15px; height:15px; border-radius:3px; background:var(--c1); opacity:.75}
+.tramo{height:15px; border-radius:4px; background:var(--c3); transition:width .25s}
+.fork{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.fork button{font:inherit; text-align:left; padding:14px 16px; border-radius:12px; border:1px solid var(--line-2); background:var(--surface); color:var(--ink); cursor:pointer}
+.fork button:hover{border-color:var(--accent)}
+.fork button[aria-pressed="true"]{border-color:var(--accent); background:var(--accent-soft)}
+.fork button b{display:block; margin-bottom:3px}
+.cmp th:first-child,.cmp td:first-child{white-space:normal; min-width:140px}
+.cmp td{font-family:"IBM Plex Sans",sans-serif; white-space:normal; text-align:left}
+.cmp td.num{font-family:"IBM Plex Mono",monospace; text-align:right; white-space:nowrap}
+.candado{border:1.5px dashed var(--line-2); border-radius:12px; padding:16px; text-align:center; color:var(--muted)}
+details.mas{margin-top:14px; border:1px solid var(--line); border-radius:10px; padding:10px 14px; background:var(--surface-2)}
+details.mas summary{cursor:pointer; font-weight:600; font-size:14px}
+details.mas > :not(summary){margin-top:10px}
+.formula{display:flex; flex-wrap:wrap; gap:8px; align-items:center; font-size:15px; margin:6px 0}
+.formula .chipf{padding:8px 14px; border-radius:10px; background:var(--surface-2); border:1px solid var(--line-2); font-weight:600}
+.formula .op{font-size:20px; color:var(--muted)}
+.dos{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+@media (max-width:760px){ .fork,.dos{grid-template-columns:1fr} .rail .t{display:none} }
+
+@media (max-width:900px){ nav.top .marca{display:none} nav.top{justify-content:flex-end} }
+
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --paper:#121419; --surface:#1A1D24; --surface-2:#232730;
+  --ink:#E7E9ED; --ink-2:#B6BAC4; --muted:#8A8F9A;
+  --line:#2C313B; --line-2:#3B414D;
+  --accent:#9085E9; --accent-soft:#25233C;
+  --c1:#4b93e8; --c2:#e8703d; --c3:#4BBF95; --c4:#9a9ca3; --c5:#a18ee8; --c6:#e66a6a;
+  --good:#4BBF95; --good-soft:#123028; --warn:#D9A742; --warn-soft:#332916; --bad:#E07070; --bad-soft:#331D1D;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 22px rgba(0,0,0,.25);
+}
+
 </style>
 </head>
 <body>
 <div class="wrap">
 <nav class="top" aria-label="Secciones">
   <span class="marca">Predicción de devoluciones</span>
-  <a href="index.html" aria-current="page">El problema</a><a href="solucion.html">La solución</a><a href="evidencia.html">La evidencia</a>
+  <a href="index.html" aria-current="page">El problema</a><a href="camino.html">El camino</a><a href="solucion.html">La solución</a><a href="evidencia.html">La evidencia</a>
+  <button class="tema" id="tema" type="button" aria-label="Cambiar entre modo claro y modo oscuro"></button>
 </nav>
 <header class="hero">
   <p class="eyebrow">1 · El problema</p>
@@ -197,7 +247,7 @@ footer{margin-top:18px; font-size:12.5px; color:var(--muted)}
     <div class="mini"><b>Con qué exactitud</b>Un error porcentual medio (MAPE) de 15 % como máximo, comprometido en el objetivo 4.</div>
     <div class="mini"><b>Con qué información</b>Solo lo que se sabe al cierre del mes anterior. Nada del futuro.</div>
   </div>
-  <div class="pie"><span></span><a class="sig" href="solucion.html">Ver cómo lo resolvimos →</a></div>
+  <div class="pie"><span></span><a class="sig" href="camino.html">Ver cómo llegamos al modelo →</a></div>
 </section>
 <footer>Generado por <code>scripts/generar_defensa.py</code> a partir del panel marca × mes, el modelo guardado y los reportes del repositorio. Grupo 5 · Maestría en IA Aplicada · UDLA.</footer>
 </div>
@@ -271,7 +321,7 @@ function lineas(el, c) {
 /* Columnas con una linea opcional encima. */
 function columnas(el, c) {
   const W = ancho(el), H = c.alto || (W < 520 ? 220 : 270), L = 44, R = 10, T = 14, B = 30, n = c.etiquetas.length;
-  const vs = c.valores.concat(c.linea ? c.linea.valores : []).filter(v => v != null);
+  const vs = c.valores.concat(c.linea ? c.linea.valores : []).concat(c.ref ? [c.ref.y] : []).filter(v => v != null);
   const [tope, paso] = escala(Math.max(...vs) * 1.06);
   const x = i => L + (W - L - R) * (i + .5) / n, y = v => T + (H - T - B) * (1 - v / tope), w = (W - L - R) / n;
   let s = '';
@@ -282,6 +332,8 @@ function columnas(el, c) {
     s += `<rect class="colb f${c.k || 1}" x="${x(i) - w * .36}" y="${y(v)}" width="${w * .72}" height="${y(0) - y(v)}" rx="2" opacity="${c.sel == null || sel ? .92 : .45}"/>`;
   });
   if (c.linea) s += `<polyline class="ln l${c.linea.k} ${c.linea.trazo || ''}" points="${c.linea.valores.map((v, i) => `${x(i)},${y(v)}`).join(' ')}"/>`;
+  if (c.ref) s += `<line class="ref" x1="${L}" x2="${W - R}" y1="${y(c.ref.y)}" y2="${y(c.ref.y)}"/><text class="reft" x="${W - R}" y="${y(c.ref.y) - 5}" text-anchor="end">${c.ref.texto}</text>`;
+  if (c.etiquetasValor) c.valores.forEach((v, i) => { s += `<text x="${x(i)}" y="${y(v) - 6}" text-anchor="middle" style="fill:var(--ink);font-weight:600">${c.etiquetasValor(v)}</text>`; });
   const salto = Math.ceil(n / Math.max(1, Math.floor((W - L) / 40)));
   c.etiquetas.forEach((e, i) => {
     if (i % salto === 0) s += `<text class="xl" x="${x(i)}" y="${H - 9}" text-anchor="middle">${e}</text>`;
@@ -311,9 +363,24 @@ function pastillas(el, etiquetas, sel, alSel) {
   $$('button', el).forEach(b => b.onclick = () => alSel(+b.dataset.i));
 }
 
+/* Modo claro / oscuro: respeta la preferencia del sistema hasta que la persona elige. */
+(function () {
+  const raiz = document.documentElement, btn = $('#tema'), sis = matchMedia('(prefers-color-scheme: dark)');
+  const actual = () => raiz.getAttribute('data-theme') || (sis.matches ? 'dark' : 'light');
+  const pintar = () => { const t = actual(); btn.textContent = t === 'dark' ? '☀ Claro' : '☾ Oscuro'; btn.setAttribute('aria-pressed', t === 'dark'); };
+  btn.onclick = () => {
+    const n = actual() === 'dark' ? 'light' : 'dark';
+    raiz.setAttribute('data-theme', n);
+    try { localStorage.setItem('tema', n); } catch (e) {}
+    pintar();
+  };
+  if (sis.addEventListener) sis.addEventListener('change', () => { if (!raiz.getAttribute('data-theme')) pintar(); });
+  pintar();
+})();
+
 </script>
 <script>
-const D = {"meses": [{"mes": "2024-05", "desp": 11563.0, "dev": 1152.0, "riesgo": 1604.0, "valor": 589077.36}, {"mes": "2024-06", "desp": 7805.0, "dev": 2264.0, "riesgo": 2884.0, "valor": 750225.1699999999}, {"mes": "2024-07", "desp": 10630.0, "dev": 1927.0, "riesgo": 2962.0, "valor": 472779.07}, {"mes": "2024-08", "desp": 8919.0, "dev": 1329.0, "riesgo": 2115.0, "valor": 723183.41}, {"mes": "2024-09", "desp": 7007.0, "dev": 1477.0, "riesgo": 2301.0, "valor": 426318.06}, {"mes": "2024-10", "desp": 8986.0, "dev": 1022.0, "riesgo": 1633.0, "valor": 259927.74}, {"mes": "2024-11", "desp": 10038.0, "dev": 915.0, "riesgo": 1309.0, "valor": 257445.91999999998}, {"mes": "2024-12", "desp": 9303.0, "dev": 1309.0, "riesgo": 2046.0, "valor": 378094.82}, {"mes": "2025-01", "desp": 9328.0, "dev": 1439.0, "riesgo": 1999.0, "valor": 373126.02}, {"mes": "2025-02", "desp": 11597.0, "dev": 1304.0, "riesgo": 1875.0, "valor": 280494.24}, {"mes": "2025-03", "desp": 7690.0, "dev": 1381.0, "riesgo": 2163.0, "valor": 395228.75}, {"mes": "2025-04", "desp": 12329.0, "dev": 1686.0, "riesgo": 2758.0, "valor": 841650.8999999999}, {"mes": "2025-05", "desp": 10095.0, "dev": 1217.0, "riesgo": 1862.0, "valor": 503782.48}, {"mes": "2025-06", "desp": 7828.0, "dev": 2244.0, "riesgo": 2819.0, "valor": 818346.48}, {"mes": "2025-07", "desp": 11213.0, "dev": 1582.0, "riesgo": 2253.0, "valor": 593565.56}, {"mes": "2025-08", "desp": 7822.0, "dev": 1395.0, "riesgo": 1895.0, "valor": 426785.22}, {"mes": "2025-09", "desp": 7898.0, "dev": 2098.0, "riesgo": 2922.0, "valor": 568127.23}, {"mes": "2025-10", "desp": 5440.0, "dev": 1963.0, "riesgo": 2679.0, "valor": 1184196.24}, {"mes": "2025-11", "desp": 2347.0, "dev": 1274.0, "riesgo": 1994.0, "valor": 428393.96}, {"mes": "2025-12", "desp": 5961.0, "dev": 992.0, "riesgo": 1415.0, "valor": 252456.09000000003}, {"mes": "2026-01", "desp": 4805.0, "dev": 335.0, "riesgo": 484.0, "valor": 134774.39}, {"mes": "2026-02", "desp": 5609.0, "dev": 478.0, "riesgo": 680.0, "valor": 204170.34}, {"mes": "2026-03", "desp": 8696.0, "dev": 732.0, "riesgo": 1017.0, "valor": 482197.24}, {"mes": "2026-04", "desp": 6757.0, "dev": 882.0, "riesgo": 1155.0, "valor": 386957.5}, {"mes": "2026-05", "desp": 6016.0, "dev": 1036.0, "riesgo": 1446.0, "valor": 460266.95}, {"mes": "2026-06", "desp": 5444.0, "dev": 725.0, "riesgo": 999.0, "valor": 293209.92}, {"mes": "2026-07", "desp": 6241.0, "dev": 1364.0, "riesgo": 1767.0, "valor": 587533.79}, {"mes": "2026-08", "desp": 3176.0, "dev": 1100.0, "riesgo": 1488.0, "valor": 632342.91}, {"mes": "2026-09", "desp": 4683.0, "dev": 899.0, "riesgo": 1188.0, "valor": 629099.01}], "k": {"dev26": 7551.0, "valor26": 3810552.05, "desp26": 51427.0, "tasa": 0.738556338028169}, "validacion": {"aciertos": 799, "total": 801}, "wf": {"etiquetas": ["2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09"], "real": [1439.0, 1304.0, 1381.0, 1686.0, 1217.0, 2244.0, 1582.0, 1395.0, 2098.0, 1963.0, 1274.0, 992.0, 335.0, 478.0, 732.0, 882.0, 1036.0, 725.0, 1364.0, 1100.0, 899.0], "naive": [1309.0, 1439.0, 1304.0, 1381.0, 1686.0, 1217.0, 2244.0, 1582.0, 1395.0, 2098.0, 1963.0, 1274.0, 992.0, 335.0, 478.0, 732.0, 882.0, 1036.0, 725.0, 1364.0, 1100.0], "mm": [1082.0, 1221.0, 1350.667, 1374.667, 1457.0, 1428.0, 1715.667, 1681.0, 1740.333, 1691.667, 1818.667, 1778.333, 1409.667, 867.0, 601.667, 515.0, 697.333, 883.333, 881.0, 1041.667, 1063.0], "cero": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "mape": {"naive": 34.96, "mm": 41.18, "cero": 100.0}, "peor": {"naive": 196.12, "mm": 320.8, "cero": 100.0}, "ape": {"Cero (no anticipa)": [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0], "XGBoost Poisson": [15.777, 18.825, 0.646, 1.099, 5.472, 19.747, 7.663, 13.689, 28.115, 10.417, 3.455, 4.464, 9.437, 14.691, 10.805, 16.509, 3.704, 7.829, 18.965, 8.466, 1.908], "Tasa de conversión": [5.614, 5.627, 3.999, 2.915, 2.096, 17.521, 4.283, 6.732, 7.394, 4.443, 10.892, 2.176, 1.117, 4.236, 2.223, 7.388, 3.358, 2.602, 14.165, 0.903, 0.764], "Media móvil 3 meses": [24.809, 6.365, 2.196, 18.466, 19.721, 36.364, 8.449, 20.502, 17.048, 13.822, 42.752, 79.267, 320.796, 81.381, 17.805, 41.61, 32.69, 21.839, 35.411, 5.303, 18.242], "Naive (mes anterior)": [9.034, 10.353, 5.576, 18.09, 38.537, 45.766, 41.846, 13.405, 33.508, 6.877, 54.082, 28.427, 196.119, 29.916, 34.699, 17.007, 14.865, 42.897, 46.848, 24.0, 22.358], "Random Forest": [3.403, 8.022, 11.428, 9.325, 5.356, 11.259, 8.508, 10.365, 23.41, 2.484, 8.217, 5.772, 5.198, 1.281, 2.097, 10.989, 5.56, 1.436, 9.606, 1.786, 5.101]}, "resumen": [{"modelo": "Tasa de conversión", "media": 5.26, "mediana": 4.24, "peor": 17.52, "ic": [3.62, 7.19]}, {"modelo": "Random Forest", "media": 7.17, "mediana": 5.77, "peor": 23.41, "ic": [5.21, 9.36]}, {"modelo": "XGBoost Poisson", "media": 10.56, "mediana": 9.44, "peor": 28.11, "ic": [7.6, 13.73]}, {"modelo": "Naive (mes anterior)", "media": 34.96, "mediana": 28.43, "peor": 196.12, "ic": [22.28, 54.01]}, {"modelo": "Media móvil 3 meses", "media": 41.18, "mediana": 20.5, "peor": 320.8, "ic": null}, {"modelo": "Cero (no anticipa)", "media": 100.0, "mediana": 100.0, "peor": 100.0, "ic": null}], "sobre15": 1, "peor_mes": "2025-06"}};
+const D = {"meses": [{"mes": "2024-05", "desp": 11563.0, "dev": 1152.0, "riesgo": 1604.0, "valor": 589077.36}, {"mes": "2024-06", "desp": 7805.0, "dev": 2264.0, "riesgo": 2884.0, "valor": 750225.1699999999}, {"mes": "2024-07", "desp": 10630.0, "dev": 1927.0, "riesgo": 2962.0, "valor": 472779.07}, {"mes": "2024-08", "desp": 8919.0, "dev": 1329.0, "riesgo": 2115.0, "valor": 723183.41}, {"mes": "2024-09", "desp": 7007.0, "dev": 1477.0, "riesgo": 2301.0, "valor": 426318.06}, {"mes": "2024-10", "desp": 8986.0, "dev": 1022.0, "riesgo": 1633.0, "valor": 259927.74}, {"mes": "2024-11", "desp": 10038.0, "dev": 915.0, "riesgo": 1309.0, "valor": 257445.91999999998}, {"mes": "2024-12", "desp": 9303.0, "dev": 1309.0, "riesgo": 2046.0, "valor": 378094.82}, {"mes": "2025-01", "desp": 9328.0, "dev": 1439.0, "riesgo": 1999.0, "valor": 373126.02}, {"mes": "2025-02", "desp": 11597.0, "dev": 1304.0, "riesgo": 1875.0, "valor": 280494.24}, {"mes": "2025-03", "desp": 7690.0, "dev": 1381.0, "riesgo": 2163.0, "valor": 395228.75}, {"mes": "2025-04", "desp": 12329.0, "dev": 1686.0, "riesgo": 2758.0, "valor": 841650.8999999999}, {"mes": "2025-05", "desp": 10095.0, "dev": 1217.0, "riesgo": 1862.0, "valor": 503782.48}, {"mes": "2025-06", "desp": 7828.0, "dev": 2244.0, "riesgo": 2819.0, "valor": 818346.48}, {"mes": "2025-07", "desp": 11213.0, "dev": 1582.0, "riesgo": 2253.0, "valor": 593565.56}, {"mes": "2025-08", "desp": 7822.0, "dev": 1395.0, "riesgo": 1895.0, "valor": 426785.22}, {"mes": "2025-09", "desp": 7898.0, "dev": 2098.0, "riesgo": 2922.0, "valor": 568127.23}, {"mes": "2025-10", "desp": 5440.0, "dev": 1963.0, "riesgo": 2679.0, "valor": 1184196.24}, {"mes": "2025-11", "desp": 2347.0, "dev": 1274.0, "riesgo": 1994.0, "valor": 428393.96}, {"mes": "2025-12", "desp": 5961.0, "dev": 992.0, "riesgo": 1415.0, "valor": 252456.09000000003}, {"mes": "2026-01", "desp": 4805.0, "dev": 335.0, "riesgo": 484.0, "valor": 134774.39}, {"mes": "2026-02", "desp": 5609.0, "dev": 478.0, "riesgo": 680.0, "valor": 204170.34}, {"mes": "2026-03", "desp": 8696.0, "dev": 732.0, "riesgo": 1017.0, "valor": 482197.24}, {"mes": "2026-04", "desp": 6757.0, "dev": 882.0, "riesgo": 1155.0, "valor": 386957.5}, {"mes": "2026-05", "desp": 6016.0, "dev": 1036.0, "riesgo": 1446.0, "valor": 460266.95}, {"mes": "2026-06", "desp": 5444.0, "dev": 725.0, "riesgo": 999.0, "valor": 293209.92}, {"mes": "2026-07", "desp": 6241.0, "dev": 1364.0, "riesgo": 1767.0, "valor": 587533.79}, {"mes": "2026-08", "desp": 3176.0, "dev": 1100.0, "riesgo": 1488.0, "valor": 632342.91}, {"mes": "2026-09", "desp": 4683.0, "dev": 899.0, "riesgo": 1188.0, "valor": 629099.01}], "k": {"dev26": 7551.0, "valor26": 3810552.05, "desp26": 51427.0, "tasa": 0.738556338028169}, "validacion": {"aciertos": 799, "total": 801}, "wf": {"etiquetas": ["2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09"], "real": [1439.0, 1304.0, 1381.0, 1686.0, 1217.0, 2244.0, 1582.0, 1395.0, 2098.0, 1963.0, 1274.0, 992.0, 335.0, 478.0, 732.0, 882.0, 1036.0, 725.0, 1364.0, 1100.0, 899.0], "naive": [1309.0, 1439.0, 1304.0, 1381.0, 1686.0, 1217.0, 2244.0, 1582.0, 1395.0, 2098.0, 1963.0, 1274.0, 992.0, 335.0, 478.0, 732.0, 882.0, 1036.0, 725.0, 1364.0, 1100.0], "mm": [1082.0, 1221.0, 1350.667, 1374.667, 1457.0, 1428.0, 1715.667, 1681.0, 1740.333, 1691.667, 1818.667, 1778.333, 1409.667, 867.0, 601.667, 515.0, 697.333, 883.333, 881.0, 1041.667, 1063.0], "cero": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "mape": {"naive": 34.96, "mm": 41.18, "cero": 100.0}, "peor": {"naive": 196.12, "mm": 320.8, "cero": 100.0}, "ape": {"Media móvil 3 meses": [24.809, 6.365, 2.196, 18.466, 19.721, 36.364, 8.449, 20.502, 17.048, 13.822, 42.752, 79.267, 320.796, 81.381, 17.805, 41.61, 32.69, 21.839, 35.411, 5.303, 18.242], "XGBoost Poisson": [15.777, 18.825, 0.646, 1.099, 5.472, 19.747, 7.663, 13.689, 28.115, 10.417, 3.455, 4.464, 9.437, 14.691, 10.805, 16.509, 3.704, 7.829, 18.965, 8.466, 1.908], "Cero (no anticipa)": [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0], "Naive (mes anterior)": [9.034, 10.353, 5.576, 18.09, 38.537, 45.766, 41.846, 13.405, 33.508, 6.877, 54.082, 28.427, 196.119, 29.916, 34.699, 17.007, 14.865, 42.897, 46.848, 24.0, 22.358], "Random Forest": [3.403, 8.022, 11.428, 9.325, 5.356, 11.259, 8.508, 10.365, 23.41, 2.484, 8.217, 5.772, 5.198, 1.281, 2.097, 10.989, 5.56, 1.436, 9.606, 1.786, 5.101], "Tasa de conversión": [5.614, 5.627, 3.999, 2.915, 2.096, 17.521, 4.283, 6.732, 7.394, 4.443, 10.892, 2.176, 1.117, 4.236, 2.223, 7.388, 3.358, 2.602, 14.165, 0.903, 0.764]}, "resumen": [{"modelo": "Tasa de conversión", "media": 5.26, "mediana": 4.24, "peor": 17.52, "ic": [3.62, 7.19]}, {"modelo": "Random Forest", "media": 7.17, "mediana": 5.77, "peor": 23.41, "ic": [5.21, 9.36]}, {"modelo": "XGBoost Poisson", "media": 10.56, "mediana": 9.44, "peor": 28.11, "ic": [7.6, 13.73]}, {"modelo": "Naive (mes anterior)", "media": 34.96, "mediana": 28.43, "peor": 196.12, "ic": [22.28, 54.01]}, {"modelo": "Media móvil 3 meses", "media": 41.18, "mediana": 20.5, "peor": 320.8, "ic": null}, {"modelo": "Cero (no anticipa)", "media": 100.0, "mediana": 100.0, "peor": 100.0, "ic": null}], "sobre15": 1, "peor_mes": "2025-06"}};
 /* ---------- 1 · el viaje ---------- */
 const ESC = {
   venta: {nombre: 'Se vende al día 25', venta: 25},

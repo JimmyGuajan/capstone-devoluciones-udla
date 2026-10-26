@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<script>try{var t=localStorage.getItem('tema');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <style>
 /*CSS*/
 </style>
@@ -16,6 +17,7 @@
 <nav class="top" aria-label="Secciones">
   <span class="marca">Predicción de devoluciones</span>
   {{NAV}}
+  <button class="tema" id="tema" type="button" aria-label="Cambiar entre modo claro y modo oscuro"></button>
 </nav>
 {{PAGINA}}
 <footer>Generado por <code>scripts/generar_defensa.py</code> a partir del panel marca × mes, el modelo guardado y los reportes del repositorio. Grupo 5 · Maestría en IA Aplicada · UDLA.</footer>

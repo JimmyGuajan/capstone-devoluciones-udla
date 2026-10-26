@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>El camino · Predicción de devoluciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<script>try{var t=localStorage.getItem('tema');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<style>
+:root{
+  color-scheme: light;
+  --paper:#F4F6F8; --surface:#FFFFFF; --surface-2:#EDF0F4;
+  --ink:#191B21; --ink-2:#464A54; --muted:#6E727C;
+  --line:#D9DEE5; --line-2:#C3CAD4;
+  --accent:#4A3AA7; --accent-soft:#EAE8F9;
+  --c1:#2a78d6; --c2:#eb6834; --c3:#12795A; --c4:#7d7f86; --c5:#7b61c9; --c6:#d03b3b;
+  --good:#12795A; --good-soft:#E2F2EC; --warn:#8A5B00; --warn-soft:#FBF0DB; --bad:#B03030; --bad-soft:#FBE9E9;
+  --shadow:0 1px 2px rgba(20,25,40,.05), 0 8px 22px rgba(20,25,40,.06);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  color-scheme: dark;
+  --paper:#121419; --surface:#1A1D24; --surface-2:#232730;
+  --ink:#E7E9ED; --ink-2:#B6BAC4; --muted:#8A8F9A;
+  --line:#2C313B; --line-2:#3B414D;
+  --accent:#9085E9; --accent-soft:#25233C;
+  --c1:#4b93e8; --c2:#e8703d; --c3:#4BBF95; --c4:#9a9ca3; --c5:#a18ee8; --c6:#e66a6a;
+  --good:#4BBF95; --good-soft:#123028; --warn:#D9A742; --warn-soft:#332916; --bad:#E07070; --bad-soft:#331D1D;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 22px rgba(0,0,0,.25);
+}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--paper); color:var(--ink); margin:0;
+  font-family:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif; font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased}
+.wrap{max-width:980px; margin:0 auto; padding:0 16px 72px}
+a{color:var(--accent)}
+nav.top{position:sticky; top:0; z-index:5; background:color-mix(in srgb, var(--paper) 88%, transparent); backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line); margin:0 -16px; padding:10px 16px; display:flex; gap:6px; align-items:center; flex-wrap:wrap}
+nav.top .marca{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-right:auto}
+nav.top a{text-decoration:none; font-size:13.5px; padding:6px 13px; border-radius:999px; color:var(--ink-2); border:1px solid transparent}
+nav.top a:hover{border-color:var(--line-2)}
+nav.top a[aria-current="page"]{background:var(--accent); color:#fff}
+header.hero{padding:40px 0 10px}
+.eyebrow{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); margin:0 0 8px}
+h1{font-family:Spectral,Georgia,serif; font-weight:700; font-size:clamp(28px,5vw,42px); line-height:1.1; letter-spacing:-.018em; margin:0 0 10px; text-wrap:balance}
+h2{font-family:Spectral,Georgia,serif; font-weight:600; font-size:clamp(21px,3vw,25px); margin:0 0 4px; line-height:1.2}
+h3{font-size:15px; margin:0 0 4px}
+.lead{color:var(--ink-2); font-size:16.5px; margin:0; max-width:66ch}
+section{margin-top:30px}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); padding:20px 20px 18px}
+.sub{color:var(--muted); font-size:14px; margin:0 0 14px; max-width:70ch}
+.paso{display:inline-flex; width:26px; height:26px; border-radius:50%; background:var(--accent); color:#fff; font-size:13px; font-weight:600; align-items:center; justify-content:center; margin-right:8px; vertical-align:2px}
+
+.pills{display:flex; flex-wrap:wrap; gap:6px; margin:0 0 14px}
+.pills button,.chip{font:inherit; font-size:13.5px; padding:6px 12px; border-radius:999px; cursor:pointer; border:1px solid var(--line-2); background:var(--surface); color:var(--ink-2)}
+.pills button:hover,.chip:hover{border-color:var(--accent)}
+.pills button[aria-pressed="true"],.chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#fff}
+.chip .sw{display:inline-block; width:18px; height:3px; border-radius:2px; vertical-align:middle; margin-right:7px; background:currentColor}
+.chip[aria-pressed="false"]{opacity:.55}
+.chip.ser{border-width:2px}
+.chip.ser[aria-pressed="true"]{background:var(--surface-2); border-color:currentColor}
+.chip.ser[aria-pressed="false"]{border-color:var(--line-2)}
+.pills button:focus-visible,.chip:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+.kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:0 0 16px}
+.kpis.tres{grid-template-columns:repeat(3,1fr)}
+.kpi{background:var(--surface-2); border-radius:10px; padding:11px 13px}
+.kpi .l{font-size:12px; color:var(--muted); margin:0}
+.kpi .v{font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:clamp(18px,3.4vw,25px); margin:2px 0 0; line-height:1.2}
+.kpi .n{font-size:12px; color:var(--muted); margin:2px 0 0}
+.badge{display:inline-block; font-size:12px; font-weight:600; padding:1px 9px; border-radius:999px}
+.badge.ok{background:var(--good-soft); color:var(--good)} .badge.no{background:var(--bad-soft); color:var(--bad)} .badge.aviso{background:var(--warn-soft); color:var(--warn)}
+.callout{border-radius:10px; padding:11px 14px; font-size:14px; margin:14px 0 0; border:1px solid transparent}
+.callout.info{background:var(--accent-soft); border-color:color-mix(in srgb, var(--accent) 25%, transparent)}
+.callout.aviso{background:var(--warn-soft); border-color:color-mix(in srgb, var(--warn) 30%, transparent)}
+.callout.ok{background:var(--good-soft); border-color:color-mix(in srgb, var(--good) 30%, transparent)}
+.callout b{font-weight:600}
+
+svg.chart{width:100%; height:auto; display:block; overflow:visible}
+.chart text{font-family:"IBM Plex Sans",sans-serif; font-size:11px; fill:var(--muted)}
+.chart .grid{stroke:var(--line); stroke-width:1}
+.chart .ref{stroke:var(--c6); stroke-width:1.2; stroke-dasharray:5 4}
+.chart .reft{fill:var(--c6); font-size:10.5px}
+.chart .sel{fill:var(--accent); opacity:.09}
+.chart .hit{fill:transparent; cursor:pointer}
+.chart .xl.on{fill:var(--ink); font-weight:600}
+.chart .l1{stroke:var(--c1)} .chart .l2{stroke:var(--c2)} .chart .l3{stroke:var(--c3)} .chart .l4{stroke:var(--c4)} .chart .l5{stroke:var(--c5)} .chart .l6{stroke:var(--c6)}
+.chart .f1{fill:var(--c1)} .chart .f2{fill:var(--c2)} .chart .f3{fill:var(--c3)} .chart .f4{fill:var(--c4)} .chart .f5{fill:var(--c5)} .chart .f6{fill:var(--c6)}
+.chart .ln{fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round}
+.chart .dash{stroke-dasharray:6 4} .chart .punt{stroke-dasharray:2 4}
+.chart .band{opacity:.15}
+.chart .pt{stroke-width:2}
+.chart .pt.hueco{fill:var(--surface)}
+.chart .colb{opacity:.9}
+
+.bars{display:grid; gap:8px}
+.bar{display:grid; grid-template-columns:minmax(110px,190px) 1fr 88px; gap:10px; align-items:center; font-size:13.5px}
+.bar .nom{color:var(--ink-2); white-space:normal; line-height:1.25; overflow-wrap:anywhere}
+.bar .pista{position:relative; height:16px; background:var(--surface-2); border-radius:8px}
+.bar .rel{position:absolute; top:0; bottom:0; border-radius:8px; transition:width .35s}
+.bar .val{font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-align:right; white-space:nowrap}
+.bar .refl{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--c6)}
+.bar.neg .rel{right:50%} .bar.pos .rel{left:50%}
+.bar .cero{position:absolute; top:-3px; bottom:-3px; left:50%; width:1px; background:var(--line-2)}
+
+.tw{overflow-x:auto; margin-top:6px}
+table{border-collapse:collapse; width:100%; font-size:13.5px; min-width:460px}
+th,td{text-align:right; padding:7px 10px; border-bottom:1px solid var(--line); white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600; color:var(--ink-2); font-size:12.5px}
+td{font-family:"IBM Plex Mono",monospace; font-size:13px}
+td:first-child{font-family:"IBM Plex Sans",sans-serif; font-weight:500}
+tfoot td{font-weight:600; border-bottom:0; background:var(--surface-2)}
+.note{font-size:12.5px; color:var(--muted); margin:10px 0 0}
+
+.grid2{display:grid; grid-template-columns:1.05fr .95fr; gap:20px; align-items:start}
+.grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+.mini{background:var(--surface-2); border-radius:10px; padding:12px 14px; font-size:13.5px; color:var(--ink-2)}
+.mini b{display:block; color:var(--ink); margin-bottom:2px}
+.ctl{display:grid; gap:6px; margin:10px 0}
+.ctl label{font-size:13.5px; color:var(--ink-2); display:flex; justify-content:space-between; gap:10px}
+.ctl label span{font-family:"IBM Plex Mono",monospace; color:var(--ink)}
+input[type=range]{width:100%; accent-color:var(--accent)}
+.inputs{display:grid; gap:8px}
+.row{display:grid; grid-template-columns:1fr 92px 64px; gap:10px; align-items:center; font-size:14px}
+.row input[type=number]{font:inherit; font-family:"IBM Plex Mono",monospace; width:100%; padding:6px 8px; text-align:right; border:1px solid var(--line-2); border-radius:8px; background:var(--surface); color:var(--ink)}
+.row .t{font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--muted); text-align:right}
+.btn{font:inherit; font-size:13px; padding:6px 12px; border-radius:8px; cursor:pointer; border:1px solid var(--line-2); background:var(--surface); color:var(--ink-2)}
+.btn:hover{border-color:var(--accent)}
+code{font-family:"IBM Plex Mono",monospace; font-size:12.5px; background:var(--surface-2); padding:1px 6px; border-radius:5px}
+pre{font-family:"IBM Plex Mono",monospace; font-size:12.5px; background:var(--surface-2); padding:12px 14px; border-radius:10px; overflow-x:auto; margin:12px 0 0}
+.nodo{cursor:pointer}
+.nodo rect{fill:var(--surface); stroke:var(--line-2); stroke-width:1.4; transition:stroke .15s, fill .15s}
+.nodo:hover rect,.nodo.on rect{stroke:var(--accent); fill:var(--accent-soft)}
+.nodo text{fill:var(--ink); font-size:12.5px; font-weight:500} .nodo .s{fill:var(--muted); font-size:11px; font-weight:400}
+.flecha{stroke:var(--line-2); stroke-width:1.6; fill:none}
+.pie{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-top:34px; padding-top:18px; border-top:1px solid var(--line)}
+.pie a.sig{font-weight:600; text-decoration:none}
+footer{margin-top:18px; font-size:12.5px; color:var(--muted)}
+
+@media (max-width:760px){
+  .kpis,.kpis.tres{grid-template-columns:1fr 1fr}
+  .grid2,.grid3{grid-template-columns:1fr}
+  .bar{grid-template-columns:96px 1fr 76px}
+}
+@media (prefers-reduced-motion:reduce){ *{transition:none!important; scroll-behavior:auto!important} }
+
+.tema{font:inherit; font-size:13px; padding:6px 12px; border-radius:999px; cursor:pointer; border:1px solid var(--line-2); background:var(--surface); color:var(--ink-2); margin-left:4px}
+.tema:hover{border-color:var(--accent)}
+/* camino */
+.rail{display:flex; gap:6px; list-style:none; padding:0; margin:0 0 6px; overflow-x:auto}
+.rail li{flex:1 0 auto}
+.rail button{width:100%; font:inherit; font-size:12.5px; cursor:pointer; text-align:left; padding:8px 10px; border-radius:10px; border:1px solid var(--line-2); background:var(--surface); color:var(--ink-2); display:flex; gap:8px; align-items:center}
+.rail button .n{display:inline-flex; width:22px; height:22px; border-radius:50%; align-items:center; justify-content:center; background:var(--surface-2); font-weight:600; flex:none}
+.rail button[aria-current="step"]{border-color:var(--accent); background:var(--accent-soft); color:var(--ink)}
+.rail button[aria-current="step"] .n{background:var(--accent); color:#fff}
+.rail button.hecho .n{background:var(--good-soft); color:var(--good)}
+.rail .t{white-space:nowrap}
+.mandos{display:flex; justify-content:space-between; gap:10px; margin:14px 0 0}
+.btn.pri{background:var(--accent); border-color:var(--accent); color:#fff}
+.btn[disabled]{opacity:.4; cursor:default}
+.celdas{display:flex; flex-wrap:wrap; gap:3px; max-width:340px}
+.celdas i{width:15px; height:15px; border-radius:3px; background:var(--c1); opacity:.75}
+.tramo{height:15px; border-radius:4px; background:var(--c3); transition:width .25s}
+.fork{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.fork button{font:inherit; text-align:left; padding:14px 16px; border-radius:12px; border:1px solid var(--line-2); background:var(--surface); color:var(--ink); cursor:pointer}
+.fork button:hover{border-color:var(--accent)}
+.fork button[aria-pressed="true"]{border-color:var(--accent); background:var(--accent-soft)}
+.fork button b{display:block; margin-bottom:3px}
+.cmp th:first-child,.cmp td:first-child{white-space:normal; min-width:140px}
+.cmp td{font-family:"IBM Plex Sans",sans-serif; white-space:normal; text-align:left}
+.cmp td.num{font-family:"IBM Plex Mono",monospace; text-align:right; white-space:nowrap}
+.candado{border:1.5px dashed var(--line-2); border-radius:12px; padding:16px; text-align:center; color:var(--muted)}
+details.mas{margin-top:14px; border:1px solid var(--line); border-radius:10px; padding:10px 14px; background:var(--surface-2)}
+details.mas summary{cursor:pointer; font-weight:600; font-size:14px}
+details.mas > :not(summary){margin-top:10px}
+.formula{display:flex; flex-wrap:wrap; gap:8px; align-items:center; font-size:15px; margin:6px 0}
+.formula .chipf{padding:8px 14px; border-radius:10px; background:var(--surface-2); border:1px solid var(--line-2); font-weight:600}
+.formula .op{font-size:20px; color:var(--muted)}
+.dos{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+@media (max-width:760px){ .fork,.dos{grid-template-columns:1fr} .rail .t{display:none} }
+
+@media (max-width:900px){ nav.top .marca{display:none} nav.top{justify-content:flex-end} }
+
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --paper:#121419; --surface:#1A1D24; --surface-2:#232730;
+  --ink:#E7E9ED; --ink-2:#B6BAC4; --muted:#8A8F9A;
+  --line:#2C313B; --line-2:#3B414D;
+  --accent:#9085E9; --accent-soft:#25233C;
+  --c1:#4b93e8; --c2:#e8703d; --c3:#4BBF95; --c4:#9a9ca3; --c5:#a18ee8; --c6:#e66a6a;
+  --good:#4BBF95; --good-soft:#123028; --warn:#D9A742; --warn-soft:#332916; --bad:#E07070; --bad-soft:#331D1D;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 22px rgba(0,0,0,.25);
+}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top" aria-label="Secciones">
+  <span class="marca">Predicción de devoluciones</span>
+  <a href="index.html">El problema</a><a href="camino.html" aria-current="page">El camino</a><a href="solucion.html">La solución</a><a href="evidencia.html">La evidencia</a>
+  <button class="tema" id="tema" type="button" aria-label="Cambiar entre modo claro y modo oscuro"></button>
+</nav>
+<header class="hero">
+  <p class="eyebrow">2 · El camino</p>
+  <h1>Cómo llegamos a este modelo</h1>
+  <p class="lead">No empezamos por el modelo final. Son ocho paradas, con la evidencia de cada decisión, entre un primer intento con 28 % de error y el 4 % actual. Las paradas 2 a 7 son el núcleo del argumento; la 1 da el punto de partida y la 8, los límites.</p>
+</header>
+
+<section class="card" aria-label="Recorrido">
+  <ol class="rail" id="rail"></ol>
+  <svg class="chart" id="termo" viewBox="0 0 720 200" role="img" aria-label="Error mensual del modelo candidato en cada etapa"></svg>
+  <p class="note">Error porcentual medio mensual del modelo candidato de cada etapa; la línea roja es el máximo comprometido (15 %). No es la misma medición repetida: cambian la variable objetivo y el periodo de prueba, y cada parada lo aclara.</p>
+</section>
+
+<div id="paradas">
+
+<section class="card parada" id="parada-1" hidden>
+  <h2><span class="paso">1</span>De dónde partimos</h2>
+  <p class="sub">El capstone compromete <b>aprendizaje supervisado</b>. Random Forest y XGBoost figuran como <i>baseline</i>, y el plan prevé un paso explícito de «ajuste final según resultados». El cliente entregó seis fuentes; lo primero fue hacer tratable el volumen.</p>
+  <div class="dos">
+    <div>
+      <div class="ctl"><label for="dias-bodega">Días que una unidad permanece en la misma bodega <span id="dv"></span></label><input type="range" id="dias-bodega" min="1" max="60" value="40"></div>
+      <p class="note" style="margin:0 0 6px">Cada cuadro es una fila del inventario diario:</p>
+      <div class="celdas" id="celdas"></div>
+      <p style="margin:12px 0 4px"><b>↓ se guarda como un solo registro</b></p>
+      <div class="mini" style="font-family:'IBM Plex Mono',monospace;font-size:12.5px">(imei, bodega, desde, hasta)</div>
+    </div>
+    <div class="kpis" style="grid-template-columns:1fr 1fr;align-content:start" id="comp"></div>
+  </div>
+  <details class="mas"><summary>Qué había que corregir antes de calcular nada</summary>
+    <ul style="margin:0;padding-left:20px">
+      <li>IMEI exportados como <code>="&lt;15 dígitos&gt;"</code>, que no cruzaban con nada.</li>
+      <li>El texto <code>"NULL"</code> contaba como valor válido.</li>
+      <li>Cuatro convenciones de fecha distintas: el 03/04 se leía como 4 de marzo.</li>
+      <li>Tres esquemas de despachos según el año, y la cabecera del inventario en filas distintas.</li>
+    </ul>
+  </details>
+</section>
+
+<section class="card parada" id="parada-2" hidden>
+  <h2><span class="paso">2</span>La variable que había que predecir no existía</h2>
+  <p class="sub">No hay ningún registro de devoluciones: hay despachos, inventario diario y ventas. La variable se fabricó, y la definición se corrigió dos veces contrastándola con el negocio. Elige una para ver en qué se diferencia.</p>
+  <div class="pills" id="defs" role="group" aria-label="Definición"></div>
+  <div class="tw"><table class="cmp" id="def-tabla"></table></div>
+  <h3 style="margin-top:18px">La misma serie, tres definiciones</h3>
+  <p class="sub" style="margin-bottom:8px">Devoluciones por mes entre enero de 2025 y junio de 2026. Con la definición 1, enero de 2025 cuenta <b id="e46"></b> devoluciones; con las del negocio, <b id="e960"></b> y <b id="e1439"></b>.</p>
+  <div class="pills" id="series-def" role="group" aria-label="Series"></div>
+  <svg class="chart" id="def-chart" viewBox="0 0 720 280" role="img" aria-label="Devoluciones mensuales según cada definición"></svg>
+  <details class="mas"><summary>La prueba del umbral: ¿de dónde sale el 60?</summary>
+    <p style="margin-top:0">Se barrieron umbrales de 30 a 150 días contra el retorno físico a bodega central, que es lo único observable de una devolución real.</p>
+    <svg class="chart" id="umbral" viewBox="0 0 720 240" role="img" aria-label="Precisión, cobertura y F1 por umbral"></svg>
+    <div class="callout aviso" id="umbral-texto"></div>
+  </details>
+</section>
+
+<section class="card parada" id="parada-3" hidden>
+  <h2><span class="paso">3</span>El primer intento falló</h2>
+  <p class="sub">Con esa primera variable se entrenó exactamente lo comprometido, Random Forest y XGBoost, contra cinco líneas base estadísticas. Cambia la métrica.</p>
+  <div class="pills" id="v1-m" role="group" aria-label="Métrica"></div>
+  <div id="v1-barras"></div>
+  <div class="callout aviso" id="v1-texto"></div>
+</section>
+
+<section class="card parada" id="parada-4" hidden>
+  <h2><span class="paso">4</span>Sospechar del dato, no del algoritmo</h2>
+  <p class="sub">En este punto había dos caminos. Elige uno.</p>
+  <div class="fork" id="fork">
+    <button type="button" data-o="a" aria-pressed="false"><b>Probar otro modelo</b>Cambiar de algoritmo, ajustar hiperparámetros, añadir variables.</button>
+    <button type="button" data-o="b" aria-pressed="false"><b>Revisar el dato</b>Contrastar la variable con algo que el negocio ya considera cierto.</button>
+  </div>
+  <div class="callout info" id="fork-texto" hidden></div>
+  <div id="dato" hidden>
+    <h3 style="margin-top:20px">Se contrastó con listados reales del área de planificación</h3>
+    <div class="grid3">
+      <div class="mini"><b>1 · Los días se cuentan desde el despacho</b>No desde que la unidad aparece en el inventario del local.</div>
+      <div class="mini"><b>2 · El reloj no se reinicia entre locales</b>Solo vuelve a cero si la unidad regresa a bodega central.</div>
+      <div class="mini"><b>3 · Es un flujo, no una foto</b>Cada unidad cuenta una sola vez, el mes en que cruza el umbral.</div>
+    </div>
+    <div class="kpis tres" style="margin-top:14px" id="cob"></div>
+    <h3 style="margin-top:6px">Efecto de la definición corregida</h3>
+    <div class="pills" id="efecto-m" role="group" aria-label="Medida"></div>
+    <div id="efecto"></div>
+    <div class="callout ok">La definición corregida ya no necesita el reporte de ventas, al que le faltaban siete meses de 2024: <b>2024 vuelve a ser utilizable</b>. Y como el vencimiento a 60 días se conoce el día del despacho, las unidades que vencerán el mes próximo <b>ya son contables hoy</b>: es el <i>grupo en riesgo</i>, que antes no existía.</div>
+    <details class="mas"><summary>Para quien pregunte por los 225 equipos</summary>
+      <p style="margin-top:0">La <b>cobertura</b> mide cuántos equipos del listado (<span id="d801"></span>) reproduce la definición: <span id="d799"></span>. Nuestro conjunto marca <span id="d1024"></span>, es decir, <span id="d225"></span> que el listado no trae, de modo que la precisión frente al listado es de <span id="dprec"></span>. El criterio con que el negocio armó el listado no consta en el repositorio.</p>
+    </details>
+  </div>
+</section>
+
+<section class="card parada" id="parada-5" hidden>
+  <h2><span class="paso">5</span>Los mismos modelos, con el dato corregido</h2>
+  <p class="sub">No se cambió de familia ni se abandonó nada: se volvieron a entrenar <b>exactamente</b> los dos algoritmos comprometidos, sobre la variable corregida.</p>
+  <div class="pills" id="ad-m" role="group" aria-label="Mostrar"></div>
+  <div id="ad-barras"></div>
+  <div class="callout ok"><b>Los dos cumplen el criterio por sí solos.</b> Queda demostrado que lo que fallaba era el dato, no el algoritmo, y que el objetivo 3 (Random Forest y XGBoost) está cubierto con independencia de lo que venga después.</div>
+  <p class="note">Precisión necesaria: las dos columnas no son la misma medición repetida. «Antes» es marzo–junio de 2026 con la definición inicial; «después», enero–julio de 2026 con la del negocio. Como cambió la variable, la tabla compara el <b>pipeline completo</b>, no el algoritmo aislado.</p>
+</section>
+
+<section class="card parada" id="parada-6" hidden>
+  <h2><span class="paso">6</span>Una sola variable manda: de ahí sale el modelo</h2>
+  <p class="sub">El capstone incorpora SHAP para explicar los modelos. Aplicado a los dos ya corregidos, no devolvió una explicación: devolvió un hallazgo sobre la estructura del problema.</p>
+  <div class="pills" id="shap-m" role="group" aria-label="Modelo"></div>
+  <div id="shap"></div>
+  <div class="callout info" id="shap-texto"></div>
+  <h3 style="margin-top:18px">Si una variable es una exposición, el modelo que corresponde es otro</h3>
+  <div class="formula" aria-label="Fórmula del modelo"><span class="chipf">devoluciones esperadas</span><span class="op">=</span><span class="chipf" style="border-color:var(--c5)">unidades en riesgo</span><span class="op">×</span><span class="chipf" style="border-color:var(--c3)">tasa de la marca</span></div>
+  <p class="sub">Es una regresión de Poisson con <i>offset</i> de exposición: la forma estándar de modelar conteos cuando los casos dependen de cuántos estaban expuestos, como siniestros por póliza-año en seguros o casos por persona-año en epidemiología. <b>No se eligió por preferencia: la dictó la estructura que SHAP reveló.</b> Una tasa por marca, aprendida por máxima verosimilitud, frente a seiscientos árboles.</p>
+  <div class="callout ok">Comprobado contra el GLM de Poisson de <code>statsmodels</code>: correlación <b>0,9991</b> entre ambas predicciones.</div>
+</section>
+
+<section class="card parada" id="parada-7" hidden>
+  <h2><span class="paso">7</span>Elegir sobre validación y guardar un tramo intacto</h2>
+  <p class="sub">La selección entre modelos, la ventana de 9 meses y el peso k = 300 se decidieron sobre julio–diciembre de 2025, no sobre la prueba.</p>
+  <h3>Validación (jul–dic 2025)</h3>
+  <div class="tw"><table id="val-tabla"></table></div>
+  <div class="callout info"><b>Aquí queda tomada la decisión entre modelos.</b> La ventana y k se fijaron también sobre validación, el 28 de septiembre.</div>
+  <div class="callout aviso"><b>Una precisión sobre la prueba.</b> Enero–julio de 2026 ya se había observado como prueba en ciclos anteriores del proyecto (el primer modelo y el modelo corregido), así que no es un conjunto virgen. Lo realmente intacto son <b>agosto y septiembre</b>: el cliente los entregó el 5 de octubre, cuando todo estaba fijado.</div>
+  <div class="candado" id="candado" style="margin-top:16px">
+    <p style="margin:0 0 10px">🔒 Agosto y septiembre de 2026 todavía no se han mirado.</p>
+    <button class="btn pri" id="abrir" type="button">Abrir agosto y septiembre</button>
+  </div>
+  <div id="prueba" hidden>
+    <h3 style="margin-top:16px">El tramo intacto</h3>
+    <div class="tw"><table id="holdout-tabla"></table></div>
+    <h3 style="margin-top:16px">Prueba completa (ene–sep 2026)</h3>
+    <div class="pills" id="meses-p" role="group" aria-label="Meses de prueba"></div>
+    <div class="tw"><table id="prueba-tabla"></table></div>
+    <div class="callout ok" id="prueba-texto"></div>
+  </div>
+</section>
+
+<section class="card parada" id="parada-8" hidden>
+  <h2><span class="paso">8</span>Lo que el modelo no resuelve</h2>
+  <p class="sub">Julio concentra 193 de las 369 unidades de error del periodo. HONOR pone 151 de esas 193. Mueve la tasa a la que se comportó el lote que lo explica.</p>
+  <div class="ctl"><label for="tasa600">Tasa a la que se comportó el lote nuevo (Honor 600E) <span id="t600v"></span></label><input type="range" id="tasa600" min="53" max="100" step="1"></div>
+  <div class="kpis" id="honor-k"></div>
+  <div class="callout aviso" id="honor-texto"></div>
+  <h3 style="margin-top:18px">Tres meses, la misma causa</h3>
+  <div class="tw"><table id="causa-tabla"></table></div>
+  <div class="callout info"><b>El panel ve la marca, no el producto.</b> Dentro de «Honor» había dos cosas distintas: un catálogo que rota con normalidad y un lanzamiento que no se movió. Eso no se arregla con otro algoritmo; se arregla con atributos que persisten entre generaciones: fecha de lanzamiento al catálogo, precio y gama, y calendario de acciones comerciales.</div>
+</section>
+
+</div>
+
+<div class="mandos">
+  <button class="btn" id="ant" type="button">← Anterior</button>
+  <span class="note" id="pos" style="align-self:center"></span>
+  <button class="btn pri" id="sig" type="button">Siguiente →</button>
+</div>
+<div class="pie"><a href="index.html">← El problema</a><a class="sig" href="solucion.html">Ver la solución →</a></div>
+<footer>Generado por <code>scripts/generar_defensa.py</code> a partir del panel marca × mes, el modelo guardado y los reportes del repositorio. Grupo 5 · Maestría en IA Aplicada · UDLA.</footer>
+</div>
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const fmt = (n, d = 0) => n.toLocaleString('de-DE', {minimumFractionDigits: d, maximumFractionDigits: d});
+const pct = (n, d = 1) => fmt(n, d) + ' %';
+const sgn = (n, d = 0) => (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n), d);
+const MES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+const etiqueta = iso => { const [y, m] = iso.split('-'); return MES[+m - 1] + ' ' + y; };
+const corta = iso => { const [y, m] = iso.split('-'); return MES[+m - 1] + (m === '01' ? ' ' + y.slice(2) : ''); };
+
+/* Todo lo que depende del ancho se registra aquí y se redibuja al cambiar el tamaño. */
+const redibujables = [];
+function registrar(fn) { redibujables.push(fn); fn(); }
+let _t; addEventListener('resize', () => { clearTimeout(_t); _t = setTimeout(() => redibujables.forEach(f => f()), 120); });
+
+const ancho = el => Math.max(300, Math.round(el.getBoundingClientRect().width || el.parentElement.clientWidth));
+function escala(max) {
+  for (const base of [1, 2, 5, 10, 20, 50, 100, 200, 250, 500, 1000, 2000, 5000]) {
+    if (max / base <= 6) return [Math.ceil(max / base) * base, base];
+  }
+  return [max, max / 5];
+}
+const corridas = a => {            // tramos contiguos sin valores nulos
+  const r = []; let c = [];
+  a.forEach((v, i) => { if (v == null) { if (c.length) r.push(c); c = []; } else c.push(i); });
+  if (c.length) r.push(c); return r;
+};
+
+/* Lineas con puntos, bandas, linea de referencia y mes seleccionable. */
+function lineas(el, c) {
+  const W = ancho(el), H = c.alto || (W < 520 ? 240 : 300), L = c.izq || 44, R = 12, T = 14, B = 30, n = c.etiquetas.length;
+  const vs = [];
+  c.series.forEach(s => s.valores.forEach(v => v != null && vs.push(v)));
+  (c.bandas || []).forEach(b => b.hi.forEach(v => v != null && vs.push(v)));
+  if (c.ref) vs.push(c.ref.y);
+  const [tope, paso] = escala(Math.max(...vs) * 1.06);
+  const x = i => L + (W - L - R) * (i + .5) / n, y = v => T + (H - T - B) * (1 - v / tope);
+  const yf = c.yfmt || (v => fmt(v));
+  let s = '';
+  for (let v = 0; v <= tope + 1e-9; v += paso)
+    s += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 7}" y="${y(v) + 3.5}" text-anchor="end">${yf(v)}</text>`;
+  const w = (W - L - R) / n;
+  if (c.sel != null) s += `<rect class="sel" x="${x(c.sel) - w / 2}" y="${T}" width="${w}" height="${H - T - B}" rx="6"/>`;
+  (c.bandas || []).forEach(b => corridas(b.hi).forEach(r => {
+    const up = r.map(i => `${x(i)},${y(b.hi[i])}`), dn = r.map(i => `${x(i)},${y(b.lo[i])}`).reverse();
+    s += `<polygon class="band ${b.cls}" points="${up.concat(dn).join(' ')}"/>`;
+  }));
+  if (c.ref) s += `<line class="ref" x1="${L}" x2="${W - R}" y1="${y(c.ref.y)}" y2="${y(c.ref.y)}"/><text class="reft" x="${W - R}" y="${y(c.ref.y) - 5}" text-anchor="end">${c.ref.texto}</text>`;
+  c.series.forEach(se => {
+    corridas(se.valores).forEach(r => {
+      s += `<polyline class="ln l${se.k} ${se.trazo || ''}" points="${r.map(i => `${x(i)},${y(se.valores[i])}`).join(' ')}"/>`;
+    });
+    if (se.puntos !== false) se.valores.forEach((v, i) => {
+      if (v == null) return;
+      const r = i === c.sel ? 5.5 : 3.6;
+      s += `<circle class="pt l${se.k} ${se.hueco && se.hueco.includes(i) ? 'hueco' : 'f' + se.k}" cx="${x(i)}" cy="${y(v)}" r="${r}"/>`;
+    });
+  });
+  const salto = Math.ceil(n / Math.max(1, Math.floor((W - L) / 44)));
+  c.etiquetas.forEach((e, i) => {
+    if (i % salto === 0 || i === c.sel) s += `<text class="xl ${i === c.sel ? 'on' : ''}" x="${x(i)}" y="${H - 9}" text-anchor="middle">${e}</text>`;
+    s += `<rect class="hit" data-i="${i}" x="${x(i) - w / 2}" y="${T}" width="${w}" height="${H - T}"><title>${c.titulo ? c.titulo(i) : e}</title></rect>`;
+  });
+  el.setAttribute('viewBox', `0 0 ${W} ${H}`); el.innerHTML = s;
+  if (c.alSel) $$('.hit', el).forEach(r => r.onclick = () => c.alSel(+r.dataset.i));
+}
+
+/* Columnas con una linea opcional encima. */
+function columnas(el, c) {
+  const W = ancho(el), H = c.alto || (W < 520 ? 220 : 270), L = 44, R = 10, T = 14, B = 30, n = c.etiquetas.length;
+  const vs = c.valores.concat(c.linea ? c.linea.valores : []).concat(c.ref ? [c.ref.y] : []).filter(v => v != null);
+  const [tope, paso] = escala(Math.max(...vs) * 1.06);
+  const x = i => L + (W - L - R) * (i + .5) / n, y = v => T + (H - T - B) * (1 - v / tope), w = (W - L - R) / n;
+  let s = '';
+  for (let v = 0; v <= tope + 1e-9; v += paso)
+    s += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 7}" y="${y(v) + 3.5}" text-anchor="end">${fmt(v)}</text>`;
+  c.valores.forEach((v, i) => {
+    const sel = c.sel === i;
+    s += `<rect class="colb f${c.k || 1}" x="${x(i) - w * .36}" y="${y(v)}" width="${w * .72}" height="${y(0) - y(v)}" rx="2" opacity="${c.sel == null || sel ? .92 : .45}"/>`;
+  });
+  if (c.linea) s += `<polyline class="ln l${c.linea.k} ${c.linea.trazo || ''}" points="${c.linea.valores.map((v, i) => `${x(i)},${y(v)}`).join(' ')}"/>`;
+  if (c.ref) s += `<line class="ref" x1="${L}" x2="${W - R}" y1="${y(c.ref.y)}" y2="${y(c.ref.y)}"/><text class="reft" x="${W - R}" y="${y(c.ref.y) - 5}" text-anchor="end">${c.ref.texto}</text>`;
+  if (c.etiquetasValor) c.valores.forEach((v, i) => { s += `<text x="${x(i)}" y="${y(v) - 6}" text-anchor="middle" style="fill:var(--ink);font-weight:600">${c.etiquetasValor(v)}</text>`; });
+  const salto = Math.ceil(n / Math.max(1, Math.floor((W - L) / 40)));
+  c.etiquetas.forEach((e, i) => {
+    if (i % salto === 0) s += `<text class="xl" x="${x(i)}" y="${H - 9}" text-anchor="middle">${e}</text>`;
+    s += `<rect class="hit" data-i="${i}" x="${x(i) - w / 2}" y="${T}" width="${w}" height="${H - T}"><title>${c.titulo ? c.titulo(i) : e}</title></rect>`;
+  });
+  el.setAttribute('viewBox', `0 0 ${W} ${H}`); el.innerHTML = s;
+  if (c.alSel) $$('.hit', el).forEach(r => r.onclick = () => c.alSel(+r.dataset.i));
+}
+
+/* Barras horizontales en HTML. Con `divergente` se centran en cero. */
+function barras(el, items, o = {}) {
+  let max = o.max ?? Math.max(...items.map(i => Math.abs(i.valor)));
+  if (o.ref != null) max = Math.max(max, o.ref * 1.12);   // la referencia siempre cabe en la escala
+  el.className = 'bars';
+  el.innerHTML = items.map(i => {
+    const a = Math.abs(i.valor) / max * (o.divergente ? 50 : 100);
+    const pos = o.divergente ? (i.valor >= 0 ? `left:50%;width:${a}%` : `left:${50 - a}%;width:${a}%`) : `left:0;width:${a}%`;
+    const ref = o.ref != null ? `<span class="refl" style="left:${o.ref / max * 100}%"></span>` : '';
+    return `<div class="bar"><span class="nom" title="${i.nombre}">${i.nombre}</span>
+      <span class="pista">${o.divergente ? '<span class="cero"></span>' : ''}<span class="rel" style="${pos};background:var(--c${i.k || 1})"></span>${ref}</span>
+      <span class="val">${i.texto ?? fmt(i.valor, o.dec || 0)}</span></div>`;
+  }).join('');
+}
+
+function pastillas(el, etiquetas, sel, alSel) {
+  el.innerHTML = etiquetas.map((e, i) => `<button type="button" data-i="${i}" aria-pressed="${i === sel}">${e}</button>`).join('');
+  $$('button', el).forEach(b => b.onclick = () => alSel(+b.dataset.i));
+}
+
+/* Modo claro / oscuro: respeta la preferencia del sistema hasta que la persona elige. */
+(function () {
+  const raiz = document.documentElement, btn = $('#tema'), sis = matchMedia('(prefers-color-scheme: dark)');
+  const actual = () => raiz.getAttribute('data-theme') || (sis.matches ? 'dark' : 'light');
+  const pintar = () => { const t = actual(); btn.textContent = t === 'dark' ? '☀ Claro' : '☾ Oscuro'; btn.setAttribute('aria-pressed', t === 'dark'); };
+  btn.onclick = () => {
+    const n = actual() === 'dark' ? 'light' : 'dark';
+    raiz.setAttribute('data-theme', n);
+    try { localStorage.setItem('tema', n); } catch (e) {}
+    pintar();
+  };
+  if (sis.addEventListener) sis.addEventListener('change', () => { if (!raiz.getAttribute('data-theme')) pintar(); });
+  pintar();
+})();
+
+</script>
+<script>
+const D = {"vol": {"inventario": 14007314, "despachos": 6383678, "estadias": 775024, "periodos": 314091, "con_despacho": 258299, "eventos": 39798}, "umbral": [{"dias": 30, "marcadas": 34777, "aciertos": 1106, "precision": 0.032, "cobertura": 0.771, "f1": 0.061}, {"dias": 45, "marcadas": 21767, "aciertos": 942, "precision": 0.043, "cobertura": 0.656, "f1": 0.081}, {"dias": 60, "marcadas": 14590, "aciertos": 892, "precision": 0.061, "cobertura": 0.622, "f1": 0.111}, {"dias": 75, "marcadas": 9672, "aciertos": 763, "precision": 0.079, "cobertura": 0.532, "f1": 0.137}, {"dias": 90, "marcadas": 7130, "aciertos": 502, "precision": 0.07, "cobertura": 0.35, "f1": 0.117}, {"dias": 105, "marcadas": 5756, "aciertos": 298, "precision": 0.052, "cobertura": 0.208, "f1": 0.083}, {"dias": 120, "marcadas": 4875, "aciertos": 202, "precision": 0.041, "cobertura": 0.141, "f1": 0.064}, {"dias": 135, "marcadas": 4309, "aciertos": 154, "precision": 0.036, "cobertura": 0.107, "f1": 0.054}, {"dias": 150, "marcadas": 3971, "aciertos": 127, "precision": 0.032, "cobertura": 0.089, "f1": 0.047}], "v1": {"wmape": [{"modelo": "XGBoost Poisson", "v": 0.4006}, {"modelo": "naive (y[t-1])", "v": 0.4525}, {"modelo": "media móvil 3m", "v": 0.4892}, {"modelo": "Random Forest", "v": 0.7651}, {"modelo": "media histórica", "v": 0.9003}, {"modelo": "cero constante", "v": 1.0}, {"modelo": "Croston/SBA", "v": 1.107}], "mape": [{"modelo": "naive (y[t-1])", "mape": 21.2, "cumple": "no"}, {"modelo": "media móvil 3m", "mape": 22.9, "cumple": "no"}, {"modelo": "XGBoost Poisson", "mape": 28.3, "cumple": "no"}, {"modelo": "Random Forest", "mape": 76.4, "cumple": "no"}, {"modelo": "media histórica", "mape": 86.8, "cumple": "no"}, {"modelo": "cero constante", "mape": 100.0, "cumple": "no"}, {"modelo": "Croston/SBA", "mape": 111.0, "cumple": "no"}]}, "def": {"meses": ["2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06"], "d1": [46, 59, 753, 1646, 583, 1018, 1123, 838, 1656, 1196, 723, 659, 245, 395, 382, 647, 557, 456], "d2": [960, 845, 1163, 1063, 879, 1700, 1707, 1062, 913, 2146, 1001, 1112, 357, 371, 546, 706, 849, 534], "d3": [1439, 1304, 1381, 1686, 1217, 2244, 1582, 1395, 2098, 1963, 1274, 992, 335, 478, 732, 882, 1036, 725], "tot": {"d1": 12982, "d2": 17914, "d3": 22763}}, "cont2": {"aciertos": 1409, "total": 1477, "capturados": 308, "listado": 367}, "cont3": {"listado": 801, "nuestro": 1024, "coinciden": 799, "solo_nuestro": 225, "cobertura": 0.9975}, "ad": [{"modelo": "Random Forest", "antes": 76.4, "despues": 5.3}, {"modelo": "XGBoost Poisson", "antes": 28.3, "despues": 10.3}], "termo": [28.3, 5.3, 5.0, 4.1], "shap": [{"v": "en_riesgo", "vals": [70.6, 94.2]}, {"v": "desp_lag2", "vals": [16.5, 0.9]}, {"v": "marca", "vals": [2.8, 0.7]}, {"v": "desp_lag1", "vals": [2.6, 0.3]}, {"v": "dev_lag1", "vals": [2.1, 0.8]}, {"v": "dev_mm3", "vals": [1.6, 0.5]}, {"v": "dev_lag2", "vals": [1.5, 0.3]}], "dec": {"val": [{"modelo": "Tasa de conversión", "mape": 6.0, "wmape": 0.105}, {"modelo": "Random Forest", "mape": 10.7, "wmape": 0.169}, {"modelo": "XGBoost Poisson", "mape": 11.8, "wmape": 0.189}], "p7": [{"modelo": "Tasa de conversión", "mape": 5.0}, {"modelo": "Random Forest", "mape": 5.3}, {"modelo": "XGBoost Poisson", "mape": 10.3}], "p9": [{"modelo": "Tasa de conversión", "mape": 4.1}, {"modelo": "Random Forest", "mape": 5.2}, {"modelo": "XGBoost Poisson", "mape": 9.5}]}, "honor": {"en_riesgo": 831, "prediccion": 492.0387279176118, "tasa_modelo": 0.5921043657251647, "u600": 495, "cumplen600": 465, "tasa_real_600": 0.9393939393939394, "resto_unid": 336, "resto_cumplen": 178, "resto_tasa": 0.5297619047619048, "real": 643}, "causas": [{"mes": "Julio", "modelo": "HONOR 600E 8+512GB 5G (gris y dorado)", "unidades": 495, "tasa": 0.9393939393939394}, {"mes": "Agosto", "modelo": "MOTOROLA EDGE 70 FUSION 8+256GB 5G AZUL", "unidades": 311, "tasa": 0.871}, {"mes": "Agosto", "modelo": "XIAOMI 17T 12+512GB BLACK", "unidades": 125, "tasa": 0.944}, {"mes": "Septiembre", "modelo": "IPHONE 17 PRO 256GB SILVER", "unidades": 171, "tasa": 0.988}], "holdout": [{"mes": "Agosto", "predicho": 1090.0, "real": 1100.0, "error_pct": -0.9}, {"mes": "Septiembre", "predicho": 892.0, "real": 899.0, "error_pct": -0.8}]};
+const PARADAS = ['Punto de partida', 'La variable', 'Primer intento', 'Sospechar del dato', 'Datos corregidos', 'Una variable manda', 'Elegir sin mirar', 'Los límites'];
+const TERMO = {3: 0, 5: 1, 7: 3};
+let cur = 1;
+
+/* ---------- recorrido ---------- */
+function rail() {
+  $('#rail').innerHTML = PARADAS.map((t, i) => `<li><button type="button" data-i="${i + 1}" ${i + 1 === cur ? 'aria-current="step"' : ''} class="${i + 1 < cur ? 'hecho' : ''}"><span class="n">${i + 1}</span><span class="t">${t}</span></button></li>`).join('');
+  $$('#rail button').forEach(b => b.onclick = () => ir(+b.dataset.i));
+}
+function termo() {
+  columnas($('#termo'), {
+    etiquetas: ['Primer intento', 'Datos corregidos', 'Modelo de tasa (7 m)', 'Modelo de tasa (9 m)'], valores: D.termo, k: 2, alto: 200,
+    sel: TERMO[cur] ?? null, ref: {y: 15, texto: 'máximo comprometido 15 %'}, etiquetasValor: v => pct(v, 1), titulo: i => ['Primer intento (XGBoost)', 'Mismos modelos, dato corregido (Random Forest)', 'Modelo de tasa, 7 meses', 'Modelo de tasa, 9 meses'][i]
+  });
+}
+function ir(n, desplazar = true) {
+  cur = Math.max(1, Math.min(8, n));
+  $$('.parada').forEach((s, i) => s.hidden = i + 1 !== cur);
+  rail();
+  $('#ant').disabled = cur === 1;
+  $('#sig').textContent = cur === 8 ? 'Ver la solución →' : 'Siguiente →';
+  $('#pos').textContent = `Parada ${cur} de 8 · ${PARADAS[cur - 1]}`;
+  try { history.replaceState(null, '', '#parada-' + cur); } catch (e) {}
+  redibujables.forEach(f => f());
+  if (desplazar) window.scrollTo({top: Math.max(0, $('#rail').getBoundingClientRect().top + scrollY - 70), behavior: 'smooth'});
+}
+$('#ant').onclick = () => ir(cur - 1);
+$('#sig').onclick = () => cur === 8 ? (location.href = 'solucion.html') : ir(cur + 1);
+addEventListener('keydown', e => {
+  if (/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+  if (e.key === 'ArrowRight') ir(cur + 1); else if (e.key === 'ArrowLeft') ir(cur - 1);
+});
+redibujables.push(termo);
+
+/* ---------- 1 · datos ---------- */
+$('#comp').innerHTML = `
+  <div class="kpi"><p class="l">Filas de inventario</p><p class="v">${fmt(D.vol.inventario / 1e6, 1)} M</p></div>
+  <div class="kpi"><p class="l">Estadías</p><p class="v">${fmt(D.vol.estadias)}</p></div>
+  <div class="kpi"><p class="l">Compresión</p><p class="v">${fmt(D.vol.inventario / D.vol.estadias, 1)}×</p></div>
+  <div class="kpi"><p class="l">Despachados que nunca aparecen en el inventario</p><p class="v">2,8 %</p></div>`;
+function comp() {
+  const n = +$('#dias-bodega').value;
+  $('#dv').textContent = n; $('#celdas').innerHTML = '<i></i>'.repeat(n);
+}
+$('#dias-bodega').oninput = comp; comp();
+
+/* ---------- 2 · la variable ---------- */
+const DEF = [
+  {n: 'Definición 1 · desde el despacho', cuad: 'cuadernos 01 y 02', como: 'La unidad llega a un local y cumple 60 días ahí sin venderse ni volver a central.', fuentes: 'Despachos, inventario y ventas', contraste: 'Ninguno', meses: '18', eventos: fmt(D.def.tot.d1), nota: 'Depende del reporte de ventas, al que le faltan siete meses de 2024. Con ella se entrenó el primer modelo.'},
+  {n: 'Definición 2 · antigüedad en la bodega', cuad: 'cuaderno 03', como: 'Días que lleva la unidad en la misma bodega del distribuidor.', fuentes: 'Solo inventario', contraste: `95,4 % de coincidencia global (${fmt(D.cont2.aciertos)} de ${fmt(D.cont2.total)} equipos Samsung); capturó ${fmt(D.cont2.capturados)} de ${fmt(D.cont2.listado)} del listado (${fmt(D.cont2.capturados / D.cont2.listado * 100, 1)} %)`, meses: '–', eventos: fmt(D.def.tot.d2) + ' (ene 2025–jun 2026)', nota: 'Reproduce el criterio del negocio, pero reinicia el reloj al cambiar de bodega y no distingue el despacho.'},
+  {n: 'Definición 3 · permanencia desde el despacho', cuad: 'cuaderno 04', como: '60 días desde el despacho; el reloj no se reinicia entre locales del canal; cada unidad cuenta una vez (flujo).', fuentes: 'Despachos e inventario', contraste: `Cobertura ${fmt(D.cont3.cobertura * 100, 2)} % (${fmt(D.cont3.coinciden)} de ${fmt(D.cont3.listado)} equipos del listado)`, meses: '31', eventos: fmt(D.vol.eventos), nota: 'Es la definición final. No usa ventas, así que 2024 vuelve a ser utilizable.'},
+];
+let defSel = 2;
+function defs() {
+  pastillas($('#defs'), DEF.map(d => d.n), defSel, i => { defSel = i; defs(); });
+  const fila = (t, k, num) => `<tr><td><b>${t}</b></td>${DEF.map((d, i) => `<td class="${num ? 'num' : ''}" style="${i === defSel ? 'background:var(--accent-soft)' : ''}">${d[k]}</td>`).join('')}</tr>`;
+  $('#def-tabla').innerHTML = `<thead><tr><th></th>${DEF.map((d, i) => `<th style="text-align:left;${i === defSel ? 'background:var(--accent-soft)' : ''}">${d.n.split(' · ')[0]}<br><span class="note" style="font-weight:400">${d.cuad}</span></th>`).join('')}</tr></thead><tbody>
+    ${fila('Cómo cuenta', 'como')}${fila('Fuentes', 'fuentes')}${fila('Contraste con el negocio', 'contraste')}${fila('Meses de historia', 'meses', true)}${fila('Eventos', 'eventos', true)}${fila('Limitación', 'nota')}</tbody>`;
+}
+defs();
+$('#e46').textContent = fmt(D.def.d1[0]); $('#e960').textContent = fmt(D.def.d2[0]); $('#e1439').textContent = fmt(D.def.d3[0]);
+const SD = [['Definición 1', 'd1', 4, 'dash'], ['Definición 2', 'd2', 5, 'dash'], ['Definición 3 (final)', 'd3', 3, '']];
+const actD = {d1: true, d2: true, d3: true};
+function serDef() {
+  $('#series-def').innerHTML = SD.map(s => `<button class="chip ser" type="button" data-k="${s[1]}" aria-pressed="${actD[s[1]]}" style="color:var(--c${s[2]})"><span class="sw"></span><span style="color:var(--ink-2)">${s[0]}</span></button>`).join('');
+  $$('#series-def .chip').forEach(b => b.onclick = () => { actD[b.dataset.k] = !actD[b.dataset.k]; if (!Object.values(actD).some(Boolean)) actD[b.dataset.k] = true; serDef(); redibujables.forEach(f => f()); });
+}
+serDef();
+redibujables.push(() => { if ($('#def-chart').offsetParent) lineas($('#def-chart'), {
+  etiquetas: D.def.meses.map(corta),
+  series: SD.filter(s => actD[s[1]]).map(s => ({valores: D.def[s[1]], k: s[2], trazo: s[3], puntos: s[1] === 'd3'})),
+  titulo: i => `${etiqueta(D.def.meses[i])}: ` + SD.filter(s => actD[s[1]]).map(s => `${s[0]} ${fmt(D.def[s[1]][i])}`).join(' · ')
+}); });
+redibujables.push(() => { if ($('#umbral').offsetParent) lineas($('#umbral'), {
+  etiquetas: D.umbral.map(r => r.dias + ' d'), yfmt: v => v + ' %', alto: 240,
+  series: [{valores: D.umbral.map(r => r.precision * 100), k: 5, trazo: 'dash'}, {valores: D.umbral.map(r => r.cobertura * 100), k: 3, trazo: 'dash'}, {valores: D.umbral.map(r => r.f1 * 100), k: 2}],
+  sel: D.umbral.findIndex(r => r.f1 === Math.max(...D.umbral.map(x => x.f1))),
+  titulo: i => `${D.umbral[i].dias} días: precisión ${fmt(D.umbral[i].precision * 100, 1)} % · cobertura ${fmt(D.umbral[i].cobertura * 100, 1)} % · F1 ${fmt(D.umbral[i].f1, 3)}`
+}); });
+{
+  const mx = D.umbral.reduce((a, r) => r.f1 > a.f1 ? r : a), r60 = D.umbral.find(r => r.dias === 60);
+  $('#umbral-texto').innerHTML = `<b>Este barrido no fija el 60.</b> El F1 máximo está en ${mx.dias} días (${fmt(mx.f1, 3)}); a 60 días vale ${fmt(r60.f1, 3)}, y la precisión no pasa del ${fmt(Math.max(...D.umbral.map(r => r.precision)) * 100)} % en ningún umbral. El retorno físico a central es raro: la mayoría de las unidades paradas no vuelve, se queda en el canal. Por eso no sirve de vara para el umbral. Los <b>60 días son la regla del negocio</b>, y es esa regla la que se contrasta con sus listados (parada 4).`;
+}
+
+/* ---------- 3 · primer intento ---------- */
+let m1 = 0;
+function v1() {
+  pastillas($('#v1-m'), ['WMAPE (marca × mes)', 'Error mensual del volumen (MAPE)'], m1, i => { m1 = i; v1(); });
+  const col = m => m === 'Random Forest' ? 6 : m === 'XGBoost Poisson' ? 1 : m.startsWith('naive') ? 5 : 4;
+  const it = (m1 === 0 ? D.v1.wmape.map(r => ({nombre: r.modelo, valor: r.v, texto: fmt(r.v, 3)})) : D.v1.mape.map(r => ({nombre: r.modelo, valor: r.mape, texto: pct(r.mape, 1)})))
+    .map(r => ({...r, k: col(r.nombre)})).sort((a, b) => a.valor - b.valor);
+  barras($('#v1-barras'), it, {max: Math.max(...it.map(r => r.valor)) * 1.1, ref: m1 === 1 ? 15 : null});
+  const g = n => (m1 === 0 ? D.v1.wmape.find(r => r.modelo === n).v : D.v1.mape.find(r => r.modelo === n).mape);
+  $('#v1-texto').innerHTML = m1 === 1
+    ? `<b>Ninguno cumple el 15 %.</b> El mejor modelo, XGBoost, queda en ${pct(g('XGBoost Poisson'), 1)}, y repetir el mes anterior lo supera (${pct(g('naive (y[t-1])'), 1)}). Random Forest llega a ${pct(g('Random Forest'), 1)}.`
+    : `<b>Random Forest pierde contra repetir el mes anterior</b> (${fmt(g('Random Forest'), 3)} frente a ${fmt(g('naive (y[t-1])'), 3)}). Un ensamble que no le gana al naive es una señal: el problema rara vez está en el ensamble.`;
+}
+v1();
+
+/* ---------- 4 · sospechar del dato ---------- */
+const FORK = {
+  a: '<b>Es lo que haría cualquiera por reflejo.</b> Pero Random Forest perdió contra repetir el mes anterior, y un algoritmo distinto heredaría el mismo dato. Cuando un ensamble pierde contra el naive, el problema suele estar antes del ensamble. Prueba la otra opción.',
+  b: '<b>Es lo que se hizo.</b> Se pidieron listados reales al área de planificación y se contrastó equipo por equipo. La definición inicial fallaba en tres reglas.',
+};
+$$('#fork button').forEach(b => b.onclick = () => {
+  $$('#fork button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  const t = $('#fork-texto'); t.hidden = false; t.innerHTML = FORK[b.dataset.o];
+  $('#dato').hidden = b.dataset.o !== 'b';
+  redibujables.forEach(f => f());
+});
+$('#cob').innerHTML = `
+  <div class="kpi"><p class="l">Cobertura del listado</p><p class="v" style="color:var(--good)">${fmt(D.cont3.cobertura * 100, 2)} %</p><p class="n">${fmt(D.cont3.coinciden)} de ${fmt(D.cont3.listado)} equipos</p></div>
+  <div class="kpi"><p class="l">Contraste anterior (definición 2)</p><p class="v">${fmt(D.cont2.capturados / D.cont2.listado * 100, 1)} %</p><p class="n">${fmt(D.cont2.capturados)} de ${fmt(D.cont2.listado)} del listado Samsung</p></div>
+  <div class="kpi"><p class="l">Sin contraste (definición 1)</p><p class="v" style="color:var(--bad)">ninguno</p><p class="n">se había construido sin validar</p></div>`;
+let ef = 0;
+function efecto() {
+  const M = [['Eventos en la serie', D.def.tot.d1, D.vol.eventos, v => fmt(v)], ['Meses de historia', 18, 31, v => fmt(v)]];
+  pastillas($('#efecto-m'), M.map(m => m[0]), ef, i => { ef = i; efecto(); });
+  const [, a, b, f] = M[ef];
+  barras($('#efecto'), [{nombre: 'Definición 1', valor: a, texto: f(a), k: 6}, {nombre: 'Definición final', valor: b, texto: f(b), k: 3}], {max: b * 1.05});
+}
+efecto();
+$('#d801').textContent = fmt(D.cont3.listado); $('#d799').textContent = fmt(D.cont3.coinciden); $('#d1024').textContent = fmt(D.cont3.nuestro);
+$('#d225').textContent = fmt(D.cont3.solo_nuestro); $('#dprec').textContent = pct(D.cont3.coinciden / D.cont3.nuestro * 100, 0);
+
+/* ---------- 5 · datos corregidos ---------- */
+let adm = 0;
+function ad() {
+  pastillas($('#ad-m'), ['Antes', 'Después', 'Ambos'], adm, i => { adm = i; ad(); });
+  const it = [];
+  D.ad.forEach(r => {
+    if (adm !== 1) it.push({nombre: r.modelo + ' · antes', valor: r.antes, texto: pct(r.antes, 1), k: 6});
+    if (adm !== 0) it.push({nombre: r.modelo + ' · después', valor: r.despues, texto: pct(r.despues, 1), k: 3});
+  });
+  barras($('#ad-barras'), it, {max: Math.max(...D.ad.map(r => r.antes)) * 1.05, ref: 15});
+}
+ad();
+
+/* ---------- 6 · SHAP ---------- */
+let sm = 0;
+function shap() {
+  const nombres = {en_riesgo: 'Unidades en riesgo', desp_lag2: 'Despachos de hace 2 meses', marca: 'Marca', desp_lag1: 'Despachos del mes anterior', dev_lag1: 'Devoluciones del mes anterior', dev_mm3: 'Promedio de 3 meses', dev_lag2: 'Devoluciones de hace 2 meses'};
+  pastillas($('#shap-m'), ['XGBoost', 'Random Forest'], sm, i => { sm = i; shap(); });
+  barras($('#shap'), D.shap.map(r => ({nombre: nombres[r.v] || r.v, valor: r.vals[sm], texto: pct(r.vals[sm], 1), k: r.v === 'en_riesgo' ? 5 : 4})), {max: 100});
+  $('#shap-texto').innerHTML = `<b>${fmt(D.shap[0].vals[sm], 1)} % de la contribución está en una sola variable.</b> Dos familias de modelos, dos análisis independientes, el mismo veredicto. La propuesta justificaba los ensambles por «múltiples variables explicativas y relaciones no lineales»: SHAP mostró que esa condición no se cumple. No hay muchas variables: hay una, y la relación es multiplicativa. Fue el propio instrumento que la propuesta mandaba usar el que lo detectó.`;
+}
+shap();
+
+/* ---------- 7 · elegir sin mirar ---------- */
+const fila = (r, extra) => `<tr><td>${r.modelo}</td><td>${pct(r.mape, 1)}</td><td>${fmt(r.wmape, 3)}</td>${extra || ''}</tr>`;
+$('#val-tabla').innerHTML = `<thead><tr><th>Modelo</th><th>MAPE mensual</th><th>WMAPE</th></tr></thead><tbody>${D.dec.val.map(r => fila(r)).join('')}</tbody>`;
+let p9 = true;
+$('#holdout-tabla').innerHTML = `<thead><tr><th>Mes</th><th>Predicción</th><th>Real</th><th>Error</th></tr></thead><tbody>${D.holdout.map(h => `<tr><td>${h.mes}</td><td>${fmt(h.predicho)}</td><td>${fmt(h.real)}</td><td>${sgn(h.error_pct, 1)} %</td></tr>`).join('')}</tbody>`;
+$('#abrir').onclick = () => { $('#candado').hidden = true; $('#prueba').hidden = false; prueba(); };
+function prueba() {
+  pastillas($('#meses-p'), ['7 meses (hasta julio)', '9 meses (hasta septiembre)'], p9 ? 1 : 0, i => { p9 = i === 1; prueba(); });
+  const f = p9 ? D.dec.p9 : D.dec.p7;
+  $('#prueba-tabla').innerHTML = `<thead><tr><th>Modelo</th><th>MAPE mensual</th><th>¿≤ 15 %?</th></tr></thead><tbody>${f.map(r => `<tr><td>${r.modelo}</td><td>${pct(r.mape, 1)}</td><td>${r.mape <= 15 ? 'sí' : 'no'}</td></tr>`).join('')}</tbody>`;
+  $('#prueba-texto').innerHTML = p9
+    ? `<b>El modelo elegido en validación gana también en la prueba: ${pct(f[0].mape, 1)}.</b> En el tramo intacto el error fue de ${D.holdout.map(h => sgn(h.error_pct, 1) + ' %').join(' y ')}: los dos meses más certeros del periodo. Conviene decirlo con precisión: el resultado no mejora por haber elegido meses favorables, sino porque los que llegaron resultaron fáciles de predecir; la decisión de incorporarlos se tomó antes de ver el resultado.`
+    : `<b>Con siete meses de prueba el resultado ya era ${pct(f[0].mape, 1)}</b>, antes de que llegaran agosto y septiembre.`;
+}
+
+/* ---------- 8 · límites ---------- */
+const H = D.honor;
+function honor() {
+  const r = +$('#tasa600').value / 100, real = H.resto_cumplen + H.u600 * r, err = H.prediccion - real;
+  $('#t600v').textContent = fmt(r, 3);
+  $('#honor-k').innerHTML = `
+    <div class="kpi"><p class="l">Predicción de Honor (julio)</p><p class="v">${fmt(H.prediccion)}</p><p class="n">tasa del modelo ${fmt(H.tasa_modelo, 3)}</p></div>
+    <div class="kpi"><p class="l">Devoluciones reales</p><p class="v">${fmt(real)}</p><p class="n">${fmt(H.u600)} del 600E + ${fmt(H.resto_unid)} del resto</p></div>
+    <div class="kpi"><p class="l">Error</p><p class="v" style="color:${Math.abs(err) > 100 ? 'var(--bad)' : 'var(--good)'}">${sgn(err)}</p><p class="n">unidades</p></div>`;
+  $('#honor-texto').innerHTML = `El resto de Honor (${fmt(H.resto_unid)} unidades) se comportó a ${fmt(H.resto_tasa, 3)}, casi lo que el modelo suponía (${fmt(H.tasa_modelo, 3)}). Todo el error está en el 600E, que era el ${fmt(H.u600 / H.en_riesgo * 100)} % del grupo en riesgo. <b>Real: lo hizo a ${fmt(H.tasa_real_600, 3)}.</b> Si ese lote se hubiera comportado como el resto, el error habría sido de ${sgn(H.prediccion - (H.resto_cumplen + H.u600 * H.resto_tasa))} en vez de ${sgn(H.prediccion - (H.resto_cumplen + H.cumplen600))}.`;
+}
+$('#tasa600').min = Math.round(H.resto_tasa * 100); $('#tasa600').value = Math.round(H.tasa_real_600 * 100); $('#tasa600').oninput = honor; honor();
+$('#causa-tabla').innerHTML = `<thead><tr><th>Mes</th><th>Producto que concentra el error</th><th>Unidades en riesgo</th><th>Tasa real</th></tr></thead><tbody>${D.causas.map(c => `<tr><td>${c.mes}</td><td>${c.modelo}</td><td>${fmt(c.unidades)}</td><td>${fmt(c.tasa, 3)}</td></tr>`).join('')}</tbody>`;
+
+/* ---------- arranque ---------- */
+{
+  const m = location.hash.match(/parada-(\d)/);
+  ir(m ? +m[1] : 1, false);
+}
+</script>
+</body>
+</html>

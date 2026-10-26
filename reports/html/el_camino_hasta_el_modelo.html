@@ -172,7 +172,7 @@ figcaption{font-size:12.5px; color:var(--muted); margin-top:7px; line-height:1.4
   <p>El cliente entregó seis fuentes. Antes de modelar nada hubo que resolver cosas que, sin
   corregir, rompían el cálculo de los 60 días:</p>
   <ul>
-    <li>IMEI exportados como <code>="350135179665922"</code>, que no cruzaban con nada</li>
+    <li>IMEI exportados como <code>="&lt;15 dígitos&gt;"</code>, que no cruzaban con nada</li>
     <li>El texto <code>"NULL"</code> contando como valor válido</li>
     <li><b>Cuatro convenciones de fecha</b> distintas: el 03/04 leído como 4 de marzo</li>
     <li>Tres esquemas de despachos según el año, y la cabecera del inventario en filas distintas</li>
@@ -198,8 +198,10 @@ figcaption{font-size:12.5px; color:var(--muted); margin-top:7px; line-height:1.4
   devoluciones</b>. Hay despachos, inventario diario y ventas. La variable a predecir hubo que
   fabricarla.</p>
   <p>La primera definición fue la intuitiva: una unidad llega a un local y cumple 60 días ahí sin
-  venderse ni volver a central. El umbral no se eligió por convención — se barrieron valores de 30
-  a 150 días contra el retorno físico a bodega central, que sí es observable, y 60 maximizó el F1.</p>
+  venderse ni volver a central. Se barrieron umbrales de 30 a 150 días contra el retorno físico a bodega
+  central; ese barrido <b>no fija el 60</b>: el F1 máximo está en 75 días (0,137), a 60 vale 0,111 y la precisión no
+  pasa del 8 % en ningún umbral, porque el retorno físico es raro. Los 60 días son la regla del negocio, y esa regla
+  es la que se contrasta con sus listados.</p>
 </div>
 </div>
 
@@ -414,8 +416,8 @@ figcaption{font-size:12.5px; color:var(--muted); margin-top:7px; line-height:1.4
 <div class="card">
   <div class="when">Fase 4 · donde se decide</div>
   <h2>La comparación, sobre validación</h2>
-  <p>La elección se toma sobre julio–diciembre de 2025. El conjunto de prueba no interviene en
-  ninguna decisión.</p>
+  <p>La elección entre modelos se toma sobre julio–diciembre de 2025. Enero–julio de 2026 ya se había
+  usado como prueba en ciclos anteriores; agosto y septiembre llegaron después, con todo fijado.</p>
   <div class="tw"><table>
   <thead><tr><th>Modelo</th><th class="n">MAPE mensual</th><th class="n">WMAPE</th></tr></thead>
   <tbody>
@@ -423,7 +425,7 @@ figcaption{font-size:12.5px; color:var(--muted); margin-top:7px; line-height:1.4
   <tr><td>Random Forest</td><td class="n">10,7 %</td><td class="n">0,169</td></tr>
   <tr><td>XGBoost Poisson</td><td class="n">11,8 %</td><td class="n">0,189</td></tr>
   </tbody></table></div>
-  <p>Gana con holgura. <b>Ahí queda tomada la decisión</b>, seis meses antes de mirar 2026.</p>
+  <p>Gana con holgura. <b>Ahí queda tomada la decisión entre modelos</b>, sobre validación.</p>
 </div>
 </div>
 
