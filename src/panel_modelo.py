@@ -22,10 +22,14 @@ from . import ciclo as CI
 from . import permanencia as P
 
 
-def construir_periodos(stock: pd.DataFrame, despachos: pd.DataFrame) -> pd.DataFrame:
+def periodos_desde_estadias(estadias: pd.DataFrame, despachos: pd.DataFrame) -> pd.DataFrame:
     """Periodos de permanencia en canal, con su fecha de despacho y de umbral."""
-    estadias = CI.estadias(stock)
     return P.marcar(P.con_despacho(P.periodo_en_canal(estadias), despachos))
+
+
+def construir_periodos(stock: pd.DataFrame, despachos: pd.DataFrame) -> pd.DataFrame:
+    """Lo mismo, partiendo del inventario diario en lugar de las estadias."""
+    return periodos_desde_estadias(CI.estadias(stock), despachos)
 
 
 def grupo_en_riesgo(validos: pd.DataFrame, meses) -> pd.DataFrame:
