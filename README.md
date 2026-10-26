@@ -88,6 +88,7 @@ identificadores); **código** en `src/` y `scripts/`; **cuadernos** en `notebook
 │   ├── panel_modelo.py         estadías → periodos → panel marca × mes
 │   ├── modelo_final.py         modelo seleccionado, evaluación en prueba, modelo guardado
 │   ├── validacion.py           walk-forward y líneas base
+│   ├── proyeccion.py           pronóstico a 1, 2 y 3 meses y su backtest
 │   ├── modelo.py               baselines, métricas, RF y XGBoost
 │   ├── artefactos.py           guardar o verificar un artefacto sin sobrescribirlo
 │   ├── seudonimizar.py         seudonimización de identificadores (HMAC-SHA256)
@@ -99,7 +100,9 @@ identificadores); **código** en `src/` y `scripts/`; **cuadernos** en `notebook
 │   ├── walk_forward.py         validación walk-forward y líneas base
 │   ├── entrenar_y_evaluar.py   entrena, evalúa en la prueba y guarda el modelo
 │   ├── predecir.py             demo: predicción de un mes con su intervalo
-│   ├── generar_demo_html.py    genera la demo visual (plantilla: demo_plantilla.html)
+│   ├── exposicion_siguiente.py unidades en riesgo observadas del mes siguiente (necesita los datos)
+│   ├── pronostico_trimestre.py pronóstico de oct–dic con su backtest por horizonte
+│   ├── generar_defensa.py      genera el sitio de defensa (plantillas en scripts/defensa/)
 │   └── seudonimizar_artefactos.py · verificar_equivalencia.py
 ├── notebooks/
 │   ├── 01_limpieza_y_eda.ipynb              limpieza, estadías y paneles
@@ -111,7 +114,7 @@ identificadores); **código** en `src/` y `scripts/`; **cuadernos** en `notebook
 │   ├── 07_validacion_estadistica.ipynb      walk-forward, bootstrap e incertidumbre
 │   └── 08_interpretabilidad_y_equidad.ipynb SHAP y auditoría de trato por territorio
 ├── modelo/modelo_final.json    el modelo entrenado: tasas por marca, ventana, k y φ
-├── tests/                      33 pruebas (modelo, ausencia de fuga, seudonimización)
+├── tests/                      41 pruebas (modelo, pronóstico, ausencia de fuga, seudonimización)
 ├── sql/                        consultas.sql · antiguedad.sql
 ├── docs/                       informes de entrega (Word y PDF) · solicitud de datos · muestra/
 ├── reports/                    métricas en CSV, figuras y reportes HTML navegables
@@ -160,7 +163,10 @@ prueba de reproducibilidad, no un riesgo para los resultados (`--forzar` reempla
 | 6 | cuadernos **07** y **08** | validación estadística; SHAP y equidad | — |
 | 7 | `python scripts/entrenar_y_evaluar.py` | evaluación en la prueba y `modelo/modelo_final.json` | 2 s |
 | 8 | `python scripts/predecir.py --mes 2026-09` | la demo | 1 s |
-| 9 | `python -m pytest tests` | 33 pruebas | 22 s |
+| 9 | `python -m pytest tests` | 41 pruebas | 27 s |
+| 10 | `python scripts/exposicion_siguiente.py` | unidades en riesgo observadas del mes siguiente (necesita los datos) | 1 s |
+| 11 | `python scripts/pronostico_trimestre.py` | pronóstico de oct–dic y `reports/pronostico_*.csv` | 2 s |
+| 12 | `python scripts/generar_defensa.py` | sitio de defensa en `reports/html/defensa/` | 21 s |
 
 \* Medidos con los parquet de entrada ya generados. La primera lectura de los archivos crudos
 (1.141 archivos, 2,6 GB) es la parte lenta y la hace `src/fuentes.py` una sola vez: queda en caché.
@@ -218,21 +224,44 @@ MOTOROLA        140 0.788       110.3
   Lo ocurrido        : 899 unidades   (error -0.8 %, dentro del intervalo)
 ```
 
-Para un mes futuro se entregan las unidades en riesgo de cada marca (CSV `marca,en_riesgo`; ejemplo en
-`docs/muestra/en_riesgo_ejemplo.csv`) y se aplican las tasas guardadas en `modelo/modelo_final.json`:
+Para un mes futuro se entregan las unidades en riesgo de cada marca (CSV `marca,en_riesgo`) y se aplican las
+tasas guardadas en `modelo/modelo_final.json`. El archivo `docs/muestra/en_riesgo_2026-10.csv` trae las
+**observadas** para octubre de 2026 (527 unidades que están en el canal al 30 de septiembre), producidas por
+`scripts/exposicion_siguiente.py`:
 
 ```bash
-python scripts/predecir.py --en-riesgo docs/muestra/en_riesgo_ejemplo.csv
+python scripts/predecir.py --en-riesgo docs/muestra/en_riesgo_2026-10.csv
 ```
 
-**Demo visual:** [`reports/html/demo_prediccion.html`](reports/html/demo_prediccion.html) es una página
-autocontenida (se abre con doble clic) que muestra lo mismo: elegir uno de los nueve meses de prueba y ver
-predicción, intervalo, valor real y detalle por marca, o ingresar unidades en riesgo para predecir un mes
-futuro. Se regenera con `python scripts/generar_demo_html.py`.
+### Pronóstico de octubre a diciembre de 2026
+
+Con datos hasta el 30 de septiembre. Lo que cambia con el horizonte es cuánto de la exposición (las unidades que
+cumplirán 60 días en el mes) ya se conoce, y por eso la precisión cae:
+
+| Mes | Predicción | Rango | Qué se conoce | Error histórico a ese horizonte |
+|---|---:|---|---|---:|
+| Octubre | 400 | 283 – 517 (intervalo 95 %) | exposición **observada** | 5,3 % |
+| Noviembre | 617 | 454 – 883 (rango 80 % histórico) | exposición **proyectada** | 25,5 % |
+| Diciembre | 664 | 392 – 917 (rango 80 % histórico) | **escenario**: supone el promedio de despachos de 3 meses | 40,0 % |
+
+Octubre se predice con el método ya validado. Noviembre y diciembre son **escenarios**, no predicciones validadas:
+repitiendo el ejercicio desde cada cierre pasado, su error medio fue de 25,5 % y 40,0 % (la mediana ronda el 17 %;
+unos pocos meses atípicos suben el promedio) y no cumplen el criterio de 15 %. El rango de cada uno sale de ese
+mismo backtest. `python scripts/pronostico_trimestre.py` lo recalcula y `--factor-despachos 0.8` cambia el supuesto
+de despachos de octubre.
+
+### Sitio de defensa
+
+[`reports/html/defensa/index.html`](reports/html/defensa/index.html) abre un sitio interactivo de tres páginas,
+autocontenidas (se abren con doble clic): **el problema** (el viaje de un equipo y la regla de los 60 días, el tamaño
+del problema, por qué no se anticipa a ojo), **la solución** (el flujo de datos, la calculadora mes a mes, la tasa por
+marca y el encogimiento, y el pronóstico de octubre a diciembre con un control para el supuesto de despachos) y **la
+evidencia** (resultados, walk-forward, intervalos, SHAP, equidad por ciudad, límites). Cada cifra sale del código y de
+los reportes. Se regenera con `python scripts/generar_defensa.py`.
 
 ## Pruebas
 
-`python -m pytest tests` ejecuta 33 pruebas, todas con el panel de muestra o datos sintéticos:
+`python -m pytest tests` ejecuta 41 pruebas, todas con el panel de muestra o datos sintéticos:
 
 - **Lógica del estimador:** el encogimiento acerca las tasas a la global, una marca sin historia usa la
   global, la ventana descarta lo antiguo, la predicción es unidades en riesgo × tasa.
@@ -240,6 +269,9 @@ futuro. Se regenera con `python scripts/generar_demo_html.py`.
   de perturbación sobre `construir_panel` cambia lo que ocurre en el último mes y comprueba que ninguna
   variable explicativa de ese mes ni de los anteriores se mueve. Se comprobó que detecta tres fugas
   inyectadas a propósito.
+- **Pronóstico a 1, 2 y 3 meses:** una prueba cambia todo lo que ocurre después del cierre y comprueba que el
+  pronóstico no se mueve; el pronóstico a un mes coincide con el modelo de siempre; la incertidumbre crece con el
+  horizonte.
 - **Reproduce lo reportado:** MAPE 4,1 % / MAE 41,0 / RMSE 69,9 / WMAPE 0,1161 en la prueba; Random Forest
   5,2 % y XGBoost 9,5 %; walk-forward 5,26 % con peor origen 17,52 %.
 - **Seudonimización:** determinismo, sin colisiones en 50.000 valores, uniones entre tablas conservadas.
@@ -384,9 +416,10 @@ en esta fase: la clasificación central/canal depende de ellos.
 | Robustez: walk-forward, intervalos de confianza, cobertura | [`reports/walkforward.csv`](reports/walkforward.csv) · [`ic_bootstrap.csv`](reports/ic_bootstrap.csv) · [`intervalos_prueba.csv`](reports/intervalos_prueba.csv) · [`walkforward_con_lineas_base.csv`](reports/walkforward_con_lineas_base.csv) |
 | Qué variables pesan en cada modelo (SHAP) | [`reports/shap_dos_ensambles.csv`](reports/shap_dos_ensambles.csv) · cuaderno `08` |
 | Equidad por ciudad y distribuidor | [`reports/equidad_ciudad.csv`](reports/equidad_ciudad.csv) · [`reports/equidad_destino.csv`](reports/equidad_destino.csv) (los destinos son clientes identificables: se publican con alias `DEST_01…` ordenados por desviación) |
-| Pruebas automáticas | `python -m pytest tests` — 33 pruebas · salida de la última corrida en [`reports/pruebas_finales.txt`](reports/pruebas_finales.txt) |
+| Pruebas automáticas | `python -m pytest tests` — 41 pruebas · salida de la última corrida en [`reports/pruebas_finales.txt`](reports/pruebas_finales.txt) |
 | Resumen de la entrega técnica (3 páginas) | [`docs/Entrega_tecnica_prototipo_Grupo5.pdf`](docs/Entrega_tecnica_prototipo_Grupo5.pdf) · [`.docx`](docs/Entrega_tecnica_prototipo_Grupo5.docx) |
-| Demo visual del resultado | [`reports/html/demo_prediccion.html`](reports/html/demo_prediccion.html) |
+| Sitio de defensa interactivo (problema, solución, evidencia) | [`reports/html/defensa/index.html`](reports/html/defensa/index.html) |
+| Pronóstico de octubre a diciembre y su backtest | [`reports/pronostico_oct_dic_2026.csv`](reports/pronostico_oct_dic_2026.csv) · [`reports/pronostico_horizontes.csv`](reports/pronostico_horizontes.csv) |
 | Resultados enero–septiembre de 2026, navegables | [`reports/html/resultados_ene-sep_2026.html`](reports/html/resultados_ene-sep_2026.html) |
 | Cómo se llegó al modelo, paso a paso | [`reports/html/el_camino_hasta_el_modelo.html`](reports/html/el_camino_hasta_el_modelo.html) |
 | Ajustes y validación del prototipo (informe) | [`docs/Ajustes_prototipo_y_validacion_Grupo5.pdf`](docs/Ajustes_prototipo_y_validacion_Grupo5.pdf) |
@@ -404,7 +437,7 @@ El informe del proyecto desarrolla siete anexos técnicos. Esto es lo que respal
 | 3 · Acta de validación de la definición (99,75 %) | Cuaderno `03_antiguedad_inventario` |
 | 4 · Estructura del flujo reproducible | «El pipeline» y «Ejecución paso a paso» de este README · `scripts/` |
 | 5 · Explicabilidad (SHAP) | Cuaderno `08_interpretabilidad_y_equidad` · [`reports/shap_dos_ensambles.csv`](reports/shap_dos_ensambles.csv) |
-| 6 · Error por marca y por modelo de equipo | Cuadernos `06` y `07` · [`reports/cuadro_v6.csv`](reports/cuadro_v6.csv) · tabla por marca de la [demo](reports/html/demo_prediccion.html) |
+| 6 · Error por marca y por modelo de equipo | Cuadernos `06` y `07` · [`reports/cuadro_v6.csv`](reports/cuadro_v6.csv) · tabla por marca del [sitio de defensa](reports/html/defensa/solucion.html) |
 | 7 · Líneas base y alternativas | Cuadernos `05` y `07` · [`reports/decision_modelo.csv`](reports/decision_modelo.csv) · [`reports/walkforward_con_lineas_base.csv`](reports/walkforward_con_lineas_base.csv) |
 
 ## Licencia

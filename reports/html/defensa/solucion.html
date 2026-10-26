@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La solución · Predicción de devoluciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --paper:#F4F6F8; --surface:#FFFFFF; --surface-2:#EDF0F4;
+  --ink:#191B21; --ink-2:#464A54; --muted:#6E727C;
+  --line:#D9DEE5; --line-2:#C3CAD4;
+  --accent:#4A3AA7; --accent-soft:#EAE8F9;
+  --c1:#2a78d6; --c2:#eb6834; --c3:#12795A; --c4:#7d7f86; --c5:#7b61c9; --c6:#d03b3b;
+  --good:#12795A; --good-soft:#E2F2EC; --warn:#8A5B00; --warn-soft:#FBF0DB; --bad:#B03030; --bad-soft:#FBE9E9;
+  --shadow:0 1px 2px rgba(20,25,40,.05), 0 8px 22px rgba(20,25,40,.06);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  color-scheme: dark;
+  --paper:#121419; --surface:#1A1D24; --surface-2:#232730;
+  --ink:#E7E9ED; --ink-2:#B6BAC4; --muted:#8A8F9A;
+  --line:#2C313B; --line-2:#3B414D;
+  --accent:#9085E9; --accent-soft:#25233C;
+  --c1:#4b93e8; --c2:#e8703d; --c3:#4BBF95; --c4:#9a9ca3; --c5:#a18ee8; --c6:#e66a6a;
+  --good:#4BBF95; --good-soft:#123028; --warn:#D9A742; --warn-soft:#332916; --bad:#E07070; --bad-soft:#331D1D;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 22px rgba(0,0,0,.25);
+}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--paper); color:var(--ink); margin:0;
+  font-family:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif; font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased}
+.wrap{max-width:980px; margin:0 auto; padding:0 16px 72px}
+a{color:var(--accent)}
+nav.top{position:sticky; top:0; z-index:5; background:color-mix(in srgb, var(--paper) 88%, transparent); backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line); margin:0 -16px; padding:10px 16px; display:flex; gap:6px; align-items:center; flex-wrap:wrap}
+nav.top .marca{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-right:auto}
+nav.top a{text-decoration:none; font-size:13.5px; padding:6px 13px; border-radius:999px; color:var(--ink-2); border:1px solid transparent}
+nav.top a:hover{border-color:var(--line-2)}
+nav.top a[aria-current="page"]{background:var(--accent); color:#fff}
+header.hero{padding:40px 0 10px}
+.eyebrow{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); margin:0 0 8px}
+h1{font-family:Spectral,Georgia,serif; font-weight:700; font-size:clamp(28px,5vw,42px); line-height:1.1; letter-spacing:-.018em; margin:0 0 10px; text-wrap:balance}
+h2{font-family:Spectral,Georgia,serif; font-weight:600; font-size:clamp(21px,3vw,25px); margin:0 0 4px; line-height:1.2}
+h3{font-size:15px; margin:0 0 4px}
+.lead{color:var(--ink-2); font-size:16.5px; margin:0; max-width:66ch}
+section{margin-top:30px}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); padding:20px 20px 18px}
+.sub{color:var(--muted); font-size:14px; margin:0 0 14px; max-width:70ch}
+.paso{display:inline-flex; width:26px; height:26px; border-radius:50%; background:var(--accent); color:#fff; font-size:13px; font-weight:600; align-items:center; justify-content:center; margin-right:8px; vertical-align:2px}
+
+.pills{display:flex; flex-wrap:wrap; gap:6px; margin:0 0 14px}
+.pills button,.chip{font:inherit; font-size:13.5px; padding:6px 12px; border-radius:999px; cursor:pointer; border:1px solid var(--line-2); background:var(--surface); color:var(--ink-2)}
+.pills button:hover,.chip:hover{border-color:var(--accent)}
+.pills button[aria-pressed="true"],.chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#fff}
+.chip .sw{display:inline-block; width:18px; height:3px; border-radius:2px; vertical-align:middle; margin-right:7px; background:currentColor}
+.chip[aria-pressed="false"]{opacity:.55}
+.chip.ser{border-width:2px}
+.chip.ser[aria-pressed="true"]{background:var(--surface-2); border-color:currentColor}
+.chip.ser[aria-pressed="false"]{border-color:var(--line-2)}
+.pills button:focus-visible,.chip:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+.kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:0 0 16px}
+.kpis.tres{grid-template-columns:repeat(3,1fr)}
+.kpi{background:var(--surface-2); border-radius:10px; padding:11px 13px}
+.kpi .l{font-size:12px; color:var(--muted); margin:0}
+.kpi .v{font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:clamp(18px,3.4vw,25px); margin:2px 0 0; line-height:1.2}
+.kpi .n{font-size:12px; color:var(--muted); margin:2px 0 0}
+.badge{display:inline-block; font-size:12px; font-weight:600; padding:1px 9px; border-radius:999px}
+.badge.ok{background:var(--good-soft); color:var(--good)} .badge.no{background:var(--bad-soft); color:var(--bad)} .badge.aviso{background:var(--warn-soft); color:var(--warn)}
+.callout{border-radius:10px; padding:11px 14px; font-size:14px; margin:14px 0 0; border:1px solid transparent}
+.callout.info{background:var(--accent-soft); border-color:color-mix(in srgb, var(--accent) 25%, transparent)}
+.callout.aviso{background:var(--warn-soft); border-color:color-mix(in srgb, var(--warn) 30%, transparent)}
+.callout.ok{background:var(--good-soft); border-color:color-mix(in srgb, var(--good) 30%, transparent)}
+.callout b{font-weight:600}
+
+svg.chart{width:100%; height:auto; display:block; overflow:visible}
+.chart text{font-family:"IBM Plex Sans",sans-serif; font-size:11px; fill:var(--muted)}
+.chart .grid{stroke:var(--line); stroke-width:1}
+.chart .ref{stroke:var(--c6); stroke-width:1.2; stroke-dasharray:5 4}
+.chart .reft{fill:var(--c6); font-size:10.5px}
+.chart .sel{fill:var(--accent); opacity:.09}
+.chart .hit{fill:transparent; cursor:pointer}
+.chart .xl.on{fill:var(--ink); font-weight:600}
+.chart .l1{stroke:var(--c1)} .chart .l2{stroke:var(--c2)} .chart .l3{stroke:var(--c3)} .chart .l4{stroke:var(--c4)} .chart .l5{stroke:var(--c5)} .chart .l6{stroke:var(--c6)}
+.chart .f1{fill:var(--c1)} .chart .f2{fill:var(--c2)} .chart .f3{fill:var(--c3)} .chart .f4{fill:var(--c4)} .chart .f5{fill:var(--c5)} .chart .f6{fill:var(--c6)}
+.chart .ln{fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round}
+.chart .dash{stroke-dasharray:6 4} .chart .punt{stroke-dasharray:2 4}
+.chart .band{opacity:.15}
+.chart .pt{stroke-width:2}
+.chart .pt.hueco{fill:var(--surface)}
+.chart .colb{opacity:.9}
+
+.bars{display:grid; gap:8px}
+.bar{display:grid; grid-template-columns:minmax(110px,190px) 1fr 88px; gap:10px; align-items:center; font-size:13.5px}
+.bar .nom{color:var(--ink-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.bar .pista{position:relative; height:16px; background:var(--surface-2); border-radius:8px}
+.bar .rel{position:absolute; top:0; bottom:0; border-radius:8px; transition:width .35s}
+.bar .val{font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-align:right; white-space:nowrap}
+.bar .refl{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--c6)}
+.bar.neg .rel{right:50%} .bar.pos .rel{left:50%}
+.bar .cero{position:absolute; top:-3px; bottom:-3px; left:50%; width:1px; background:var(--line-2)}
+
+.tw{overflow-x:auto; margin-top:6px}
+table{border-collapse:collapse; width:100%; font-size:13.5px; min-width:460px}
+th,td{text-align:right; padding:7px 10px; border-bottom:1px solid var(--line); white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600; color:var(--ink-2); font-size:12.5px}
+td{font-family:"IBM Plex Mono",monospace; font-size:13px}
+td:first-child{font-family:"IBM Plex Sans",sans-serif; font-weight:500}
+tfoot td{font-weight:600; border-bottom:0; background:var(--surface-2)}
+.note{font-size:12.5px; color:var(--muted); margin:10px 0 0}
+
+.grid2{display:grid; grid-template-columns:1.05fr .95fr; gap:20px; align-items:start}
+.grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+.mini{background:var(--surface-2); border-radius:10px; padding:12px 14px; font-size:13.5px; color:var(--ink-2)}
+.mini b{display:block; color:var(--ink); margin-bottom:2px}
+.ctl{display:grid; gap:6px; margin:10px 0}
+.ctl label{font-size:13.5px; color:var(--ink-2); display:flex; justify-content:space-between; gap:10px}
+.ctl label span{font-family:"IBM Plex Mono",monospace; color:var(--ink)}
+input[type=range]{width:100%; accent-color:var(--accent)}
+.inputs{display:grid; gap:8px}
+.row{display:grid; grid-template-columns:1fr 92px 64px; gap:10px; align-items:center; font-size:14px}
+.row input[type=number]{font:inherit; font-family:"IBM Plex Mono",monospace; width:100%; padding:6px 8px; text-align:right; border:1px solid var(--line-2); border-radius:8px; background:var(--surface); color:var(--ink)}
+.row .t{font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--muted); text-align:right}
+.btn{font:inherit; font-size:13px; padding:6px 12px; border-radius:8px; cursor:pointer; border:1px solid var(--line-2); background:var(--surface); color:var(--ink-2)}
+.btn:hover{border-color:var(--accent)}
+code{font-family:"IBM Plex Mono",monospace; font-size:12.5px; background:var(--surface-2); padding:1px 6px; border-radius:5px}
+pre{font-family:"IBM Plex Mono",monospace; font-size:12.5px; background:var(--surface-2); padding:12px 14px; border-radius:10px; overflow-x:auto; margin:12px 0 0}
+.nodo{cursor:pointer}
+.nodo rect{fill:var(--surface); stroke:var(--line-2); stroke-width:1.4; transition:stroke .15s, fill .15s}
+.nodo:hover rect,.nodo.on rect{stroke:var(--accent); fill:var(--accent-soft)}
+.nodo text{fill:var(--ink); font-size:12.5px; font-weight:500} .nodo .s{fill:var(--muted); font-size:11px; font-weight:400}
+.flecha{stroke:var(--line-2); stroke-width:1.6; fill:none}
+.pie{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-top:34px; padding-top:18px; border-top:1px solid var(--line)}
+.pie a.sig{font-weight:600; text-decoration:none}
+footer{margin-top:18px; font-size:12.5px; color:var(--muted)}
+
+@media (max-width:760px){
+  .kpis,.kpis.tres{grid-template-columns:1fr 1fr}
+  .grid2,.grid3{grid-template-columns:1fr}
+  .bar{grid-template-columns:96px 1fr 76px}
+}
+@media (prefers-reduced-motion:reduce){ *{transition:none!important; scroll-behavior:auto!important} }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top" aria-label="Secciones">
+  <span class="marca">Predicción de devoluciones</span>
+  <a href="index.html">El problema</a><a href="solucion.html" aria-current="page">La solución</a><a href="evidencia.html">La evidencia</a>
+</nav>
+<header class="hero">
+  <p class="eyebrow">2 · La solución</p>
+  <h1>Devoluciones = unidades en riesgo × tasa de la marca</h1>
+  <p class="lead">El modelo no intenta adivinar el futuro lejano: parte de las unidades que <b>ya están en el canal</b> y se acercan a los 60 días, y aplica la proporción histórica de cada marca que acaba sin venderse.</p>
+</header>
+
+<section class="card" aria-labelledby="h-flujo">
+  <h2 id="h-flujo"><span class="paso">1</span>Del dato crudo al panel que ve el modelo</h2>
+  <p class="sub">Toca cada etapa para ver qué hace y con qué volumen.</p>
+  <svg class="chart" id="flujo" viewBox="0 0 760 112" role="img" aria-label="Flujo de datos del inventario al modelo"></svg>
+  <div class="callout info" id="nodo-detalle" aria-live="polite"></div>
+</section>
+
+<section class="card" aria-labelledby="h-calc">
+  <h2 id="h-calc"><span class="paso">2</span>Así llega a la cifra de cada mes</h2>
+  <p class="sub">Cada mes se predice solo con lo que se sabía antes de él y se compara con lo que ocurrió. Elige un mes de prueba.</p>
+  <div class="pills" id="pills" role="group" aria-label="Mes de prueba"></div>
+  <div class="kpis" id="kpis"></div>
+  <svg class="chart" id="cal" viewBox="0 0 720 290" role="img" aria-label="Predicción, real e intervalo de los nueve meses de prueba"></svg>
+  <div class="tw"><table id="tabla"></table></div>
+  <p class="note" id="nota"></p>
+</section>
+
+<section class="card" aria-labelledby="h-tasa">
+  <h2 id="h-tasa"><span class="paso">3</span>La tasa de cada marca, y por qué se «encoge»</h2>
+  <p class="sub">Una marca con pocas unidades tiene una tasa poco fiable. El modelo la acerca a la tasa global con un peso <b>k</b>: cuanta menos historia, más se parece al promedio. Mueve k para verlo.</p>
+  <div class="pills" id="marcas" role="group" aria-label="Marca"></div>
+  <div class="ctl"><label for="k">Peso del encogimiento k <span id="kv"></span></label><input type="range" id="k" min="0" max="2000" step="10"></div>
+  <div class="grid2">
+    <div id="tasa-panel"></div>
+    <div class="mini" id="tasa-texto"></div>
+  </div>
+  <p class="note">Los datos son la ventana de los 9 meses anteriores a octubre (ene–sep 2026), la que usa el modelo guardado. El valor elegido, k = 300, se ajustó sobre validación.</p>
+</section>
+
+<section class="card" aria-labelledby="h-fut">
+  <h2 id="h-fut"><span class="paso">4</span>Mirando adelante: octubre, noviembre y diciembre</h2>
+  <p class="sub">Los datos llegan hasta el 30 de septiembre. Lo que cambia con el horizonte es cuánto de la exposición ya se conoce.</p>
+  <div class="grid3" id="trio"></div>
+  <div class="callout aviso"><b>Cuánto creerle a cada mes.</b> Octubre se predice con el método ya validado. Noviembre y diciembre son <b>escenarios</b>: dependen de despachos que aún no ocurren y, repetido el ejercicio sobre el pasado, su error fue mucho mayor (ver abajo). No cumplen el criterio de 15 %.</div>
+  <div class="ctl" style="margin-top:16px">
+    <label for="factor">Supuesto: despachos de octubre <span id="fv"></span></label>
+    <input type="range" id="factor" min="50" max="150" step="5" value="100">
+  </div>
+  <svg class="chart" id="fut" viewBox="0 0 720 290" role="img" aria-label="Historia reciente y pronóstico de octubre a diciembre"></svg>
+  <div class="legend" id="leyenda" style="display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--ink-2);margin-top:6px"></div>
+  <div class="tw"><table id="tabla-fut"></table></div>
+  <div class="grid3" style="margin-top:14px" id="como"></div>
+  <details style="margin-top:16px"><summary style="cursor:pointer;font-weight:600">Probar con otras cifras de unidades en riesgo</summary>
+    <p class="sub" style="margin-top:8px">Para un mes cualquiera: se ingresan las unidades en riesgo de cada marca y se aplican las tasas guardadas en <code>modelo/modelo_final.json</code>. Los valores iniciales son las unidades en riesgo observadas para octubre.</p>
+    <div class="grid2"><div><div class="inputs" id="inputs"></div><button class="btn" id="reset" type="button" style="margin-top:8px">Volver a las cifras observadas</button></div>
+    <div class="mini" aria-live="polite"><b>Devoluciones esperadas</b><span style="font-family:'IBM Plex Mono',monospace;font-size:30px;font-weight:600;color:var(--ink)" id="rtotal">–</span><br><span id="rrango" style="font-family:'IBM Plex Mono',monospace"></span><br><span class="note">Intervalo del 95 % del total del mes.</span></div></div>
+  </details>
+</section>
+
+<section class="card" aria-labelledby="h-hor">
+  <h2 id="h-hor"><span class="paso">5</span>Por qué los rangos son los que son</h2>
+  <p class="sub">Se repitió el pronóstico desde cada cierre pasado y se comparó con lo que ocurrió. Esa medición es la que fija el rango de cada mes, no un supuesto.</p>
+  <div class="tw"><table id="tabla-hor"></table></div>
+  <p class="note">La mediana es parecida en los dos horizontes largos (unos 17 %); el promedio sube porque unos pocos meses atípicos fallan por mucho. Con 16–17 casos por horizonte la estimación del rango es aproximada.</p>
+  <div class="pie"><a href="index.html">← El problema</a><a class="sig" href="evidencia.html">Ver la evidencia →</a></div>
+</section>
+<footer>Generado por <code>scripts/generar_defensa.py</code> a partir del panel marca × mes, el modelo guardado y los reportes del repositorio. Grupo 5 · Maestría en IA Aplicada · UDLA.</footer>
+</div>
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const fmt = (n, d = 0) => n.toLocaleString('de-DE', {minimumFractionDigits: d, maximumFractionDigits: d});
+const pct = (n, d = 1) => fmt(n, d) + ' %';
+const sgn = (n, d = 0) => (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n), d);
+const MES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+const etiqueta = iso => { const [y, m] = iso.split('-'); return MES[+m - 1] + ' ' + y; };
+const corta = iso => { const [y, m] = iso.split('-'); return MES[+m - 1] + (m === '01' ? ' ' + y.slice(2) : ''); };
+
+/* Todo lo que depende del ancho se registra aquí y se redibuja al cambiar el tamaño. */
+const redibujables = [];
+function registrar(fn) { redibujables.push(fn); fn(); }
+let _t; addEventListener('resize', () => { clearTimeout(_t); _t = setTimeout(() => redibujables.forEach(f => f()), 120); });
+
+const ancho = el => Math.max(300, Math.round(el.getBoundingClientRect().width || el.parentElement.clientWidth));
+function escala(max) {
+  for (const base of [1, 2, 5, 10, 20, 50, 100, 200, 250, 500, 1000, 2000, 5000]) {
+    if (max / base <= 6) return [Math.ceil(max / base) * base, base];
+  }
+  return [max, max / 5];
+}
+const corridas = a => {            // tramos contiguos sin valores nulos
+  const r = []; let c = [];
+  a.forEach((v, i) => { if (v == null) { if (c.length) r.push(c); c = []; } else c.push(i); });
+  if (c.length) r.push(c); return r;
+};
+
+/* Lineas con puntos, bandas, linea de referencia y mes seleccionable. */
+function lineas(el, c) {
+  const W = ancho(el), H = c.alto || (W < 520 ? 240 : 300), L = c.izq || 44, R = 12, T = 14, B = 30, n = c.etiquetas.length;
+  const vs = [];
+  c.series.forEach(s => s.valores.forEach(v => v != null && vs.push(v)));
+  (c.bandas || []).forEach(b => b.hi.forEach(v => v != null && vs.push(v)));
+  if (c.ref) vs.push(c.ref.y);
+  const [tope, paso] = escala(Math.max(...vs) * 1.06);
+  const x = i => L + (W - L - R) * (i + .5) / n, y = v => T + (H - T - B) * (1 - v / tope);
+  const yf = c.yfmt || (v => fmt(v));
+  let s = '';
+  for (let v = 0; v <= tope + 1e-9; v += paso)
+    s += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 7}" y="${y(v) + 3.5}" text-anchor="end">${yf(v)}</text>`;
+  const w = (W - L - R) / n;
+  if (c.sel != null) s += `<rect class="sel" x="${x(c.sel) - w / 2}" y="${T}" width="${w}" height="${H - T - B}" rx="6"/>`;
+  (c.bandas || []).forEach(b => corridas(b.hi).forEach(r => {
+    const up = r.map(i => `${x(i)},${y(b.hi[i])}`), dn = r.map(i => `${x(i)},${y(b.lo[i])}`).reverse();
+    s += `<polygon class="band ${b.cls}" points="${up.concat(dn).join(' ')}"/>`;
+  }));
+  if (c.ref) s += `<line class="ref" x1="${L}" x2="${W - R}" y1="${y(c.ref.y)}" y2="${y(c.ref.y)}"/><text class="reft" x="${W - R}" y="${y(c.ref.y) - 5}" text-anchor="end">${c.ref.texto}</text>`;
+  c.series.forEach(se => {
+    corridas(se.valores).forEach(r => {
+      s += `<polyline class="ln l${se.k} ${se.trazo || ''}" points="${r.map(i => `${x(i)},${y(se.valores[i])}`).join(' ')}"/>`;
+    });
+    if (se.puntos !== false) se.valores.forEach((v, i) => {
+      if (v == null) return;
+      const r = i === c.sel ? 5.5 : 3.6;
+      s += `<circle class="pt l${se.k} ${se.hueco && se.hueco.includes(i) ? 'hueco' : 'f' + se.k}" cx="${x(i)}" cy="${y(v)}" r="${r}"/>`;
+    });
+  });
+  const salto = Math.ceil(n / Math.max(1, Math.floor((W - L) / 44)));
+  c.etiquetas.forEach((e, i) => {
+    if (i % salto === 0 || i === c.sel) s += `<text class="xl ${i === c.sel ? 'on' : ''}" x="${x(i)}" y="${H - 9}" text-anchor="middle">${e}</text>`;
+    s += `<rect class="hit" data-i="${i}" x="${x(i) - w / 2}" y="${T}" width="${w}" height="${H - T}"><title>${c.titulo ? c.titulo(i) : e}</title></rect>`;
+  });
+  el.setAttribute('viewBox', `0 0 ${W} ${H}`); el.innerHTML = s;
+  if (c.alSel) $$('.hit', el).forEach(r => r.onclick = () => c.alSel(+r.dataset.i));
+}
+
+/* Columnas con una linea opcional encima. */
+function columnas(el, c) {
+  const W = ancho(el), H = c.alto || (W < 520 ? 220 : 270), L = 44, R = 10, T = 14, B = 30, n = c.etiquetas.length;
+  const vs = c.valores.concat(c.linea ? c.linea.valores : []).filter(v => v != null);
+  const [tope, paso] = escala(Math.max(...vs) * 1.06);
+  const x = i => L + (W - L - R) * (i + .5) / n, y = v => T + (H - T - B) * (1 - v / tope), w = (W - L - R) / n;
+  let s = '';
+  for (let v = 0; v <= tope + 1e-9; v += paso)
+    s += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 7}" y="${y(v) + 3.5}" text-anchor="end">${fmt(v)}</text>`;
+  c.valores.forEach((v, i) => {
+    const sel = c.sel === i;
+    s += `<rect class="colb f${c.k || 1}" x="${x(i) - w * .36}" y="${y(v)}" width="${w * .72}" height="${y(0) - y(v)}" rx="2" opacity="${c.sel == null || sel ? .92 : .45}"/>`;
+  });
+  if (c.linea) s += `<polyline class="ln l${c.linea.k} ${c.linea.trazo || ''}" points="${c.linea.valores.map((v, i) => `${x(i)},${y(v)}`).join(' ')}"/>`;
+  const salto = Math.ceil(n / Math.max(1, Math.floor((W - L) / 40)));
+  c.etiquetas.forEach((e, i) => {
+    if (i % salto === 0) s += `<text class="xl" x="${x(i)}" y="${H - 9}" text-anchor="middle">${e}</text>`;
+    s += `<rect class="hit" data-i="${i}" x="${x(i) - w / 2}" y="${T}" width="${w}" height="${H - T}"><title>${c.titulo ? c.titulo(i) : e}</title></rect>`;
+  });
+  el.setAttribute('viewBox', `0 0 ${W} ${H}`); el.innerHTML = s;
+  if (c.alSel) $$('.hit', el).forEach(r => r.onclick = () => c.alSel(+r.dataset.i));
+}
+
+/* Barras horizontales en HTML. Con `divergente` se centran en cero. */
+function barras(el, items, o = {}) {
+  let max = o.max ?? Math.max(...items.map(i => Math.abs(i.valor)));
+  if (o.ref != null) max = Math.max(max, o.ref * 1.12);   // la referencia siempre cabe en la escala
+  el.className = 'bars';
+  el.innerHTML = items.map(i => {
+    const a = Math.abs(i.valor) / max * (o.divergente ? 50 : 100);
+    const pos = o.divergente ? (i.valor >= 0 ? `left:50%;width:${a}%` : `left:${50 - a}%;width:${a}%`) : `left:0;width:${a}%`;
+    const ref = o.ref != null ? `<span class="refl" style="left:${o.ref / max * 100}%"></span>` : '';
+    return `<div class="bar"><span class="nom" title="${i.nombre}">${i.nombre}</span>
+      <span class="pista">${o.divergente ? '<span class="cero"></span>' : ''}<span class="rel" style="${pos};background:var(--c${i.k || 1})"></span>${ref}</span>
+      <span class="val">${i.texto ?? fmt(i.valor, o.dec || 0)}</span></div>`;
+  }).join('');
+}
+
+function pastillas(el, etiquetas, sel, alSel) {
+  el.innerHTML = etiquetas.map((e, i) => `<button type="button" data-i="${i}" aria-pressed="${i === sel}">${e}</button>`).join('');
+  $$('button', el).forEach(b => b.onclick = () => alSel(+b.dataset.i));
+}
+
+</script>
+<script>
+const D = {"meses": [{"mes": "2026-01", "etiqueta": "ene 2026", "prediccion": 338.7427331225337, "lo": 231.3665589479393, "hi": 446.1189072971281, "real": 335.0, "marcas": [{"marca": "SAMSUNG", "en_riesgo": 183, "tasa": 0.7142412615441329, "prediccion": 130.70615086257632, "real": 134}, {"marca": "HONOR", "en_riesgo": 114, "tasa": 0.6242520048087759, "prediccion": 71.16472854820044, "real": 76}, {"marca": "XIAOMI", "en_riesgo": 81, "tasa": 0.6828187080953049, "prediccion": 55.30831535571969, "real": 45}, {"marca": "APPLE", "en_riesgo": 66, "tasa": 0.7321348003256719, "prediccion": 48.320896821494344, "real": 53}, {"marca": "OTRA", "en_riesgo": 25, "tasa": 0.8303571167272076, "prediccion": 20.758927918180188, "real": 18}, {"marca": "MOTOROLA", "en_riesgo": 15, "tasa": 0.8322475744241822, "prediccion": 12.483713616362733, "real": 9}]}, {"mes": "2026-02", "etiqueta": "feb 2026", "prediccion": 498.24969729102367, "lo": 368.02407120758755, "hi": 628.4753233744598, "real": 478.0, "marcas": [{"marca": "SAMSUNG", "en_riesgo": 458, "tasa": 0.7217257509285253, "prediccion": 330.5503939252646, "real": 309}, {"marca": "APPLE", "en_riesgo": 97, "tasa": 0.7442229088950973, "prediccion": 72.18962216282445, "real": 69}, {"marca": "MOTOROLA", "en_riesgo": 46, "tasa": 0.8333220478795428, "prediccion": 38.33281420245897, "real": 33}, {"marca": "XIAOMI", "en_riesgo": 28, "tasa": 0.6928145767266115, "prediccion": 19.398808148345122, "real": 21}, {"marca": "HONOR", "en_riesgo": 26, "tasa": 0.6494883492401209, "prediccion": 16.88669708024314, "real": 22}, {"marca": "OTRA", "en_riesgo": 25, "tasa": 0.8356544708754968, "prediccion": 20.89136177188742, "real": 24}]}, {"mes": "2026-03", "etiqueta": "mar 2026", "prediccion": 748.269056371394, "lo": 588.6804709223298, "hi": 907.8576418204581, "real": 732.0, "marcas": [{"marca": "SAMSUNG", "en_riesgo": 531, "tasa": 0.7218286478943169, "prediccion": 383.29101203188225, "real": 364}, {"marca": "APPLE", "en_riesgo": 337, "tasa": 0.7578770744422353, "prediccion": 255.4045740870333, "real": 283}, {"marca": "XIAOMI", "en_riesgo": 87, "tasa": 0.7021890998191471, "prediccion": 61.0904516842658, "real": 48}, {"marca": "MOTOROLA", "en_riesgo": 24, "tasa": 0.8287561048732522, "prediccion": 19.890146516958055, "real": 16}, {"marca": "OTRA", "en_riesgo": 20, "tasa": 0.8426803300655294, "prediccion": 16.853606601310588, "real": 16}, {"marca": "HONOR", "en_riesgo": 18, "tasa": 0.65218141388578, "prediccion": 11.739265449944039, "real": 5}]}, {"mes": "2026-04", "etiqueta": "abr 2026", "prediccion": 816.8356269715571, "lo": 650.095446160437, "hi": 983.5758077826772, "real": 882.0, "marcas": [{"marca": "SAMSUNG", "en_riesgo": 513, "tasa": 0.7075992715810586, "prediccion": 362.99842632108306, "real": 402}, {"marca": "XIAOMI", "en_riesgo": 257, "tasa": 0.688126435073611, "prediccion": 176.84849381391803, "real": 212}, {"marca": "APPLE", "en_riesgo": 209, "tasa": 0.7276546187686336, "prediccion": 152.0798153226444, "real": 173}, {"marca": "HONOR", "en_riesgo": 114, "tasa": 0.6550410952688861, "prediccion": 74.67468486065302, "real": 42}, {"marca": "OTRA", "en_riesgo": 33, "tasa": 0.7999811147669549, "prediccion": 26.39937678730951, "real": 31}, {"marca": "MOTOROLA", "en_riesgo": 28, "tasa": 0.8258511063616878, "prediccion": 23.12383097812726, "real": 21}, {"marca": "REALME", "en_riesgo": 1, "tasa": 0.7109988878217945, "prediccion": 0.7109988878217945, "real": 1}]}, {"mes": "2026-05", "etiqueta": "may 2026", "prediccion": 1001.2120206263087, "lo": 816.6102085220909, "hi": 1185.8138327305264, "real": 1036.0, "marcas": [{"marca": "SAMSUNG", "en_riesgo": 643, "tasa": 0.7083802244280818, "prediccion": 455.4884843072566, "real": 528}, {"marca": "HONOR", "en_riesgo": 493, "tasa": 0.6478581146238722, "prediccion": 319.394050509569, "real": 280}, {"marca": "XIAOMI", "en_riesgo": 146, "tasa": 0.6919329171476153, "prediccion": 101.02220590355184, "real": 106}, {"marca": "APPLE", "en_riesgo": 145, "tasa": 0.7568774726762192, "prediccion": 109.74723353805179, "real": 108}, {"marca": "MOTOROLA", "en_riesgo": 12, "tasa": 0.8269311623686378, "prediccion": 9.923173948423655, "real": 10}, {"marca": "OTRA", "en_riesgo": 7, "tasa": 0.8052674884936905, "prediccion": 5.636872419455833, "real": 4}]}, {"mes": "2026-06", "etiqueta": "jun 2026", "prediccion": 706.1357294805894, "lo": 551.1052730445022, "hi": 861.1661859166766, "real": 725.0, "marcas": [{"marca": "SAMSUNG", "en_riesgo": 343, "tasa": 0.7143053682116309, "prediccion": 245.0067412965894, "real": 261}, {"marca": "XIAOMI", "en_riesgo": 270, "tasa": 0.6940799013921114, "prediccion": 187.40157337587007, "real": 182}, {"marca": "APPLE", "en_riesgo": 199, "tasa": 0.7598668353568934, "prediccion": 151.2135002360218, "real": 163}, {"marca": "HONOR", "en_riesgo": 169, "tasa": 0.6417566427427217, "prediccion": 108.45687262351997, "real": 102}, {"marca": "OTRA", "en_riesgo": 13, "tasa": 0.7783374090381776, "prediccion": 10.11838631749631, "real": 13}, {"marca": "MOTOROLA", "en_riesgo": 4, "tasa": 0.8071563154458393, "prediccion": 3.2286252617833573, "real": 3}, {"marca": "REALME", "en_riesgo": 1, "tasa": 0.7100303693085256, "prediccion": 0.7100303693085256, "real": 1}]}, {"mes": "2026-07", "etiqueta": "jul 2026", "prediccion": 1170.7844361328102, "lo": 971.1610571411412, "hi": 1370.4078151244794, "real": 1364.0, "marcas": [{"marca": "HONOR", "en_riesgo": 831, "tasa": 0.5921043657251647, "prediccion": 492.0387279176118, "real": 643}, {"marca": "SAMSUNG", "en_riesgo": 548, "tasa": 0.7327660174578731, "prediccion": 401.55577756691446, "real": 412}, {"marca": "XIAOMI", "en_riesgo": 251, "tasa": 0.6837857113244377, "prediccion": 171.63021354243386, "real": 189}, {"marca": "APPLE", "en_riesgo": 114, "tasa": 0.7690286772981187, "prediccion": 87.66926921198554, "real": 102}, {"marca": "OTRA", "en_riesgo": 16, "tasa": 0.776293218257039, "prediccion": 12.420691492112624, "real": 13}, {"marca": "MOTOROLA", "en_riesgo": 7, "tasa": 0.7813937716788557, "prediccion": 5.46975640175199, "real": 5}]}, {"mes": "2026-08", "etiqueta": "ago 2026", "prediccion": 1090.070467806722, "lo": 897.4509819729699, "hi": 1282.6899536404742, "real": 1100.0, "marcas": [{"marca": "SAMSUNG", "en_riesgo": 442, "tasa": 0.7399800380300823, "prediccion": 327.0711768092964, "real": 270}, {"marca": "XIAOMI", "en_riesgo": 401, "tasa": 0.7096082545140621, "prediccion": 284.5529100601389, "real": 308}, {"marca": "MOTOROLA", "en_riesgo": 316, "tasa": 0.7835094803136057, "prediccion": 247.5889957790994, "real": 274}, {"marca": "APPLE", "en_riesgo": 209, "tasa": 0.7384169471682758, "prediccion": 154.32914195816963, "real": 167}, {"marca": "HONOR", "en_riesgo": 117, "tasa": 0.634163744708958, "prediccion": 74.19715813094808, "real": 79}, {"marca": "OTRA", "en_riesgo": 3, "tasa": 0.7770283563565576, "prediccion": 2.331085069069673, "real": 2}]}, {"mes": "2026-09", "etiqueta": "sep 2026", "prediccion": 892.1274279463298, "lo": 717.8719746515196, "hi": 1066.38288124114, "real": 899.0, "marcas": [{"marca": "SAMSUNG", "en_riesgo": 402, "tasa": 0.7354535722543747, "prediccion": 295.6523360462586, "real": 241}, {"marca": "APPLE", "en_riesgo": 377, "tasa": 0.7903530641556321, "prediccion": 297.9631051866733, "real": 353}, {"marca": "XIAOMI", "en_riesgo": 160, "tasa": 0.7276390597984392, "prediccion": 116.42224956775027, "real": 119}, {"marca": "MOTOROLA", "en_riesgo": 140, "tasa": 0.7876204118815624, "prediccion": 110.26685766341873, "real": 109}, {"marca": "HONOR", "en_riesgo": 109, "tasa": 0.6589254998369618, "prediccion": 71.82287948222884, "real": 77}]}], "phi": 8.86, "z": 1.96, "ventana": 9, "k": 300, "vol": {"inventario": 14007314, "despachos": 6383678, "estadias": 775024, "periodos": 314091, "con_despacho": 258299, "eventos": 39798}, "marcas_tasa": ["APPLE", "HONOR", "MOTOROLA", "OTRA", "REALME", "SAMSUNG", "XIAOMI"], "tasa_global": 0.738556338028169, "ventana_marcas": {"APPLE": {"dev": 1471.0, "riesgo": 1753.0}, "HONOR": {"dev": 1326.0, "riesgo": 1991.0}, "MOTOROLA": {"dev": 480.0, "riesgo": 592.0}, "OTRA": {"dev": 121.0, "riesgo": 142.0}, "REALME": {"dev": 2.0, "riesgo": 2.0}, "SAMSUNG": {"dev": 2921.0, "riesgo": 4063.0}, "XIAOMI": {"dev": 1230.0, "riesgo": 1681.0}}, "fut": {"marcas": [{"marca": "APPLE", "exp1": 191.0, "razon": 0.2820666866927005, "desp_cierre": 371.0, "desp_prom": 574.6666666666666, "tasa": 0.8244358993708966}, {"marca": "HONOR", "exp1": 60.0, "razon": 0.19783474619548566, "desp_cierre": 1487.0, "desp_prom": 769.6666666666666, "tasa": 0.6754984292485599}, {"marca": "MOTOROLA", "exp1": 35.0, "razon": 0.491566265060241, "desp_cierre": 83.0, "desp_prom": 174.0, "tasa": 0.7865099791574559}, {"marca": "OTRA", "exp1": 0.0, "razon": 0.468, "desp_cierre": 0.0, "desp_prom": 1.6666666666666667, "tasa": 0.7750382384806577}, {"marca": "REALME", "exp1": 0.0, "razon": 0.5, "desp_cierre": 0.0, "desp_prom": 0.0, "tasa": 0.7402877530081149}, {"marca": "SAMSUNG", "exp1": 168.0, "razon": 0.1464809118870997, "desp_cierre": 2583.0, "desp_prom": 2825.6666666666665, "tasa": 0.7202766219134656}, {"marca": "XIAOMI", "exp1": 73.0, "razon": 0.23560061963103787, "desp_cierre": 159.0, "desp_prom": 354.3333333333333, "tasa": 0.7327445236791775}], "desp_prom_total": 4699.999999999999, "desp_cierre_total": 4683.0, "razon_total": 0.182670873858935, "hor": [{"nombre": "1 mes (octubre)", "casos": 18, "mape_medio": 5.289366939347399, "mape_mediana": 3.7971257061805312, "peor": 17.52128559819231, "q_bajo": 0.9679828847171932, "q_alto": 1.1054008467412118}, {"nombre": "2 meses (noviembre)", "casos": 17, "mape_medio": 25.486101421985023, "mape_mediana": 17.59245139604582, "peor": 121.81112544937614, "q_bajo": 0.7358619361478784, "q_alto": 1.4315063810422133}, {"nombre": "3 meses (diciembre)", "casos": 16, "mape_medio": 39.96279300714524, "mape_mediana": 17.357883494704453, "peor": 273.66337723374653, "q_bajo": 0.5907246778531103, "q_alto": 1.3815000045448502}]}};
+/* ---------- 1 · flujo ---------- */
+const NODOS = [
+  {t: 'Inventario y', t2: 'despachos', n: fmt(D.vol.inventario / 1e6, 1) + ' M filas', d: `Los inventarios diarios del cliente (${fmt(D.vol.inventario)} filas) y el reporte de despachos por IMEI (${fmt(D.vol.despachos)}). Es la materia prima; no se versiona porque contiene datos personales.`, s: 'src/fuentes.py · src/extension.py'},
+  {t: 'Estadías', t2: '', n: fmt(D.vol.estadias) + ' tramos', d: `El snapshot diario se colapsa a tramos (unidad, bodega, desde, hasta): ${fmt(D.vol.estadias)}. Reduce el volumen unas 18 veces y es la base de todo lo demás.`, s: 'scripts/construir_v6.py'},
+  {t: 'Periodos', t2: 'en el canal', n: fmt(D.vol.periodos) + ' periodos', d: `Cuánto permanece cada unidad fuera de bodega central, con su fecha de despacho y la fecha en que cumple 60 días. ${fmt(D.vol.periodos)} periodos; ${fmt(D.vol.con_despacho)} tienen despacho asociado.`, s: 'src/permanencia.py'},
+  {t: 'Eventos', t2: 'a 60 días', n: fmt(D.vol.eventos) + ' eventos', d: `Las unidades que cruzan el umbral de 60 días sin haber salido del canal: ${fmt(D.vol.eventos)} en 29 meses. Cada una cuenta una sola vez.`, s: 'src/permanencia.py'},
+  {t: 'Panel', t2: 'marca × mes', n: '319 filas', d: 'Una fila por marca y mes: devoluciones, unidades en riesgo y rezagos. 11 marcas, 29 meses, 16 columnas. Es lo único que ve el modelo.', s: 'src/panel_modelo.py'},
+  {t: 'Modelo', t2: 'riesgo × tasa', n: 'predicción', d: 'Regresión de Poisson con offset de exposición: unidades en riesgo × tasa de la marca, reestimada cada mes. Entrega la predicción con su intervalo.', s: 'src/modelo_final.py'},
+];
+let nodo = 0;
+function flujo() {
+  const ancho = 108, sep = 22, y = 18;
+  let s = '';
+  NODOS.forEach((n, i) => {
+    const x = 6 + i * (ancho + sep);
+    if (i) s += `<line class="flecha" x1="${x - sep + 2}" y1="${y + 42}" x2="${x - 3}" y2="${y + 42}" marker-end="url(#pta)"/>`;
+    s += `<g class="nodo ${i === nodo ? 'on' : ''}" data-i="${i}" tabindex="0" role="button" aria-label="${n.t} ${n.t2}">
+      <rect x="${x}" y="${y}" width="${ancho}" height="84" rx="10"/>
+      <text x="${x + ancho / 2}" y="${y + 30}" text-anchor="middle">${n.t}</text><text x="${x + ancho / 2}" y="${y + 46}" text-anchor="middle">${n.t2}</text>
+      <text class="s" x="${x + ancho / 2}" y="${y + 70}" text-anchor="middle">${n.n}</text></g>`;
+  });
+  $('#flujo').innerHTML = `<defs><marker id="pta" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="var(--line-2)"/></marker></defs>` + s;
+  $$('#flujo .nodo').forEach(g => { g.onclick = () => { nodo = +g.dataset.i; flujo(); }; g.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); nodo = +g.dataset.i; flujo(); } }; });
+  const n = NODOS[nodo];
+  $('#nodo-detalle').innerHTML = `<b>${n.t} ${n.t2}.</b> ${n.d} <br><code>${n.s}</code>`;
+}
+flujo();
+
+/* ---------- 2 · calculadora ---------- */
+let sel = D.meses.length - 1;
+function calc() {
+  pastillas($('#pills'), D.meses.map(m => m.etiqueta), sel, i => { sel = i; calc(); });
+  const m = D.meses[sel], err = (m.prediccion - m.real) / m.real * 100, dentro = m.real >= m.lo && m.real <= m.hi;
+  $('#kpis').innerHTML = `
+    <div class="kpi"><p class="l">Predicción</p><p class="v">${fmt(m.prediccion)}</p><p class="n">unidades</p></div>
+    <div class="kpi"><p class="l">Intervalo 95 %</p><p class="v">${fmt(m.lo)}–${fmt(m.hi)}</p><p class="n">&nbsp;</p></div>
+    <div class="kpi"><p class="l">Lo ocurrido</p><p class="v">${fmt(m.real)}</p><p class="n">unidades</p></div>
+    <div class="kpi"><p class="l">Error</p><p class="v">${sgn(err, 1)} %</p><p class="n"><span class="badge ${dentro ? 'ok' : 'no'}">${dentro ? 'dentro del intervalo' : 'fuera del intervalo'}</span></p></div>`;
+  const f = m.marcas.map(r => `<tr><td>${r.marca}</td><td>${fmt(r.en_riesgo)}</td><td>${fmt(r.tasa * 100, 1)} %</td><td>${fmt(r.prediccion, 1)}</td><td>${fmt(r.real)}</td><td>${sgn(r.prediccion - r.real, 1)}</td></tr>`).join('');
+  const er = m.marcas.reduce((a, r) => a + r.en_riesgo, 0);
+  $('#tabla').innerHTML = `<thead><tr><th>Marca</th><th>En riesgo</th><th>Tasa</th><th>Predicción</th><th>Real</th><th>Diferencia</th></tr></thead><tbody>${f}</tbody>
+    <tfoot><tr><td>Total del mes</td><td>${fmt(er)}</td><td>${fmt(m.prediccion / er * 100, 1)} %</td><td>${fmt(m.prediccion, 1)}</td><td>${fmt(m.real)}</td><td>${sgn(m.prediccion - m.real, 1)}</td></tr></tfoot>`;
+  $('#nota').textContent = `Tasas de ${m.etiqueta} estimadas con los ${D.ventana} meses anteriores. Por marca el error relativo puede ser grande cuando son pocas unidades; el modelo se evalúa sobre el total del mes.`;
+  dibujarCal();
+}
+const dibujarCal = () => lineas($('#cal'), {
+  etiquetas: D.meses.map(m => m.etiqueta.split(' ')[0]), sel,
+  series: [{valores: D.meses.map(m => m.real), k: 2}, {valores: D.meses.map(m => m.prediccion), k: 1, trazo: 'dash', hueco: D.meses.map((_, i) => i)}],
+  bandas: [{lo: D.meses.map(m => m.lo), hi: D.meses.map(m => m.hi), cls: 'f1'}],
+  titulo: i => `${D.meses[i].etiqueta}: predicho ${fmt(D.meses[i].prediccion)} · real ${fmt(D.meses[i].real)}`, alSel: i => { sel = i; calc(); }
+});
+registrar(calc);
+
+/* ---------- 3 · tasa y encogimiento ---------- */
+let marca = D.marcas_tasa[0], kk = D.k;
+function tasa() {
+  pastillas($('#marcas'), D.marcas_tasa, D.marcas_tasa.indexOf(marca), i => { marca = D.marcas_tasa[i]; tasa(); });
+  $('#kv').textContent = kk; $('#k').value = kk;
+  const v = D.ventana_marcas[marca], cruda = v.riesgo ? v.dev / v.riesgo : D.tasa_global;
+  const enc = (v.dev + kk * D.tasa_global) / (v.riesgo + kk), peso = v.riesgo / (v.riesgo + kk) * 100;
+  const pos = t => Math.min(100, Math.max(0, (t - .4) / .6 * 100)) + '%';
+  $('#tasa-panel').innerHTML = `
+    <div style="position:relative;height:96px;margin:6px 0 14px">
+      <div style="position:absolute;left:0;right:0;top:30px;height:6px;border-radius:3px;background:var(--line)"></div>
+      <div style="position:absolute;top:22px;height:22px;width:3px;background:var(--c4);left:${pos(D.tasa_global)}" title="global"></div><div style="position:absolute;top:48px;height:20px;width:1px;background:var(--line-2);left:${pos(D.tasa_global)}"></div><span style="position:absolute;top:34px;left:0;font-size:10.5px;color:var(--muted)">40 %</span><span style="position:absolute;top:34px;right:0;font-size:10.5px;color:var(--muted)">100 %</span>
+      <div style="position:absolute;top:21px;width:22px;height:22px;border-radius:50%;border:3px solid var(--c2);background:var(--surface);transform:translateX(-11px);left:${pos(cruda)}" title="cruda"></div>
+      <div style="position:absolute;top:21px;width:22px;height:22px;border-radius:50%;background:var(--accent);transform:translateX(-11px);left:${pos(enc)};transition:left .25s" title="encogida"></div>
+      <span style="position:absolute;top:70px;font-size:11.5px;color:var(--c4);transform:translateX(-50%);left:${pos(D.tasa_global)}">global ${fmt(D.tasa_global * 100, 1)} %</span>
+      <span style="position:absolute;top:50px;font-size:11.5px;color:var(--c2);transform:translateX(-50%);left:${pos(cruda)}">cruda ${fmt(cruda * 100, 1)} %</span>
+      <span style="position:absolute;top:0;font-size:11.5px;font-weight:600;color:var(--accent);transform:translateX(-50%);left:${pos(enc)}">encogida ${fmt(enc * 100, 1)} %</span>
+    </div>
+    <div class="kpis tres"><div class="kpi"><p class="l">Unidades en riesgo (9 m)</p><p class="v">${fmt(v.riesgo)}</p></div>
+      <div class="kpi"><p class="l">Acabaron devueltas</p><p class="v">${fmt(v.dev)}</p></div>
+      <div class="kpi"><p class="l">Peso de su propia historia</p><p class="v">${fmt(peso)} %</p></div></div>`;
+  $('#tasa-texto').innerHTML = v.riesgo < 50
+    ? `<b>${marca} casi no tiene historia</b>Con ${fmt(v.riesgo)} unidades su tasa cruda no dice nada; el modelo la deja prácticamente en la tasa global.`
+    : kk === 0 ? `<b>Sin encogimiento</b>La tasa es la cruda de la marca. Con pocas unidades, un mes atípico la desplazaría mucho.`
+    : `<b>${fmt(peso)} % historia propia, ${fmt(100 - peso)} % promedio global</b>La tasa de ${marca} se mueve de ${fmt(cruda * 100, 1)} % a ${fmt(enc * 100, 1)} %. A más k, más se parece al promedio; las marcas grandes casi no cambian.`;
+}
+$('#k').oninput = e => { kk = +e.target.value; tasa(); };
+tasa();
+
+/* ---------- 4 · pronóstico oct-dic ---------- */
+const F = D.fut, M = F.marcas;
+let factor = 1;
+function trio() {
+  const mes = [], tasaDe = m => m.tasa;
+  const exp1 = M.map(m => m.exp1), exp2 = M.map(m => m.razon * m.desp_cierre), exp3 = M.map(m => m.razon * m.desp_prom * factor);
+  const tot = e => e.reduce((a, v, i) => a + v * M[i].tasa, 0), sumE = e => e.reduce((a, v) => a + v, 0);
+  const p1 = tot(exp1), p2 = tot(exp2), p3 = tot(exp3);
+  const [l1, h1] = (() => { const s = D.z * Math.sqrt(D.phi * p1); return [Math.max(p1 - s, 0), p1 + s]; })();
+  return [
+    {mes: '2026-10', n: 'Octubre', origen: 'observada', badge: 'ok', texto: 'exposición observada', total: p1, lo: l1, hi: h1, rango: 'intervalo 95 %', exp: exp1, mape: F.hor[0].mape_medio, h: 1},
+    {mes: '2026-11', n: 'Noviembre', origen: 'proyectada', badge: 'aviso', texto: 'exposición proyectada', total: p2, lo: p2 * F.hor[1].q_bajo, hi: p2 * F.hor[1].q_alto, rango: 'rango 80 % histórico', exp: exp2, mape: F.hor[1].mape_medio, h: 2},
+    {mes: '2026-12', n: 'Diciembre', origen: 'escenario', badge: 'no', texto: 'escenario con supuesto', total: p3, lo: p3 * F.hor[2].q_bajo, hi: p3 * F.hor[2].q_alto, rango: 'rango 80 % histórico', exp: exp3, mape: F.hor[2].mape_medio, h: 3},
+  ].map(r => ({...r, sumExp: sumE(r.exp)}));
+}
+function fut() {
+  $('#fv').textContent = `${fmt(factor * 100)} % del promedio (${fmt(F.desp_prom_total * factor)} unidades)`;
+  const t = trio();
+  $('#trio').innerHTML = t.map((r, i) => `<div class="mini" style="padding:14px 16px"><b>${r.n} 2026</b>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:28px;font-weight:600;color:var(--ink)">${fmt(r.total)}</span> <span class="note">unidades</span><br>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px">${fmt(r.lo)} – ${fmt(r.hi)}</span> <span class="note">${r.rango}</span><br>
+    <span class="badge ${r.badge}" style="margin-top:6px">${r.texto}</span>
+    <div class="bars" id="mp${i}" style="margin-top:10px"></div></div>`).join('');
+  t.forEach((r, i) => barras($('#mp' + i), [{nombre: 'Error histórico', valor: r.mape, texto: pct(r.mape, 1), k: r.mape <= 15 ? 3 : r.mape <= 30 ? 2 : 6}], {max: 45, ref: 15}));
+  $('#tabla-fut').innerHTML = `<thead><tr><th>Marca</th><th>Tasa</th>${t.map(r => `<th>${r.n.slice(0, 3)} en riesgo</th><th>${r.n.slice(0, 3)} pred.</th>`).join('')}</tr></thead><tbody>${
+    M.map((m, j) => `<tr><td>${m.marca}</td><td>${fmt(m.tasa * 100, 1)} %</td>${t.map(r => `<td>${fmt(r.exp[j])}</td><td>${fmt(r.exp[j] * m.tasa)}</td>`).join('')}</tr>`).join('')}</tbody>
+    <tfoot><tr><td>Total</td><td></td>${t.map(r => `<td>${fmt(r.sumExp)}</td><td>${fmt(r.total)}</td>`).join('')}</tr></tfoot>`;
+  $('#como').innerHTML = `
+    <div class="mini"><b>Octubre · observada</b>${fmt(t[0].sumExp)} unidades que ya están en el canal al 30 de septiembre (despachadas del 3 al 31 de agosto) y cumplirán 60 días en octubre.</div>
+    <div class="mini"><b>Noviembre · proyectada</b>Despachos de septiembre ya conocidos (${fmt(F.desp_cierre_total)}) × la fracción que históricamente llega en riesgo: ${fmt(F.razon_total * 100, 1)} %.</div>
+    <div class="mini"><b>Diciembre · escenario</b>Depende de lo que se despache en octubre, que aún no ocurre. Se supone el promedio de 3 meses (${fmt(F.desp_prom_total)}); el control de arriba lo cambia.</div>`;
+  dibujarFut(t);
+}
+function dibujarFut(t) {
+  const n = D.meses.length, et = D.meses.map(m => m.etiqueta.split(' ')[0]).concat(['oct', 'nov', 'dic']);
+  const nul = k => Array(k).fill(null);
+  lineas($('#fut'), {
+    etiquetas: et,
+    series: [
+      {valores: D.meses.map(m => m.real).concat(nul(3)), k: 2},
+      {valores: D.meses.map(m => m.prediccion).concat([t[0].total, null, null]), k: 1, trazo: 'dash', hueco: D.meses.map((_, i) => i).concat([n])},
+      {valores: nul(n).concat([t[0].total, t[1].total, t[2].total]).map((v, i) => (i >= n ? v : null)), k: 5, trazo: 'punt', hueco: [n, n + 1, n + 2]},
+    ],
+    bandas: [
+      {lo: D.meses.map(m => m.lo).concat([t[0].lo, null, null]), hi: D.meses.map(m => m.hi).concat([t[0].hi, null, null]), cls: 'f1'},
+      {lo: nul(n + 1).concat([t[1].lo, t[2].lo]), hi: nul(n + 1).concat([t[1].hi, t[2].hi]), cls: 'f5'},
+    ],
+    titulo: i => i < n ? `${D.meses[i].etiqueta}: predicho ${fmt(D.meses[i].prediccion)} · real ${fmt(D.meses[i].real)}` : `${t[i - n].n}: ${fmt(t[i - n].total)} (${fmt(t[i - n].lo)}–${fmt(t[i - n].hi)})`
+  });
+  $('#leyenda').innerHTML = `<span style="color:var(--c2)">━ real</span><span style="color:var(--c1)">╍ predicho (mes observado)</span><span style="color:var(--c5)">┅ escenario (nov y dic)</span><span>banda azul: intervalo 95 % · banda violeta: rango 80 % histórico</span>`;
+}
+$('#factor').oninput = e => { factor = e.target.value / 100; fut(); };
+registrar(fut);
+
+/* calculadora libre */
+function inputs() {
+  $('#inputs').innerHTML = M.map(m => `<div class="row"><label for="i-${m.marca}">${m.marca}</label>
+    <input id="i-${m.marca}" type="number" min="0" step="1" inputmode="numeric" data-t="${m.tasa}" value="${m.exp1}"><span class="t">${fmt(m.tasa * 100, 1)} %</span></div>`).join('');
+  $$('#inputs input').forEach(e => e.oninput = libre); libre();
+}
+function libre() {
+  const p = $$('#inputs input').reduce((a, e) => a + Math.max(0, parseFloat(e.value) || 0) * +e.dataset.t, 0);
+  const s = D.z * Math.sqrt(D.phi * p);
+  $('#rtotal').textContent = fmt(p); $('#rrango').textContent = `${fmt(Math.max(p - s, 0))} – ${fmt(p + s)}`;
+}
+$('#reset').onclick = inputs; inputs();
+
+/* ---------- 5 · horizontes ---------- */
+$('#tabla-hor').innerHTML = `<thead><tr><th>Horizonte</th><th>Casos</th><th>Error medio</th><th>Mediana</th><th>Peor caso</th><th>Rango 80 % (real ÷ predicción)</th></tr></thead><tbody>${
+  F.hor.map(h => `<tr><td>${h.nombre}</td><td>${h.casos}</td><td>${pct(h.mape_medio)}</td><td>${pct(h.mape_mediana)}</td><td>${fmt(h.peor)} %</td><td>${fmt(h.q_bajo, 2)} – ${fmt(h.q_alto, 2)}</td></tr>`).join('')}</tbody>`;
+</script>
+</body>
+</html>

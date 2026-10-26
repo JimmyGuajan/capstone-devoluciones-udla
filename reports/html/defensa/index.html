@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>El problema · Predicción de devoluciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --paper:#F4F6F8; --surface:#FFFFFF; --surface-2:#EDF0F4;
+  --ink:#191B21; --ink-2:#464A54; --muted:#6E727C;
+  --line:#D9DEE5; --line-2:#C3CAD4;
+  --accent:#4A3AA7; --accent-soft:#EAE8F9;
+  --c1:#2a78d6; --c2:#eb6834; --c3:#12795A; --c4:#7d7f86; --c5:#7b61c9; --c6:#d03b3b;
+  --good:#12795A; --good-soft:#E2F2EC; --warn:#8A5B00; --warn-soft:#FBF0DB; --bad:#B03030; --bad-soft:#FBE9E9;
+  --shadow:0 1px 2px rgba(20,25,40,.05), 0 8px 22px rgba(20,25,40,.06);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  color-scheme: dark;
+  --paper:#121419; --surface:#1A1D24; --surface-2:#232730;
+  --ink:#E7E9ED; --ink-2:#B6BAC4; --muted:#8A8F9A;
+  --line:#2C313B; --line-2:#3B414D;
+  --accent:#9085E9; --accent-soft:#25233C;
+  --c1:#4b93e8; --c2:#e8703d; --c3:#4BBF95; --c4:#9a9ca3; --c5:#a18ee8; --c6:#e66a6a;
+  --good:#4BBF95; --good-soft:#123028; --warn:#D9A742; --warn-soft:#332916; --bad:#E07070; --bad-soft:#331D1D;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 22px rgba(0,0,0,.25);
+}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--paper); color:var(--ink); margin:0;
+  font-family:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif; font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased}
+.wrap{max-width:980px; margin:0 auto; padding:0 16px 72px}
+a{color:var(--accent)}
+nav.top{position:sticky; top:0; z-index:5; background:color-mix(in srgb, var(--paper) 88%, transparent); backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line); margin:0 -16px; padding:10px 16px; display:flex; gap:6px; align-items:center; flex-wrap:wrap}
+nav.top .marca{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-right:auto}
+nav.top a{text-decoration:none; font-size:13.5px; padding:6px 13px; border-radius:999px; color:var(--ink-2); border:1px solid transparent}
+nav.top a:hover{border-color:var(--line-2)}
+nav.top a[aria-current="page"]{background:var(--accent); color:#fff}
+header.hero{padding:40px 0 10px}
+.eyebrow{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); margin:0 0 8px}
+h1{font-family:Spectral,Georgia,serif; font-weight:700; font-size:clamp(28px,5vw,42px); line-height:1.1; letter-spacing:-.018em; margin:0 0 10px; text-wrap:balance}
+h2{font-family:Spectral,Georgia,serif; font-weight:600; font-size:clamp(21px,3vw,25px); margin:0 0 4px; line-height:1.2}
+h3{font-size:15px; margin:0 0 4px}
+.lead{color:var(--ink-2); font-size:16.5px; margin:0; max-width:66ch}
+section{margin-top:30px}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); padding:20px 20px 18px}
+.sub{color:var(--muted); font-size:14px; margin:0 0 14px; max-width:70ch}
+.paso{display:inline-flex; width:26px; height:26px; border-radius:50%; background:var(--accent); color:#fff; font-size:13px; font-weight:600; align-items:center; justify-content:center; margin-right:8px; vertical-align:2px}
+
+.pills{display:flex; flex-wrap:wrap; gap:6px; margin:0 0 14px}
+.pills button,.chip{font:inherit; font-size:13.5px; padding:6px 12px; border-radius:999px; cursor:pointer; border:1px solid var(--line-2); background:var(--surface); color:var(--ink-2)}
+.pills button:hover,.chip:hover{border-color:var(--accent)}
+.pills button[aria-pressed="true"],.chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#fff}
+.chip .sw{display:inline-block; width:18px; height:3px; border-radius:2px; vertical-align:middle; margin-right:7px; background:currentColor}
+.chip[aria-pressed="false"]{opacity:.55}
+.chip.ser{border-width:2px}
+.chip.ser[aria-pressed="true"]{background:var(--surface-2); border-color:currentColor}
+.chip.ser[aria-pressed="false"]{border-color:var(--line-2)}
+.pills button:focus-visible,.chip:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+.kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:0 0 16px}
+.kpis.tres{grid-template-columns:repeat(3,1fr)}
+.kpi{background:var(--surface-2); border-radius:10px; padding:11px 13px}
+.kpi .l{font-size:12px; color:var(--muted); margin:0}
+.kpi .v{font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:clamp(18px,3.4vw,25px); margin:2px 0 0; line-height:1.2}
+.kpi .n{font-size:12px; color:var(--muted); margin:2px 0 0}
+.badge{display:inline-block; font-size:12px; font-weight:600; padding:1px 9px; border-radius:999px}
+.badge.ok{background:var(--good-soft); color:var(--good)} .badge.no{background:var(--bad-soft); color:var(--bad)} .badge.aviso{background:var(--warn-soft); color:var(--warn)}
+.callout{border-radius:10px; padding:11px 14px; font-size:14px; margin:14px 0 0; border:1px solid transparent}
+.callout.info{background:var(--accent-soft); border-color:color-mix(in srgb, var(--accent) 25%, transparent)}
+.callout.aviso{background:var(--warn-soft); border-color:color-mix(in srgb, var(--warn) 30%, transparent)}
+.callout.ok{background:var(--good-soft); border-color:color-mix(in srgb, var(--good) 30%, transparent)}
+.callout b{font-weight:600}
+
+svg.chart{width:100%; height:auto; display:block; overflow:visible}
+.chart text{font-family:"IBM Plex Sans",sans-serif; font-size:11px; fill:var(--muted)}
+.chart .grid{stroke:var(--line); stroke-width:1}
+.chart .ref{stroke:var(--c6); stroke-width:1.2; stroke-dasharray:5 4}
+.chart .reft{fill:var(--c6); font-size:10.5px}
+.chart .sel{fill:var(--accent); opacity:.09}
+.chart .hit{fill:transparent; cursor:pointer}
+.chart .xl.on{fill:var(--ink); font-weight:600}
+.chart .l1{stroke:var(--c1)} .chart .l2{stroke:var(--c2)} .chart .l3{stroke:var(--c3)} .chart .l4{stroke:var(--c4)} .chart .l5{stroke:var(--c5)} .chart .l6{stroke:var(--c6)}
+.chart .f1{fill:var(--c1)} .chart .f2{fill:var(--c2)} .chart .f3{fill:var(--c3)} .chart .f4{fill:var(--c4)} .chart .f5{fill:var(--c5)} .chart .f6{fill:var(--c6)}
+.chart .ln{fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round}
+.chart .dash{stroke-dasharray:6 4} .chart .punt{stroke-dasharray:2 4}
+.chart .band{opacity:.15}
+.chart .pt{stroke-width:2}
+.chart .pt.hueco{fill:var(--surface)}
+.chart .colb{opacity:.9}
+
+.bars{display:grid; gap:8px}
+.bar{display:grid; grid-template-columns:minmax(110px,190px) 1fr 88px; gap:10px; align-items:center; font-size:13.5px}
+.bar .nom{color:var(--ink-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.bar .pista{position:relative; height:16px; background:var(--surface-2); border-radius:8px}
+.bar .rel{position:absolute; top:0; bottom:0; border-radius:8px; transition:width .35s}
+.bar .val{font-family:"IBM Plex Mono",monospace; font-size:12.5px; text-align:right; white-space:nowrap}
+.bar .refl{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--c6)}
+.bar.neg .rel{right:50%} .bar.pos .rel{left:50%}
+.bar .cero{position:absolute; top:-3px; bottom:-3px; left:50%; width:1px; background:var(--line-2)}
+
+.tw{overflow-x:auto; margin-top:6px}
+table{border-collapse:collapse; width:100%; font-size:13.5px; min-width:460px}
+th,td{text-align:right; padding:7px 10px; border-bottom:1px solid var(--line); white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600; color:var(--ink-2); font-size:12.5px}
+td{font-family:"IBM Plex Mono",monospace; font-size:13px}
+td:first-child{font-family:"IBM Plex Sans",sans-serif; font-weight:500}
+tfoot td{font-weight:600; border-bottom:0; background:var(--surface-2)}
+.note{font-size:12.5px; color:var(--muted); margin:10px 0 0}
+
+.grid2{display:grid; grid-template-columns:1.05fr .95fr; gap:20px; align-items:start}
+.grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+.mini{background:var(--surface-2); border-radius:10px; padding:12px 14px; font-size:13.5px; color:var(--ink-2)}
+.mini b{display:block; color:var(--ink); margin-bottom:2px}
+.ctl{display:grid; gap:6px; margin:10px 0}
+.ctl label{font-size:13.5px; color:var(--ink-2); display:flex; justify-content:space-between; gap:10px}
+.ctl label span{font-family:"IBM Plex Mono",monospace; color:var(--ink)}
+input[type=range]{width:100%; accent-color:var(--accent)}
+.inputs{display:grid; gap:8px}
+.row{display:grid; grid-template-columns:1fr 92px 64px; gap:10px; align-items:center; font-size:14px}
+.row input[type=number]{font:inherit; font-family:"IBM Plex Mono",monospace; width:100%; padding:6px 8px; text-align:right; border:1px solid var(--line-2); border-radius:8px; background:var(--surface); color:var(--ink)}
+.row .t{font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--muted); text-align:right}
+.btn{font:inherit; font-size:13px; padding:6px 12px; border-radius:8px; cursor:pointer; border:1px solid var(--line-2); background:var(--surface); color:var(--ink-2)}
+.btn:hover{border-color:var(--accent)}
+code{font-family:"IBM Plex Mono",monospace; font-size:12.5px; background:var(--surface-2); padding:1px 6px; border-radius:5px}
+pre{font-family:"IBM Plex Mono",monospace; font-size:12.5px; background:var(--surface-2); padding:12px 14px; border-radius:10px; overflow-x:auto; margin:12px 0 0}
+.nodo{cursor:pointer}
+.nodo rect{fill:var(--surface); stroke:var(--line-2); stroke-width:1.4; transition:stroke .15s, fill .15s}
+.nodo:hover rect,.nodo.on rect{stroke:var(--accent); fill:var(--accent-soft)}
+.nodo text{fill:var(--ink); font-size:12.5px; font-weight:500} .nodo .s{fill:var(--muted); font-size:11px; font-weight:400}
+.flecha{stroke:var(--line-2); stroke-width:1.6; fill:none}
+.pie{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-top:34px; padding-top:18px; border-top:1px solid var(--line)}
+.pie a.sig{font-weight:600; text-decoration:none}
+footer{margin-top:18px; font-size:12.5px; color:var(--muted)}
+
+@media (max-width:760px){
+  .kpis,.kpis.tres{grid-template-columns:1fr 1fr}
+  .grid2,.grid3{grid-template-columns:1fr}
+  .bar{grid-template-columns:96px 1fr 76px}
+}
+@media (prefers-reduced-motion:reduce){ *{transition:none!important; scroll-behavior:auto!important} }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="top" aria-label="Secciones">
+  <span class="marca">Predicción de devoluciones</span>
+  <a href="index.html" aria-current="page">El problema</a><a href="solucion.html">La solución</a><a href="evidencia.html">La evidencia</a>
+</nav>
+<header class="hero">
+  <p class="eyebrow">1 · El problema</p>
+  <h1>Cuando un equipo sale a un distribuidor, ¿cuántos vuelven?</h1>
+  <p class="lead">Una empresa de telefonía en Ecuador despacha equipos a sus distribuidores. Los que no se venden en 60 días se acumulan como inventario parado. El proyecto parte de una premisa del negocio: la proyección de demanda no incorpora de forma explícita cuántos equipos volverán.</p>
+</header>
+
+<section class="card" aria-labelledby="h-viaje">
+  <h2 id="h-viaje"><span class="paso">1</span>El viaje de un equipo</h2>
+  <p class="sub">Esta es la regla que acordó el negocio: una unidad cuenta como devolución cuando cumple <b>60 días desde su despacho</b> y sigue en poder del canal. Mueve el reloj y prueba los casos.</p>
+  <div class="pills" id="escenarios" role="group" aria-label="Escenario"></div>
+  <svg class="chart" id="viaje" viewBox="0 0 760 210" role="img" aria-label="Línea de tiempo de un equipo desde su despacho"></svg>
+  <div class="ctl">
+    <label for="dia">Días desde el despacho <span id="diav">0</span></label>
+    <input type="range" id="dia" min="0" max="120" value="0" step="1">
+    <div><button class="btn" id="play" type="button">▶ Reproducir</button></div>
+  </div>
+  <div class="callout info" id="estado" aria-live="polite"></div>
+  <p class="note">Tres reglas, verificadas una por una con listados reales del área de planificación: los días se cuentan desde el despacho, el reloj no se reinicia al mover la unidad entre locales del canal (solo al volver a bodega central) y es un flujo: cada unidad se cuenta una sola vez, el mes en que cruza el umbral. Coincidencia con el negocio: <b id="valid"></b>.</p>
+</section>
+
+<section class="card" aria-labelledby="h-tam">
+  <h2 id="h-tam"><span class="paso">2</span>Qué tan grande es</h2>
+  <p class="sub">Unidades que cumplen 60 días en el canal, mes a mes. Toca una columna para ver el detalle.</p>
+  <div class="kpis" id="kpis"></div>
+  <svg class="chart" id="cols" viewBox="0 0 720 270" role="img" aria-label="Devoluciones por mes"></svg>
+  <div class="callout info" id="detalle" aria-live="polite"></div>
+</section>
+
+<section class="card" aria-labelledby="h-ojo">
+  <h2 id="h-ojo"><span class="paso">3</span>Por qué no se anticipa a ojo</h2>
+  <p class="sub">Tres formas sencillas de adelantarse, evaluadas con el mismo esquema que usaremos para el modelo: en cada mes, solo con lo que se sabía antes. Activa y desactiva para compararlas con lo que ocurrió.</p>
+  <div class="pills" id="metodos" role="group" aria-label="Métodos sencillos"></div>
+  <svg class="chart" id="ojo" viewBox="0 0 720 300" role="img" aria-label="Real frente a métodos sencillos"></svg>
+  <div class="kpis tres" id="errores"></div>
+  <div class="callout aviso"><b>La serie salta de 335 a 1.364 devoluciones</b> entre enero y julio de 2026. Repetir el mes anterior o promediar los últimos tres se equivoca en promedio 35 % y 41 %, y en el peor mes más de 190 %. No anticipar nada se equivoca el 100 % por definición.</div>
+</section>
+
+<section aria-labelledby="h-res">
+  <h2 id="h-res" style="margin-bottom:10px">Lo que hay que resolver</h2>
+  <div class="grid3">
+    <div class="mini"><b>Qué predecir</b>El volumen mensual de devoluciones por marca: cuántas unidades cumplirán 60 días en el canal.</div>
+    <div class="mini"><b>Con qué exactitud</b>Un error porcentual medio (MAPE) de 15 % como máximo, comprometido en el objetivo 4.</div>
+    <div class="mini"><b>Con qué información</b>Solo lo que se sabe al cierre del mes anterior. Nada del futuro.</div>
+  </div>
+  <div class="pie"><span></span><a class="sig" href="solucion.html">Ver cómo lo resolvimos →</a></div>
+</section>
+<footer>Generado por <code>scripts/generar_defensa.py</code> a partir del panel marca × mes, el modelo guardado y los reportes del repositorio. Grupo 5 · Maestría en IA Aplicada · UDLA.</footer>
+</div>
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const fmt = (n, d = 0) => n.toLocaleString('de-DE', {minimumFractionDigits: d, maximumFractionDigits: d});
+const pct = (n, d = 1) => fmt(n, d) + ' %';
+const sgn = (n, d = 0) => (n > 0 ? '+' : n < 0 ? '−' : '') + fmt(Math.abs(n), d);
+const MES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+const etiqueta = iso => { const [y, m] = iso.split('-'); return MES[+m - 1] + ' ' + y; };
+const corta = iso => { const [y, m] = iso.split('-'); return MES[+m - 1] + (m === '01' ? ' ' + y.slice(2) : ''); };
+
+/* Todo lo que depende del ancho se registra aquí y se redibuja al cambiar el tamaño. */
+const redibujables = [];
+function registrar(fn) { redibujables.push(fn); fn(); }
+let _t; addEventListener('resize', () => { clearTimeout(_t); _t = setTimeout(() => redibujables.forEach(f => f()), 120); });
+
+const ancho = el => Math.max(300, Math.round(el.getBoundingClientRect().width || el.parentElement.clientWidth));
+function escala(max) {
+  for (const base of [1, 2, 5, 10, 20, 50, 100, 200, 250, 500, 1000, 2000, 5000]) {
+    if (max / base <= 6) return [Math.ceil(max / base) * base, base];
+  }
+  return [max, max / 5];
+}
+const corridas = a => {            // tramos contiguos sin valores nulos
+  const r = []; let c = [];
+  a.forEach((v, i) => { if (v == null) { if (c.length) r.push(c); c = []; } else c.push(i); });
+  if (c.length) r.push(c); return r;
+};
+
+/* Lineas con puntos, bandas, linea de referencia y mes seleccionable. */
+function lineas(el, c) {
+  const W = ancho(el), H = c.alto || (W < 520 ? 240 : 300), L = c.izq || 44, R = 12, T = 14, B = 30, n = c.etiquetas.length;
+  const vs = [];
+  c.series.forEach(s => s.valores.forEach(v => v != null && vs.push(v)));
+  (c.bandas || []).forEach(b => b.hi.forEach(v => v != null && vs.push(v)));
+  if (c.ref) vs.push(c.ref.y);
+  const [tope, paso] = escala(Math.max(...vs) * 1.06);
+  const x = i => L + (W - L - R) * (i + .5) / n, y = v => T + (H - T - B) * (1 - v / tope);
+  const yf = c.yfmt || (v => fmt(v));
+  let s = '';
+  for (let v = 0; v <= tope + 1e-9; v += paso)
+    s += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 7}" y="${y(v) + 3.5}" text-anchor="end">${yf(v)}</text>`;
+  const w = (W - L - R) / n;
+  if (c.sel != null) s += `<rect class="sel" x="${x(c.sel) - w / 2}" y="${T}" width="${w}" height="${H - T - B}" rx="6"/>`;
+  (c.bandas || []).forEach(b => corridas(b.hi).forEach(r => {
+    const up = r.map(i => `${x(i)},${y(b.hi[i])}`), dn = r.map(i => `${x(i)},${y(b.lo[i])}`).reverse();
+    s += `<polygon class="band ${b.cls}" points="${up.concat(dn).join(' ')}"/>`;
+  }));
+  if (c.ref) s += `<line class="ref" x1="${L}" x2="${W - R}" y1="${y(c.ref.y)}" y2="${y(c.ref.y)}"/><text class="reft" x="${W - R}" y="${y(c.ref.y) - 5}" text-anchor="end">${c.ref.texto}</text>`;
+  c.series.forEach(se => {
+    corridas(se.valores).forEach(r => {
+      s += `<polyline class="ln l${se.k} ${se.trazo || ''}" points="${r.map(i => `${x(i)},${y(se.valores[i])}`).join(' ')}"/>`;
+    });
+    if (se.puntos !== false) se.valores.forEach((v, i) => {
+      if (v == null) return;
+      const r = i === c.sel ? 5.5 : 3.6;
+      s += `<circle class="pt l${se.k} ${se.hueco && se.hueco.includes(i) ? 'hueco' : 'f' + se.k}" cx="${x(i)}" cy="${y(v)}" r="${r}"/>`;
+    });
+  });
+  const salto = Math.ceil(n / Math.max(1, Math.floor((W - L) / 44)));
+  c.etiquetas.forEach((e, i) => {
+    if (i % salto === 0 || i === c.sel) s += `<text class="xl ${i === c.sel ? 'on' : ''}" x="${x(i)}" y="${H - 9}" text-anchor="middle">${e}</text>`;
+    s += `<rect class="hit" data-i="${i}" x="${x(i) - w / 2}" y="${T}" width="${w}" height="${H - T}"><title>${c.titulo ? c.titulo(i) : e}</title></rect>`;
+  });
+  el.setAttribute('viewBox', `0 0 ${W} ${H}`); el.innerHTML = s;
+  if (c.alSel) $$('.hit', el).forEach(r => r.onclick = () => c.alSel(+r.dataset.i));
+}
+
+/* Columnas con una linea opcional encima. */
+function columnas(el, c) {
+  const W = ancho(el), H = c.alto || (W < 520 ? 220 : 270), L = 44, R = 10, T = 14, B = 30, n = c.etiquetas.length;
+  const vs = c.valores.concat(c.linea ? c.linea.valores : []).filter(v => v != null);
+  const [tope, paso] = escala(Math.max(...vs) * 1.06);
+  const x = i => L + (W - L - R) * (i + .5) / n, y = v => T + (H - T - B) * (1 - v / tope), w = (W - L - R) / n;
+  let s = '';
+  for (let v = 0; v <= tope + 1e-9; v += paso)
+    s += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 7}" y="${y(v) + 3.5}" text-anchor="end">${fmt(v)}</text>`;
+  c.valores.forEach((v, i) => {
+    const sel = c.sel === i;
+    s += `<rect class="colb f${c.k || 1}" x="${x(i) - w * .36}" y="${y(v)}" width="${w * .72}" height="${y(0) - y(v)}" rx="2" opacity="${c.sel == null || sel ? .92 : .45}"/>`;
+  });
+  if (c.linea) s += `<polyline class="ln l${c.linea.k} ${c.linea.trazo || ''}" points="${c.linea.valores.map((v, i) => `${x(i)},${y(v)}`).join(' ')}"/>`;
+  const salto = Math.ceil(n / Math.max(1, Math.floor((W - L) / 40)));
+  c.etiquetas.forEach((e, i) => {
+    if (i % salto === 0) s += `<text class="xl" x="${x(i)}" y="${H - 9}" text-anchor="middle">${e}</text>`;
+    s += `<rect class="hit" data-i="${i}" x="${x(i) - w / 2}" y="${T}" width="${w}" height="${H - T}"><title>${c.titulo ? c.titulo(i) : e}</title></rect>`;
+  });
+  el.setAttribute('viewBox', `0 0 ${W} ${H}`); el.innerHTML = s;
+  if (c.alSel) $$('.hit', el).forEach(r => r.onclick = () => c.alSel(+r.dataset.i));
+}
+
+/* Barras horizontales en HTML. Con `divergente` se centran en cero. */
+function barras(el, items, o = {}) {
+  let max = o.max ?? Math.max(...items.map(i => Math.abs(i.valor)));
+  if (o.ref != null) max = Math.max(max, o.ref * 1.12);   // la referencia siempre cabe en la escala
+  el.className = 'bars';
+  el.innerHTML = items.map(i => {
+    const a = Math.abs(i.valor) / max * (o.divergente ? 50 : 100);
+    const pos = o.divergente ? (i.valor >= 0 ? `left:50%;width:${a}%` : `left:${50 - a}%;width:${a}%`) : `left:0;width:${a}%`;
+    const ref = o.ref != null ? `<span class="refl" style="left:${o.ref / max * 100}%"></span>` : '';
+    return `<div class="bar"><span class="nom" title="${i.nombre}">${i.nombre}</span>
+      <span class="pista">${o.divergente ? '<span class="cero"></span>' : ''}<span class="rel" style="${pos};background:var(--c${i.k || 1})"></span>${ref}</span>
+      <span class="val">${i.texto ?? fmt(i.valor, o.dec || 0)}</span></div>`;
+  }).join('');
+}
+
+function pastillas(el, etiquetas, sel, alSel) {
+  el.innerHTML = etiquetas.map((e, i) => `<button type="button" data-i="${i}" aria-pressed="${i === sel}">${e}</button>`).join('');
+  $$('button', el).forEach(b => b.onclick = () => alSel(+b.dataset.i));
+}
+
+</script>
+<script>
+const D = {"meses": [{"mes": "2024-05", "desp": 11563.0, "dev": 1152.0, "riesgo": 1604.0, "valor": 589077.36}, {"mes": "2024-06", "desp": 7805.0, "dev": 2264.0, "riesgo": 2884.0, "valor": 750225.1699999999}, {"mes": "2024-07", "desp": 10630.0, "dev": 1927.0, "riesgo": 2962.0, "valor": 472779.07}, {"mes": "2024-08", "desp": 8919.0, "dev": 1329.0, "riesgo": 2115.0, "valor": 723183.41}, {"mes": "2024-09", "desp": 7007.0, "dev": 1477.0, "riesgo": 2301.0, "valor": 426318.06}, {"mes": "2024-10", "desp": 8986.0, "dev": 1022.0, "riesgo": 1633.0, "valor": 259927.74}, {"mes": "2024-11", "desp": 10038.0, "dev": 915.0, "riesgo": 1309.0, "valor": 257445.91999999998}, {"mes": "2024-12", "desp": 9303.0, "dev": 1309.0, "riesgo": 2046.0, "valor": 378094.82}, {"mes": "2025-01", "desp": 9328.0, "dev": 1439.0, "riesgo": 1999.0, "valor": 373126.02}, {"mes": "2025-02", "desp": 11597.0, "dev": 1304.0, "riesgo": 1875.0, "valor": 280494.24}, {"mes": "2025-03", "desp": 7690.0, "dev": 1381.0, "riesgo": 2163.0, "valor": 395228.75}, {"mes": "2025-04", "desp": 12329.0, "dev": 1686.0, "riesgo": 2758.0, "valor": 841650.8999999999}, {"mes": "2025-05", "desp": 10095.0, "dev": 1217.0, "riesgo": 1862.0, "valor": 503782.48}, {"mes": "2025-06", "desp": 7828.0, "dev": 2244.0, "riesgo": 2819.0, "valor": 818346.48}, {"mes": "2025-07", "desp": 11213.0, "dev": 1582.0, "riesgo": 2253.0, "valor": 593565.56}, {"mes": "2025-08", "desp": 7822.0, "dev": 1395.0, "riesgo": 1895.0, "valor": 426785.22}, {"mes": "2025-09", "desp": 7898.0, "dev": 2098.0, "riesgo": 2922.0, "valor": 568127.23}, {"mes": "2025-10", "desp": 5440.0, "dev": 1963.0, "riesgo": 2679.0, "valor": 1184196.24}, {"mes": "2025-11", "desp": 2347.0, "dev": 1274.0, "riesgo": 1994.0, "valor": 428393.96}, {"mes": "2025-12", "desp": 5961.0, "dev": 992.0, "riesgo": 1415.0, "valor": 252456.09000000003}, {"mes": "2026-01", "desp": 4805.0, "dev": 335.0, "riesgo": 484.0, "valor": 134774.39}, {"mes": "2026-02", "desp": 5609.0, "dev": 478.0, "riesgo": 680.0, "valor": 204170.34}, {"mes": "2026-03", "desp": 8696.0, "dev": 732.0, "riesgo": 1017.0, "valor": 482197.24}, {"mes": "2026-04", "desp": 6757.0, "dev": 882.0, "riesgo": 1155.0, "valor": 386957.5}, {"mes": "2026-05", "desp": 6016.0, "dev": 1036.0, "riesgo": 1446.0, "valor": 460266.95}, {"mes": "2026-06", "desp": 5444.0, "dev": 725.0, "riesgo": 999.0, "valor": 293209.92}, {"mes": "2026-07", "desp": 6241.0, "dev": 1364.0, "riesgo": 1767.0, "valor": 587533.79}, {"mes": "2026-08", "desp": 3176.0, "dev": 1100.0, "riesgo": 1488.0, "valor": 632342.91}, {"mes": "2026-09", "desp": 4683.0, "dev": 899.0, "riesgo": 1188.0, "valor": 629099.01}], "k": {"dev26": 7551.0, "valor26": 3810552.05, "desp26": 51427.0, "tasa": 0.738556338028169}, "validacion": {"aciertos": 799, "total": 801}, "wf": {"etiquetas": ["2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09"], "real": [1439.0, 1304.0, 1381.0, 1686.0, 1217.0, 2244.0, 1582.0, 1395.0, 2098.0, 1963.0, 1274.0, 992.0, 335.0, 478.0, 732.0, 882.0, 1036.0, 725.0, 1364.0, 1100.0, 899.0], "naive": [1309.0, 1439.0, 1304.0, 1381.0, 1686.0, 1217.0, 2244.0, 1582.0, 1395.0, 2098.0, 1963.0, 1274.0, 992.0, 335.0, 478.0, 732.0, 882.0, 1036.0, 725.0, 1364.0, 1100.0], "mm": [1082.0, 1221.0, 1350.667, 1374.667, 1457.0, 1428.0, 1715.667, 1681.0, 1740.333, 1691.667, 1818.667, 1778.333, 1409.667, 867.0, 601.667, 515.0, 697.333, 883.333, 881.0, 1041.667, 1063.0], "cero": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "mape": {"naive": 34.96, "mm": 41.18, "cero": 100.0}, "peor": {"naive": 196.12, "mm": 320.8, "cero": 100.0}, "ape": {"Cero (no anticipa)": [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0], "XGBoost Poisson": [15.777, 18.825, 0.646, 1.099, 5.472, 19.747, 7.663, 13.689, 28.115, 10.417, 3.455, 4.464, 9.437, 14.691, 10.805, 16.509, 3.704, 7.829, 18.965, 8.466, 1.908], "Tasa de conversión": [5.614, 5.627, 3.999, 2.915, 2.096, 17.521, 4.283, 6.732, 7.394, 4.443, 10.892, 2.176, 1.117, 4.236, 2.223, 7.388, 3.358, 2.602, 14.165, 0.903, 0.764], "Media móvil 3 meses": [24.809, 6.365, 2.196, 18.466, 19.721, 36.364, 8.449, 20.502, 17.048, 13.822, 42.752, 79.267, 320.796, 81.381, 17.805, 41.61, 32.69, 21.839, 35.411, 5.303, 18.242], "Naive (mes anterior)": [9.034, 10.353, 5.576, 18.09, 38.537, 45.766, 41.846, 13.405, 33.508, 6.877, 54.082, 28.427, 196.119, 29.916, 34.699, 17.007, 14.865, 42.897, 46.848, 24.0, 22.358], "Random Forest": [3.403, 8.022, 11.428, 9.325, 5.356, 11.259, 8.508, 10.365, 23.41, 2.484, 8.217, 5.772, 5.198, 1.281, 2.097, 10.989, 5.56, 1.436, 9.606, 1.786, 5.101]}, "resumen": [{"modelo": "Tasa de conversión", "media": 5.26, "mediana": 4.24, "peor": 17.52, "ic": [3.62, 7.19]}, {"modelo": "Random Forest", "media": 7.17, "mediana": 5.77, "peor": 23.41, "ic": [5.21, 9.36]}, {"modelo": "XGBoost Poisson", "media": 10.56, "mediana": 9.44, "peor": 28.11, "ic": [7.6, 13.73]}, {"modelo": "Naive (mes anterior)", "media": 34.96, "mediana": 28.43, "peor": 196.12, "ic": [22.28, 54.01]}, {"modelo": "Media móvil 3 meses", "media": 41.18, "mediana": 20.5, "peor": 320.8, "ic": null}, {"modelo": "Cero (no anticipa)", "media": 100.0, "mediana": 100.0, "peor": 100.0, "ic": null}], "sobre15": 1, "peor_mes": "2025-06"}};
+/* ---------- 1 · el viaje ---------- */
+const ESC = {
+  venta: {nombre: 'Se vende al día 25', venta: 25},
+  sin: {nombre: 'Sigue sin venderse'},
+  cambio: {nombre: 'Cambia de local (el reloj sigue)', mueve: 20},
+  reinicio: {nombre: 'Vuelve a central y sale de nuevo (el reloj reinicia)', vuelve: 40, sale: 45},
+};
+let esc = 'sin', dia = 0, timer = null;
+
+function estado(d) {
+  const e = ESC[esc];
+  if (e.venta != null && d >= e.venta)
+    return {lugar: 'vendido', k: 3, reloj: e.venta, clase: 'ok', t: `<b>Vendido al cliente final el día ${e.venta}.</b> Sale del canal antes de los 60 días: no cuenta como devolución.`};
+  if (e.vuelve != null && d >= e.vuelve && d < e.sale)
+    return {lugar: 'central', k: 4, reloj: 0, clase: 'aviso', t: `<b>De vuelta en bodega central.</b> El reloj se reinicia: lo que se contó hasta aquí ya no sirve.`};
+  const reloj = e.vuelve != null && d >= e.sale ? d - e.sale : d;
+  if (reloj >= 60)
+    return {lugar: 'cuenta', k: 6, reloj, clase: 'aviso', t: `<b>Día ${reloj}: cumple 60 días sin venderse y sigue en el canal.</b> Cuenta como devolución, una sola vez, en el mes en que cruza el umbral.`};
+  const extra = e.mueve != null && d >= e.mueve ? ' Cambió de local, pero el reloj no se reinicia.' : e.vuelve != null && d >= e.sale ? ' Es un nuevo despacho: el reloj parte de cero.' : '';
+  return {lugar: 'canal', k: 1, reloj, clase: 'info', t: `<b>En el distribuidor · reloj en ${reloj} de 60 días.</b> Todavía no cuenta.${extra}`};
+}
+
+function viaje() {
+  const W = ancho($('#viaje')), estrecho = W < 560, x0 = estrecho ? 26 : 170, y = 112, e = ESC[esc], st = estado(dia);
+  const x = d => x0 + d * (W - x0 - 26) / 120;
+  let s = '';
+  if (estrecho) s += `<text x="${x0}" y="30" style="fill:var(--ink-2)">Sale de bodega central →</text>`;
+  else s += `<rect x="14" y="82" width="116" height="60" rx="10" fill="var(--surface-2)" stroke="var(--line-2)"/>
+    <text x="72" y="108" text-anchor="middle" style="fill:var(--ink);font-weight:600;font-size:12.5px">Bodega</text><text x="72" y="124" text-anchor="middle" style="fill:var(--ink);font-weight:600;font-size:12.5px">central</text>
+    <line class="flecha" x1="130" y1="${y}" x2="${x(0) - 8}" y2="${y}"/><text x="${x(0) - 2}" y="70" text-anchor="middle">despacho</text>`;
+  s += `<rect x="${x(0)}" y="${y - 22}" width="${x(60) - x(0)}" height="44" fill="var(--c1)" opacity=".1"/>
+    <rect x="${x(60)}" y="${y - 22}" width="${x(120) - x(60)}" height="44" fill="var(--c2)" opacity=".13"/>
+    <text x="${(x(0) + x(60)) / 2}" y="${y - 28}" text-anchor="middle">${estrecho ? 'aún no cuenta' : 'en el canal: aún no cuenta'}</text>
+    <text x="${(x(60) + x(120)) / 2}" y="${y - 28}" text-anchor="middle">${estrecho ? 'cuenta si sigue' : 'si sigue en el canal: cuenta'}</text>
+    <line x1="${x(60)}" x2="${x(60)}" y1="${y - 40}" y2="${y + 28}" stroke="var(--c6)" stroke-width="1.6" stroke-dasharray="5 4"/>
+    <text x="${x(60)}" y="${y - 46}" text-anchor="middle" style="fill:var(--c6);font-weight:600">60 días</text>
+    <line x1="${x(0)}" x2="${x(120)}" y1="${y}" y2="${y}" stroke="var(--line-2)" stroke-width="2"/>`;
+  [0, 30, 60, 90, 120].forEach(t => s += `<line x1="${x(t)}" x2="${x(t)}" y1="${y - 5}" y2="${y + 5}" stroke="var(--line-2)"/><text x="${x(t)}" y="${y + 54}" text-anchor="middle">${estrecho ? t : 'día ' + t}</text>`);
+  const ev = (d, txt, k, fila) => `<text x="${Math.min(Math.max(x(d), x0 + 48), W - 60)}" y="${y + fila}" text-anchor="middle" style="fill:var(--c${k});font-weight:600">${txt}</text>`;
+  if (e.venta != null) s += ev(e.venta, '▲ venta al cliente', 3, 78);
+  if (e.mueve != null) s += ev(e.mueve, '◆ otro local', 5, 78);
+  if (e.vuelve != null) {
+    s += ev(e.vuelve, '◀ vuelve a central', 4, 78) + ev(e.sale + 8, '▶ sale de nuevo', 1, 96);
+    s += `<line x1="${x(e.sale + 60)}" x2="${x(e.sale + 60)}" y1="${y - 22}" y2="${y + 28}" stroke="var(--c6)" stroke-width="1.4" stroke-dasharray="2 4"/>
+      <text x="${x(e.sale + 60)}" y="${y + 37}" text-anchor="middle" style="fill:var(--c6)">nuevo umbral</text>`;
+  }
+  s += `<circle cx="${x(dia)}" cy="${y}" r="11" fill="var(--c${st.k})" stroke="var(--surface)" stroke-width="3"/>
+    <text x="${x(dia)}" y="${y + 4}" text-anchor="middle" style="fill:#fff;font-size:10.5px;font-weight:600">${st.reloj}</text>`;
+  $('#viaje').setAttribute('viewBox', `0 0 ${W} 222`);
+  $('#viaje').innerHTML = s;
+  $('#diav').textContent = dia + (st.reloj !== dia ? ` (reloj: ${st.reloj})` : '');
+  const c = $('#estado'); c.className = 'callout ' + st.clase; c.innerHTML = st.t;
+  $('#dia').value = dia;
+}
+function escenarios() {
+  pastillas($('#escenarios'), Object.values(ESC).map(e => e.nombre), Object.keys(ESC).indexOf(esc), i => {
+    esc = Object.keys(ESC)[i]; dia = 0; parar(); escenarios(); viaje();
+  });
+}
+function parar() { clearInterval(timer); timer = null; $('#play').textContent = '▶ Reproducir'; }
+$('#dia').oninput = e => { parar(); dia = +e.target.value; viaje(); };
+$('#play').onclick = () => {
+  if (timer) return parar();
+  if (dia >= 120) dia = 0;
+  $('#play').textContent = '❚❚ Pausar';
+  timer = setInterval(() => { dia = Math.min(120, dia + 1); viaje(); if (dia >= 120) parar(); }, 70);
+};
+$('#valid').textContent = `${fmt(D.validacion.aciertos)} de ${fmt(D.validacion.total)} equipos (${fmt(D.validacion.aciertos / D.validacion.total * 100, 2)} %)`;
+escenarios(); registrar(viaje);
+
+/* ---------- 2 · tamaño ---------- */
+$('#kpis').innerHTML = `
+  <div class="kpi"><p class="l">Devoluciones ene–sep 2026</p><p class="v">${fmt(D.k.dev26)}</p><p class="n">unidades</p></div>
+  <div class="kpi"><p class="l">Valor a precio de despacho</p><p class="v">USD ${fmt(D.k.valor26 / 1e6, 1)} M</p><p class="n">${fmt(D.k.valor26 / D.k.dev26)} por unidad</p></div>
+  <div class="kpi"><p class="l">Siguen sin venderse a los 60 días</p><p class="v">${fmt(D.k.tasa * 100)} de 100</p><p class="n">de las que llegan en riesgo</p></div>
+  <div class="kpi"><p class="l">Historia</p><p class="v">${D.meses.length} meses</p><p class="n">11 marcas</p></div>`;
+let selMes = D.meses.length - 1;
+function detalle() {
+  const m = D.meses[selMes];
+  $('#detalle').innerHTML = `<b>${etiqueta(m.mes)}:</b> ${fmt(m.dev)} unidades cumplieron 60 días en el canal, de ${fmt(m.riesgo)} que llegaban en riesgo (${fmt(m.dev / m.riesgo * 100)} %). Ese mes se despacharon ${fmt(m.desp)} equipos; lo devuelto vale USD ${fmt(m.valor / 1e3)} mil a precio de despacho.`;
+}
+registrar(() => columnas($('#cols'), {
+  etiquetas: D.meses.map(m => corta(m.mes)), valores: D.meses.map(m => m.dev), k: 2, sel: selMes,
+  titulo: i => `${etiqueta(D.meses[i].mes)}: ${fmt(D.meses[i].dev)} devoluciones`, alSel: i => { selMes = i; detalle(); redibujables.forEach(f => f()); }
+}));
+detalle();
+
+/* ---------- 3 · a ojo ---------- */
+const MET = {naive: {n: 'Repetir el mes anterior', k: 4, trazo: 'dash'}, mm: {n: 'Promedio de 3 meses', k: 5, trazo: 'dash'}, cero: {n: 'No anticipar nada', k: 6, trazo: 'punt'}};
+const act = {naive: true, mm: false, cero: false};
+function ojo() {
+  $('#metodos').innerHTML = Object.entries(MET).map(([id, m]) =>
+    `<button class="chip ser" type="button" data-id="${id}" aria-pressed="${act[id]}" style="color:var(--c${m.k})"><span class="sw"></span><span style="color:var(--ink-2)">${m.n}</span></button>`).join('');
+  $$('#metodos .chip').forEach(b => b.onclick = () => { act[b.dataset.id] = !act[b.dataset.id]; ojo(); });
+  lineas($('#ojo'), {
+    etiquetas: D.wf.etiquetas.map(corta),
+    series: [{valores: D.wf.real, k: 2}].concat(Object.entries(MET).filter(([id]) => act[id]).map(([id, m]) => ({valores: D.wf[id], k: m.k, trazo: m.trazo, puntos: false}))),
+    titulo: i => `${etiqueta(D.wf.etiquetas[i])}: real ${fmt(D.wf.real[i])}`
+  });
+  $('#errores').innerHTML = Object.entries(MET).map(([id, m]) =>
+    `<div class="kpi"><p class="l">${m.n}</p><p class="v" style="color:var(--c${m.k})">${pct(D.wf.mape[id], 1)}</p><p class="n">error medio · peor mes ${fmt(D.wf.peor[id], 0)} %</p></div>`).join('');
+}
+registrar(ojo);
+</script>
+</body>
+</html>

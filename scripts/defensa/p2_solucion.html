@@ -1,0 +1,215 @@
+<header class="hero">
+  <p class="eyebrow">2 · La solución</p>
+  <h1>Devoluciones = unidades en riesgo × tasa de la marca</h1>
+  <p class="lead">El modelo no intenta adivinar el futuro lejano: parte de las unidades que <b>ya están en el canal</b> y se acercan a los 60 días, y aplica la proporción histórica de cada marca que acaba sin venderse.</p>
+</header>
+
+<section class="card" aria-labelledby="h-flujo">
+  <h2 id="h-flujo"><span class="paso">1</span>Del dato crudo al panel que ve el modelo</h2>
+  <p class="sub">Toca cada etapa para ver qué hace y con qué volumen.</p>
+  <svg class="chart" id="flujo" viewBox="0 0 760 112" role="img" aria-label="Flujo de datos del inventario al modelo"></svg>
+  <div class="callout info" id="nodo-detalle" aria-live="polite"></div>
+</section>
+
+<section class="card" aria-labelledby="h-calc">
+  <h2 id="h-calc"><span class="paso">2</span>Así llega a la cifra de cada mes</h2>
+  <p class="sub">Cada mes se predice solo con lo que se sabía antes de él y se compara con lo que ocurrió. Elige un mes de prueba.</p>
+  <div class="pills" id="pills" role="group" aria-label="Mes de prueba"></div>
+  <div class="kpis" id="kpis"></div>
+  <svg class="chart" id="cal" viewBox="0 0 720 290" role="img" aria-label="Predicción, real e intervalo de los nueve meses de prueba"></svg>
+  <div class="tw"><table id="tabla"></table></div>
+  <p class="note" id="nota"></p>
+</section>
+
+<section class="card" aria-labelledby="h-tasa">
+  <h2 id="h-tasa"><span class="paso">3</span>La tasa de cada marca, y por qué se «encoge»</h2>
+  <p class="sub">Una marca con pocas unidades tiene una tasa poco fiable. El modelo la acerca a la tasa global con un peso <b>k</b>: cuanta menos historia, más se parece al promedio. Mueve k para verlo.</p>
+  <div class="pills" id="marcas" role="group" aria-label="Marca"></div>
+  <div class="ctl"><label for="k">Peso del encogimiento k <span id="kv"></span></label><input type="range" id="k" min="0" max="2000" step="10"></div>
+  <div class="grid2">
+    <div id="tasa-panel"></div>
+    <div class="mini" id="tasa-texto"></div>
+  </div>
+  <p class="note">Los datos son la ventana de los 9 meses anteriores a octubre (ene–sep 2026), la que usa el modelo guardado. El valor elegido, k = 300, se ajustó sobre validación.</p>
+</section>
+
+<section class="card" aria-labelledby="h-fut">
+  <h2 id="h-fut"><span class="paso">4</span>Mirando adelante: octubre, noviembre y diciembre</h2>
+  <p class="sub">Los datos llegan hasta el 30 de septiembre. Lo que cambia con el horizonte es cuánto de la exposición ya se conoce.</p>
+  <div class="grid3" id="trio"></div>
+  <div class="callout aviso"><b>Cuánto creerle a cada mes.</b> Octubre se predice con el método ya validado. Noviembre y diciembre son <b>escenarios</b>: dependen de despachos que aún no ocurren y, repetido el ejercicio sobre el pasado, su error fue mucho mayor (ver abajo). No cumplen el criterio de 15 %.</div>
+  <div class="ctl" style="margin-top:16px">
+    <label for="factor">Supuesto: despachos de octubre <span id="fv"></span></label>
+    <input type="range" id="factor" min="50" max="150" step="5" value="100">
+  </div>
+  <svg class="chart" id="fut" viewBox="0 0 720 290" role="img" aria-label="Historia reciente y pronóstico de octubre a diciembre"></svg>
+  <div class="legend" id="leyenda" style="display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--ink-2);margin-top:6px"></div>
+  <div class="tw"><table id="tabla-fut"></table></div>
+  <div class="grid3" style="margin-top:14px" id="como"></div>
+  <details style="margin-top:16px"><summary style="cursor:pointer;font-weight:600">Probar con otras cifras de unidades en riesgo</summary>
+    <p class="sub" style="margin-top:8px">Para un mes cualquiera: se ingresan las unidades en riesgo de cada marca y se aplican las tasas guardadas en <code>modelo/modelo_final.json</code>. Los valores iniciales son las unidades en riesgo observadas para octubre.</p>
+    <div class="grid2"><div><div class="inputs" id="inputs"></div><button class="btn" id="reset" type="button" style="margin-top:8px">Volver a las cifras observadas</button></div>
+    <div class="mini" aria-live="polite"><b>Devoluciones esperadas</b><span style="font-family:'IBM Plex Mono',monospace;font-size:30px;font-weight:600;color:var(--ink)" id="rtotal">–</span><br><span id="rrango" style="font-family:'IBM Plex Mono',monospace"></span><br><span class="note">Intervalo del 95 % del total del mes.</span></div></div>
+  </details>
+</section>
+
+<section class="card" aria-labelledby="h-hor">
+  <h2 id="h-hor"><span class="paso">5</span>Por qué los rangos son los que son</h2>
+  <p class="sub">Se repitió el pronóstico desde cada cierre pasado y se comparó con lo que ocurrió. Esa medición es la que fija el rango de cada mes, no un supuesto.</p>
+  <div class="tw"><table id="tabla-hor"></table></div>
+  <p class="note">La mediana es parecida en los dos horizontes largos (unos 17 %); el promedio sube porque unos pocos meses atípicos fallan por mucho. Con 16–17 casos por horizonte la estimación del rango es aproximada.</p>
+  <div class="pie"><a href="index.html">← El problema</a><a class="sig" href="evidencia.html">Ver la evidencia →</a></div>
+</section>
+=====SCRIPT=====
+/* ---------- 1 · flujo ---------- */
+const NODOS = [
+  {t: 'Inventario y', t2: 'despachos', n: fmt(D.vol.inventario / 1e6, 1) + ' M filas', d: `Los inventarios diarios del cliente (${fmt(D.vol.inventario)} filas) y el reporte de despachos por IMEI (${fmt(D.vol.despachos)}). Es la materia prima; no se versiona porque contiene datos personales.`, s: 'src/fuentes.py · src/extension.py'},
+  {t: 'Estadías', t2: '', n: fmt(D.vol.estadias) + ' tramos', d: `El snapshot diario se colapsa a tramos (unidad, bodega, desde, hasta): ${fmt(D.vol.estadias)}. Reduce el volumen unas 18 veces y es la base de todo lo demás.`, s: 'scripts/construir_v6.py'},
+  {t: 'Periodos', t2: 'en el canal', n: fmt(D.vol.periodos) + ' periodos', d: `Cuánto permanece cada unidad fuera de bodega central, con su fecha de despacho y la fecha en que cumple 60 días. ${fmt(D.vol.periodos)} periodos; ${fmt(D.vol.con_despacho)} tienen despacho asociado.`, s: 'src/permanencia.py'},
+  {t: 'Eventos', t2: 'a 60 días', n: fmt(D.vol.eventos) + ' eventos', d: `Las unidades que cruzan el umbral de 60 días sin haber salido del canal: ${fmt(D.vol.eventos)} en 29 meses. Cada una cuenta una sola vez.`, s: 'src/permanencia.py'},
+  {t: 'Panel', t2: 'marca × mes', n: '319 filas', d: 'Una fila por marca y mes: devoluciones, unidades en riesgo y rezagos. 11 marcas, 29 meses, 16 columnas. Es lo único que ve el modelo.', s: 'src/panel_modelo.py'},
+  {t: 'Modelo', t2: 'riesgo × tasa', n: 'predicción', d: 'Regresión de Poisson con offset de exposición: unidades en riesgo × tasa de la marca, reestimada cada mes. Entrega la predicción con su intervalo.', s: 'src/modelo_final.py'},
+];
+let nodo = 0;
+function flujo() {
+  const ancho = 108, sep = 22, y = 18;
+  let s = '';
+  NODOS.forEach((n, i) => {
+    const x = 6 + i * (ancho + sep);
+    if (i) s += `<line class="flecha" x1="${x - sep + 2}" y1="${y + 42}" x2="${x - 3}" y2="${y + 42}" marker-end="url(#pta)"/>`;
+    s += `<g class="nodo ${i === nodo ? 'on' : ''}" data-i="${i}" tabindex="0" role="button" aria-label="${n.t} ${n.t2}">
+      <rect x="${x}" y="${y}" width="${ancho}" height="84" rx="10"/>
+      <text x="${x + ancho / 2}" y="${y + 30}" text-anchor="middle">${n.t}</text><text x="${x + ancho / 2}" y="${y + 46}" text-anchor="middle">${n.t2}</text>
+      <text class="s" x="${x + ancho / 2}" y="${y + 70}" text-anchor="middle">${n.n}</text></g>`;
+  });
+  $('#flujo').innerHTML = `<defs><marker id="pta" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="var(--line-2)"/></marker></defs>` + s;
+  $$('#flujo .nodo').forEach(g => { g.onclick = () => { nodo = +g.dataset.i; flujo(); }; g.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); nodo = +g.dataset.i; flujo(); } }; });
+  const n = NODOS[nodo];
+  $('#nodo-detalle').innerHTML = `<b>${n.t} ${n.t2}.</b> ${n.d} <br><code>${n.s}</code>`;
+}
+flujo();
+
+/* ---------- 2 · calculadora ---------- */
+let sel = D.meses.length - 1;
+function calc() {
+  pastillas($('#pills'), D.meses.map(m => m.etiqueta), sel, i => { sel = i; calc(); });
+  const m = D.meses[sel], err = (m.prediccion - m.real) / m.real * 100, dentro = m.real >= m.lo && m.real <= m.hi;
+  $('#kpis').innerHTML = `
+    <div class="kpi"><p class="l">Predicción</p><p class="v">${fmt(m.prediccion)}</p><p class="n">unidades</p></div>
+    <div class="kpi"><p class="l">Intervalo 95 %</p><p class="v">${fmt(m.lo)}–${fmt(m.hi)}</p><p class="n">&nbsp;</p></div>
+    <div class="kpi"><p class="l">Lo ocurrido</p><p class="v">${fmt(m.real)}</p><p class="n">unidades</p></div>
+    <div class="kpi"><p class="l">Error</p><p class="v">${sgn(err, 1)} %</p><p class="n"><span class="badge ${dentro ? 'ok' : 'no'}">${dentro ? 'dentro del intervalo' : 'fuera del intervalo'}</span></p></div>`;
+  const f = m.marcas.map(r => `<tr><td>${r.marca}</td><td>${fmt(r.en_riesgo)}</td><td>${fmt(r.tasa * 100, 1)} %</td><td>${fmt(r.prediccion, 1)}</td><td>${fmt(r.real)}</td><td>${sgn(r.prediccion - r.real, 1)}</td></tr>`).join('');
+  const er = m.marcas.reduce((a, r) => a + r.en_riesgo, 0);
+  $('#tabla').innerHTML = `<thead><tr><th>Marca</th><th>En riesgo</th><th>Tasa</th><th>Predicción</th><th>Real</th><th>Diferencia</th></tr></thead><tbody>${f}</tbody>
+    <tfoot><tr><td>Total del mes</td><td>${fmt(er)}</td><td>${fmt(m.prediccion / er * 100, 1)} %</td><td>${fmt(m.prediccion, 1)}</td><td>${fmt(m.real)}</td><td>${sgn(m.prediccion - m.real, 1)}</td></tr></tfoot>`;
+  $('#nota').textContent = `Tasas de ${m.etiqueta} estimadas con los ${D.ventana} meses anteriores. Por marca el error relativo puede ser grande cuando son pocas unidades; el modelo se evalúa sobre el total del mes.`;
+  dibujarCal();
+}
+const dibujarCal = () => lineas($('#cal'), {
+  etiquetas: D.meses.map(m => m.etiqueta.split(' ')[0]), sel,
+  series: [{valores: D.meses.map(m => m.real), k: 2}, {valores: D.meses.map(m => m.prediccion), k: 1, trazo: 'dash', hueco: D.meses.map((_, i) => i)}],
+  bandas: [{lo: D.meses.map(m => m.lo), hi: D.meses.map(m => m.hi), cls: 'f1'}],
+  titulo: i => `${D.meses[i].etiqueta}: predicho ${fmt(D.meses[i].prediccion)} · real ${fmt(D.meses[i].real)}`, alSel: i => { sel = i; calc(); }
+});
+registrar(calc);
+
+/* ---------- 3 · tasa y encogimiento ---------- */
+let marca = D.marcas_tasa[0], kk = D.k;
+function tasa() {
+  pastillas($('#marcas'), D.marcas_tasa, D.marcas_tasa.indexOf(marca), i => { marca = D.marcas_tasa[i]; tasa(); });
+  $('#kv').textContent = kk; $('#k').value = kk;
+  const v = D.ventana_marcas[marca], cruda = v.riesgo ? v.dev / v.riesgo : D.tasa_global;
+  const enc = (v.dev + kk * D.tasa_global) / (v.riesgo + kk), peso = v.riesgo / (v.riesgo + kk) * 100;
+  const pos = t => Math.min(100, Math.max(0, (t - .4) / .6 * 100)) + '%';
+  $('#tasa-panel').innerHTML = `
+    <div style="position:relative;height:96px;margin:6px 0 14px">
+      <div style="position:absolute;left:0;right:0;top:30px;height:6px;border-radius:3px;background:var(--line)"></div>
+      <div style="position:absolute;top:22px;height:22px;width:3px;background:var(--c4);left:${pos(D.tasa_global)}" title="global"></div><div style="position:absolute;top:48px;height:20px;width:1px;background:var(--line-2);left:${pos(D.tasa_global)}"></div><span style="position:absolute;top:34px;left:0;font-size:10.5px;color:var(--muted)">40 %</span><span style="position:absolute;top:34px;right:0;font-size:10.5px;color:var(--muted)">100 %</span>
+      <div style="position:absolute;top:21px;width:22px;height:22px;border-radius:50%;border:3px solid var(--c2);background:var(--surface);transform:translateX(-11px);left:${pos(cruda)}" title="cruda"></div>
+      <div style="position:absolute;top:21px;width:22px;height:22px;border-radius:50%;background:var(--accent);transform:translateX(-11px);left:${pos(enc)};transition:left .25s" title="encogida"></div>
+      <span style="position:absolute;top:70px;font-size:11.5px;color:var(--c4);transform:translateX(-50%);left:${pos(D.tasa_global)}">global ${fmt(D.tasa_global * 100, 1)} %</span>
+      <span style="position:absolute;top:50px;font-size:11.5px;color:var(--c2);transform:translateX(-50%);left:${pos(cruda)}">cruda ${fmt(cruda * 100, 1)} %</span>
+      <span style="position:absolute;top:0;font-size:11.5px;font-weight:600;color:var(--accent);transform:translateX(-50%);left:${pos(enc)}">encogida ${fmt(enc * 100, 1)} %</span>
+    </div>
+    <div class="kpis tres"><div class="kpi"><p class="l">Unidades en riesgo (9 m)</p><p class="v">${fmt(v.riesgo)}</p></div>
+      <div class="kpi"><p class="l">Acabaron devueltas</p><p class="v">${fmt(v.dev)}</p></div>
+      <div class="kpi"><p class="l">Peso de su propia historia</p><p class="v">${fmt(peso)} %</p></div></div>`;
+  $('#tasa-texto').innerHTML = v.riesgo < 50
+    ? `<b>${marca} casi no tiene historia</b>Con ${fmt(v.riesgo)} unidades su tasa cruda no dice nada; el modelo la deja prácticamente en la tasa global.`
+    : kk === 0 ? `<b>Sin encogimiento</b>La tasa es la cruda de la marca. Con pocas unidades, un mes atípico la desplazaría mucho.`
+    : `<b>${fmt(peso)} % historia propia, ${fmt(100 - peso)} % promedio global</b>La tasa de ${marca} se mueve de ${fmt(cruda * 100, 1)} % a ${fmt(enc * 100, 1)} %. A más k, más se parece al promedio; las marcas grandes casi no cambian.`;
+}
+$('#k').oninput = e => { kk = +e.target.value; tasa(); };
+tasa();
+
+/* ---------- 4 · pronóstico oct-dic ---------- */
+const F = D.fut, M = F.marcas;
+let factor = 1;
+function trio() {
+  const mes = [], tasaDe = m => m.tasa;
+  const exp1 = M.map(m => m.exp1), exp2 = M.map(m => m.razon * m.desp_cierre), exp3 = M.map(m => m.razon * m.desp_prom * factor);
+  const tot = e => e.reduce((a, v, i) => a + v * M[i].tasa, 0), sumE = e => e.reduce((a, v) => a + v, 0);
+  const p1 = tot(exp1), p2 = tot(exp2), p3 = tot(exp3);
+  const [l1, h1] = (() => { const s = D.z * Math.sqrt(D.phi * p1); return [Math.max(p1 - s, 0), p1 + s]; })();
+  return [
+    {mes: '2026-10', n: 'Octubre', origen: 'observada', badge: 'ok', texto: 'exposición observada', total: p1, lo: l1, hi: h1, rango: 'intervalo 95 %', exp: exp1, mape: F.hor[0].mape_medio, h: 1},
+    {mes: '2026-11', n: 'Noviembre', origen: 'proyectada', badge: 'aviso', texto: 'exposición proyectada', total: p2, lo: p2 * F.hor[1].q_bajo, hi: p2 * F.hor[1].q_alto, rango: 'rango 80 % histórico', exp: exp2, mape: F.hor[1].mape_medio, h: 2},
+    {mes: '2026-12', n: 'Diciembre', origen: 'escenario', badge: 'no', texto: 'escenario con supuesto', total: p3, lo: p3 * F.hor[2].q_bajo, hi: p3 * F.hor[2].q_alto, rango: 'rango 80 % histórico', exp: exp3, mape: F.hor[2].mape_medio, h: 3},
+  ].map(r => ({...r, sumExp: sumE(r.exp)}));
+}
+function fut() {
+  $('#fv').textContent = `${fmt(factor * 100)} % del promedio (${fmt(F.desp_prom_total * factor)} unidades)`;
+  const t = trio();
+  $('#trio').innerHTML = t.map((r, i) => `<div class="mini" style="padding:14px 16px"><b>${r.n} 2026</b>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:28px;font-weight:600;color:var(--ink)">${fmt(r.total)}</span> <span class="note">unidades</span><br>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px">${fmt(r.lo)} – ${fmt(r.hi)}</span> <span class="note">${r.rango}</span><br>
+    <span class="badge ${r.badge}" style="margin-top:6px">${r.texto}</span>
+    <div class="bars" id="mp${i}" style="margin-top:10px"></div></div>`).join('');
+  t.forEach((r, i) => barras($('#mp' + i), [{nombre: 'Error histórico', valor: r.mape, texto: pct(r.mape, 1), k: r.mape <= 15 ? 3 : r.mape <= 30 ? 2 : 6}], {max: 45, ref: 15}));
+  $('#tabla-fut').innerHTML = `<thead><tr><th>Marca</th><th>Tasa</th>${t.map(r => `<th>${r.n.slice(0, 3)} en riesgo</th><th>${r.n.slice(0, 3)} pred.</th>`).join('')}</tr></thead><tbody>${
+    M.map((m, j) => `<tr><td>${m.marca}</td><td>${fmt(m.tasa * 100, 1)} %</td>${t.map(r => `<td>${fmt(r.exp[j])}</td><td>${fmt(r.exp[j] * m.tasa)}</td>`).join('')}</tr>`).join('')}</tbody>
+    <tfoot><tr><td>Total</td><td></td>${t.map(r => `<td>${fmt(r.sumExp)}</td><td>${fmt(r.total)}</td>`).join('')}</tr></tfoot>`;
+  $('#como').innerHTML = `
+    <div class="mini"><b>Octubre · observada</b>${fmt(t[0].sumExp)} unidades que ya están en el canal al 30 de septiembre (despachadas del 3 al 31 de agosto) y cumplirán 60 días en octubre.</div>
+    <div class="mini"><b>Noviembre · proyectada</b>Despachos de septiembre ya conocidos (${fmt(F.desp_cierre_total)}) × la fracción que históricamente llega en riesgo: ${fmt(F.razon_total * 100, 1)} %.</div>
+    <div class="mini"><b>Diciembre · escenario</b>Depende de lo que se despache en octubre, que aún no ocurre. Se supone el promedio de 3 meses (${fmt(F.desp_prom_total)}); el control de arriba lo cambia.</div>`;
+  dibujarFut(t);
+}
+function dibujarFut(t) {
+  const n = D.meses.length, et = D.meses.map(m => m.etiqueta.split(' ')[0]).concat(['oct', 'nov', 'dic']);
+  const nul = k => Array(k).fill(null);
+  lineas($('#fut'), {
+    etiquetas: et,
+    series: [
+      {valores: D.meses.map(m => m.real).concat(nul(3)), k: 2},
+      {valores: D.meses.map(m => m.prediccion).concat([t[0].total, null, null]), k: 1, trazo: 'dash', hueco: D.meses.map((_, i) => i).concat([n])},
+      {valores: nul(n).concat([t[0].total, t[1].total, t[2].total]).map((v, i) => (i >= n ? v : null)), k: 5, trazo: 'punt', hueco: [n, n + 1, n + 2]},
+    ],
+    bandas: [
+      {lo: D.meses.map(m => m.lo).concat([t[0].lo, null, null]), hi: D.meses.map(m => m.hi).concat([t[0].hi, null, null]), cls: 'f1'},
+      {lo: nul(n + 1).concat([t[1].lo, t[2].lo]), hi: nul(n + 1).concat([t[1].hi, t[2].hi]), cls: 'f5'},
+    ],
+    titulo: i => i < n ? `${D.meses[i].etiqueta}: predicho ${fmt(D.meses[i].prediccion)} · real ${fmt(D.meses[i].real)}` : `${t[i - n].n}: ${fmt(t[i - n].total)} (${fmt(t[i - n].lo)}–${fmt(t[i - n].hi)})`
+  });
+  $('#leyenda').innerHTML = `<span style="color:var(--c2)">━ real</span><span style="color:var(--c1)">╍ predicho (mes observado)</span><span style="color:var(--c5)">┅ escenario (nov y dic)</span><span>banda azul: intervalo 95 % · banda violeta: rango 80 % histórico</span>`;
+}
+$('#factor').oninput = e => { factor = e.target.value / 100; fut(); };
+registrar(fut);
+
+/* calculadora libre */
+function inputs() {
+  $('#inputs').innerHTML = M.map(m => `<div class="row"><label for="i-${m.marca}">${m.marca}</label>
+    <input id="i-${m.marca}" type="number" min="0" step="1" inputmode="numeric" data-t="${m.tasa}" value="${m.exp1}"><span class="t">${fmt(m.tasa * 100, 1)} %</span></div>`).join('');
+  $$('#inputs input').forEach(e => e.oninput = libre); libre();
+}
+function libre() {
+  const p = $$('#inputs input').reduce((a, e) => a + Math.max(0, parseFloat(e.value) || 0) * +e.dataset.t, 0);
+  const s = D.z * Math.sqrt(D.phi * p);
+  $('#rtotal').textContent = fmt(p); $('#rrango').textContent = `${fmt(Math.max(p - s, 0))} – ${fmt(p + s)}`;
+}
+$('#reset').onclick = inputs; inputs();
+
+/* ---------- 5 · horizontes ---------- */
+$('#tabla-hor').innerHTML = `<thead><tr><th>Horizonte</th><th>Casos</th><th>Error medio</th><th>Mediana</th><th>Peor caso</th><th>Rango 80 % (real ÷ predicción)</th></tr></thead><tbody>${
+  F.hor.map(h => `<tr><td>${h.nombre}</td><td>${h.casos}</td><td>${pct(h.mape_medio)}</td><td>${pct(h.mape_mediana)}</td><td>${fmt(h.peor)} %</td><td>${fmt(h.q_bajo, 2)} – ${fmt(h.q_alto, 2)}</td></tr>`).join('')}</tbody>`;

@@ -1,0 +1,150 @@
+<header class="hero">
+  <p class="eyebrow">1 · El problema</p>
+  <h1>Cuando un equipo sale a un distribuidor, ¿cuántos vuelven?</h1>
+  <p class="lead">Una empresa de telefonía en Ecuador despacha equipos a sus distribuidores. Los que no se venden en 60 días se acumulan como inventario parado. El proyecto parte de una premisa del negocio: la proyección de demanda no incorpora de forma explícita cuántos equipos volverán.</p>
+</header>
+
+<section class="card" aria-labelledby="h-viaje">
+  <h2 id="h-viaje"><span class="paso">1</span>El viaje de un equipo</h2>
+  <p class="sub">Esta es la regla que acordó el negocio: una unidad cuenta como devolución cuando cumple <b>60 días desde su despacho</b> y sigue en poder del canal. Mueve el reloj y prueba los casos.</p>
+  <div class="pills" id="escenarios" role="group" aria-label="Escenario"></div>
+  <svg class="chart" id="viaje" viewBox="0 0 760 210" role="img" aria-label="Línea de tiempo de un equipo desde su despacho"></svg>
+  <div class="ctl">
+    <label for="dia">Días desde el despacho <span id="diav">0</span></label>
+    <input type="range" id="dia" min="0" max="120" value="0" step="1">
+    <div><button class="btn" id="play" type="button">▶ Reproducir</button></div>
+  </div>
+  <div class="callout info" id="estado" aria-live="polite"></div>
+  <p class="note">Tres reglas, verificadas una por una con listados reales del área de planificación: los días se cuentan desde el despacho, el reloj no se reinicia al mover la unidad entre locales del canal (solo al volver a bodega central) y es un flujo: cada unidad se cuenta una sola vez, el mes en que cruza el umbral. Coincidencia con el negocio: <b id="valid"></b>.</p>
+</section>
+
+<section class="card" aria-labelledby="h-tam">
+  <h2 id="h-tam"><span class="paso">2</span>Qué tan grande es</h2>
+  <p class="sub">Unidades que cumplen 60 días en el canal, mes a mes. Toca una columna para ver el detalle.</p>
+  <div class="kpis" id="kpis"></div>
+  <svg class="chart" id="cols" viewBox="0 0 720 270" role="img" aria-label="Devoluciones por mes"></svg>
+  <div class="callout info" id="detalle" aria-live="polite"></div>
+</section>
+
+<section class="card" aria-labelledby="h-ojo">
+  <h2 id="h-ojo"><span class="paso">3</span>Por qué no se anticipa a ojo</h2>
+  <p class="sub">Tres formas sencillas de adelantarse, evaluadas con el mismo esquema que usaremos para el modelo: en cada mes, solo con lo que se sabía antes. Activa y desactiva para compararlas con lo que ocurrió.</p>
+  <div class="pills" id="metodos" role="group" aria-label="Métodos sencillos"></div>
+  <svg class="chart" id="ojo" viewBox="0 0 720 300" role="img" aria-label="Real frente a métodos sencillos"></svg>
+  <div class="kpis tres" id="errores"></div>
+  <div class="callout aviso"><b>La serie salta de 335 a 1.364 devoluciones</b> entre enero y julio de 2026. Repetir el mes anterior o promediar los últimos tres se equivoca en promedio 35 % y 41 %, y en el peor mes más de 190 %. No anticipar nada se equivoca el 100 % por definición.</div>
+</section>
+
+<section aria-labelledby="h-res">
+  <h2 id="h-res" style="margin-bottom:10px">Lo que hay que resolver</h2>
+  <div class="grid3">
+    <div class="mini"><b>Qué predecir</b>El volumen mensual de devoluciones por marca: cuántas unidades cumplirán 60 días en el canal.</div>
+    <div class="mini"><b>Con qué exactitud</b>Un error porcentual medio (MAPE) de 15 % como máximo, comprometido en el objetivo 4.</div>
+    <div class="mini"><b>Con qué información</b>Solo lo que se sabe al cierre del mes anterior. Nada del futuro.</div>
+  </div>
+  <div class="pie"><span></span><a class="sig" href="solucion.html">Ver cómo lo resolvimos →</a></div>
+</section>
+=====SCRIPT=====
+/* ---------- 1 · el viaje ---------- */
+const ESC = {
+  venta: {nombre: 'Se vende al día 25', venta: 25},
+  sin: {nombre: 'Sigue sin venderse'},
+  cambio: {nombre: 'Cambia de local (el reloj sigue)', mueve: 20},
+  reinicio: {nombre: 'Vuelve a central y sale de nuevo (el reloj reinicia)', vuelve: 40, sale: 45},
+};
+let esc = 'sin', dia = 0, timer = null;
+
+function estado(d) {
+  const e = ESC[esc];
+  if (e.venta != null && d >= e.venta)
+    return {lugar: 'vendido', k: 3, reloj: e.venta, clase: 'ok', t: `<b>Vendido al cliente final el día ${e.venta}.</b> Sale del canal antes de los 60 días: no cuenta como devolución.`};
+  if (e.vuelve != null && d >= e.vuelve && d < e.sale)
+    return {lugar: 'central', k: 4, reloj: 0, clase: 'aviso', t: `<b>De vuelta en bodega central.</b> El reloj se reinicia: lo que se contó hasta aquí ya no sirve.`};
+  const reloj = e.vuelve != null && d >= e.sale ? d - e.sale : d;
+  if (reloj >= 60)
+    return {lugar: 'cuenta', k: 6, reloj, clase: 'aviso', t: `<b>Día ${reloj}: cumple 60 días sin venderse y sigue en el canal.</b> Cuenta como devolución, una sola vez, en el mes en que cruza el umbral.`};
+  const extra = e.mueve != null && d >= e.mueve ? ' Cambió de local, pero el reloj no se reinicia.' : e.vuelve != null && d >= e.sale ? ' Es un nuevo despacho: el reloj parte de cero.' : '';
+  return {lugar: 'canal', k: 1, reloj, clase: 'info', t: `<b>En el distribuidor · reloj en ${reloj} de 60 días.</b> Todavía no cuenta.${extra}`};
+}
+
+function viaje() {
+  const W = ancho($('#viaje')), estrecho = W < 560, x0 = estrecho ? 26 : 170, y = 112, e = ESC[esc], st = estado(dia);
+  const x = d => x0 + d * (W - x0 - 26) / 120;
+  let s = '';
+  if (estrecho) s += `<text x="${x0}" y="30" style="fill:var(--ink-2)">Sale de bodega central →</text>`;
+  else s += `<rect x="14" y="82" width="116" height="60" rx="10" fill="var(--surface-2)" stroke="var(--line-2)"/>
+    <text x="72" y="108" text-anchor="middle" style="fill:var(--ink);font-weight:600;font-size:12.5px">Bodega</text><text x="72" y="124" text-anchor="middle" style="fill:var(--ink);font-weight:600;font-size:12.5px">central</text>
+    <line class="flecha" x1="130" y1="${y}" x2="${x(0) - 8}" y2="${y}"/><text x="${x(0) - 2}" y="70" text-anchor="middle">despacho</text>`;
+  s += `<rect x="${x(0)}" y="${y - 22}" width="${x(60) - x(0)}" height="44" fill="var(--c1)" opacity=".1"/>
+    <rect x="${x(60)}" y="${y - 22}" width="${x(120) - x(60)}" height="44" fill="var(--c2)" opacity=".13"/>
+    <text x="${(x(0) + x(60)) / 2}" y="${y - 28}" text-anchor="middle">${estrecho ? 'aún no cuenta' : 'en el canal: aún no cuenta'}</text>
+    <text x="${(x(60) + x(120)) / 2}" y="${y - 28}" text-anchor="middle">${estrecho ? 'cuenta si sigue' : 'si sigue en el canal: cuenta'}</text>
+    <line x1="${x(60)}" x2="${x(60)}" y1="${y - 40}" y2="${y + 28}" stroke="var(--c6)" stroke-width="1.6" stroke-dasharray="5 4"/>
+    <text x="${x(60)}" y="${y - 46}" text-anchor="middle" style="fill:var(--c6);font-weight:600">60 días</text>
+    <line x1="${x(0)}" x2="${x(120)}" y1="${y}" y2="${y}" stroke="var(--line-2)" stroke-width="2"/>`;
+  [0, 30, 60, 90, 120].forEach(t => s += `<line x1="${x(t)}" x2="${x(t)}" y1="${y - 5}" y2="${y + 5}" stroke="var(--line-2)"/><text x="${x(t)}" y="${y + 54}" text-anchor="middle">${estrecho ? t : 'día ' + t}</text>`);
+  const ev = (d, txt, k, fila) => `<text x="${Math.min(Math.max(x(d), x0 + 48), W - 60)}" y="${y + fila}" text-anchor="middle" style="fill:var(--c${k});font-weight:600">${txt}</text>`;
+  if (e.venta != null) s += ev(e.venta, '▲ venta al cliente', 3, 78);
+  if (e.mueve != null) s += ev(e.mueve, '◆ otro local', 5, 78);
+  if (e.vuelve != null) {
+    s += ev(e.vuelve, '◀ vuelve a central', 4, 78) + ev(e.sale + 8, '▶ sale de nuevo', 1, 96);
+    s += `<line x1="${x(e.sale + 60)}" x2="${x(e.sale + 60)}" y1="${y - 22}" y2="${y + 28}" stroke="var(--c6)" stroke-width="1.4" stroke-dasharray="2 4"/>
+      <text x="${x(e.sale + 60)}" y="${y + 37}" text-anchor="middle" style="fill:var(--c6)">nuevo umbral</text>`;
+  }
+  s += `<circle cx="${x(dia)}" cy="${y}" r="11" fill="var(--c${st.k})" stroke="var(--surface)" stroke-width="3"/>
+    <text x="${x(dia)}" y="${y + 4}" text-anchor="middle" style="fill:#fff;font-size:10.5px;font-weight:600">${st.reloj}</text>`;
+  $('#viaje').setAttribute('viewBox', `0 0 ${W} 222`);
+  $('#viaje').innerHTML = s;
+  $('#diav').textContent = dia + (st.reloj !== dia ? ` (reloj: ${st.reloj})` : '');
+  const c = $('#estado'); c.className = 'callout ' + st.clase; c.innerHTML = st.t;
+  $('#dia').value = dia;
+}
+function escenarios() {
+  pastillas($('#escenarios'), Object.values(ESC).map(e => e.nombre), Object.keys(ESC).indexOf(esc), i => {
+    esc = Object.keys(ESC)[i]; dia = 0; parar(); escenarios(); viaje();
+  });
+}
+function parar() { clearInterval(timer); timer = null; $('#play').textContent = '▶ Reproducir'; }
+$('#dia').oninput = e => { parar(); dia = +e.target.value; viaje(); };
+$('#play').onclick = () => {
+  if (timer) return parar();
+  if (dia >= 120) dia = 0;
+  $('#play').textContent = '❚❚ Pausar';
+  timer = setInterval(() => { dia = Math.min(120, dia + 1); viaje(); if (dia >= 120) parar(); }, 70);
+};
+$('#valid').textContent = `${fmt(D.validacion.aciertos)} de ${fmt(D.validacion.total)} equipos (${fmt(D.validacion.aciertos / D.validacion.total * 100, 2)} %)`;
+escenarios(); registrar(viaje);
+
+/* ---------- 2 · tamaño ---------- */
+$('#kpis').innerHTML = `
+  <div class="kpi"><p class="l">Devoluciones ene–sep 2026</p><p class="v">${fmt(D.k.dev26)}</p><p class="n">unidades</p></div>
+  <div class="kpi"><p class="l">Valor a precio de despacho</p><p class="v">USD ${fmt(D.k.valor26 / 1e6, 1)} M</p><p class="n">${fmt(D.k.valor26 / D.k.dev26)} por unidad</p></div>
+  <div class="kpi"><p class="l">Siguen sin venderse a los 60 días</p><p class="v">${fmt(D.k.tasa * 100)} de 100</p><p class="n">de las que llegan en riesgo</p></div>
+  <div class="kpi"><p class="l">Historia</p><p class="v">${D.meses.length} meses</p><p class="n">11 marcas</p></div>`;
+let selMes = D.meses.length - 1;
+function detalle() {
+  const m = D.meses[selMes];
+  $('#detalle').innerHTML = `<b>${etiqueta(m.mes)}:</b> ${fmt(m.dev)} unidades cumplieron 60 días en el canal, de ${fmt(m.riesgo)} que llegaban en riesgo (${fmt(m.dev / m.riesgo * 100)} %). Ese mes se despacharon ${fmt(m.desp)} equipos; lo devuelto vale USD ${fmt(m.valor / 1e3)} mil a precio de despacho.`;
+}
+registrar(() => columnas($('#cols'), {
+  etiquetas: D.meses.map(m => corta(m.mes)), valores: D.meses.map(m => m.dev), k: 2, sel: selMes,
+  titulo: i => `${etiqueta(D.meses[i].mes)}: ${fmt(D.meses[i].dev)} devoluciones`, alSel: i => { selMes = i; detalle(); redibujables.forEach(f => f()); }
+}));
+detalle();
+
+/* ---------- 3 · a ojo ---------- */
+const MET = {naive: {n: 'Repetir el mes anterior', k: 4, trazo: 'dash'}, mm: {n: 'Promedio de 3 meses', k: 5, trazo: 'dash'}, cero: {n: 'No anticipar nada', k: 6, trazo: 'punt'}};
+const act = {naive: true, mm: false, cero: false};
+function ojo() {
+  $('#metodos').innerHTML = Object.entries(MET).map(([id, m]) =>
+    `<button class="chip ser" type="button" data-id="${id}" aria-pressed="${act[id]}" style="color:var(--c${m.k})"><span class="sw"></span><span style="color:var(--ink-2)">${m.n}</span></button>`).join('');
+  $$('#metodos .chip').forEach(b => b.onclick = () => { act[b.dataset.id] = !act[b.dataset.id]; ojo(); });
+  lineas($('#ojo'), {
+    etiquetas: D.wf.etiquetas.map(corta),
+    series: [{valores: D.wf.real, k: 2}].concat(Object.entries(MET).filter(([id]) => act[id]).map(([id, m]) => ({valores: D.wf[id], k: m.k, trazo: m.trazo, puntos: false}))),
+    titulo: i => `${etiqueta(D.wf.etiquetas[i])}: real ${fmt(D.wf.real[i])}`
+  });
+  $('#errores').innerHTML = Object.entries(MET).map(([id, m]) =>
+    `<div class="kpi"><p class="l">${m.n}</p><p class="v" style="color:var(--c${m.k})">${pct(D.wf.mape[id], 1)}</p><p class="n">error medio · peor mes ${fmt(D.wf.peor[id], 0)} %</p></div>`).join('');
+}
+registrar(ojo);

@@ -6,7 +6,7 @@ por marca y mes: ningún IMEI, ICCID, RUC, nombre de distribuidor ni de bodega.
 | Archivo | Contenido |
 |---|---|
 | `panel_modelo_muestra.csv` | El panel marca × mes completo que usa el modelo: 319 filas, 29 meses (2024-05 a 2026-09), 11 marcas, 16 columnas. Es el mismo contenido que `data/processed/v6_panel_modelo.parquet`. |
-| `en_riesgo_ejemplo.csv` | Ejemplo del formato de entrada para predecir un mes futuro: unidades en riesgo por marca. **Es ilustrativo**: copia las unidades en riesgo de septiembre de 2026, no las de octubre. |
+| `en_riesgo_2026-10.csv` | Unidades en riesgo por marca **observadas** para octubre de 2026: las 527 unidades que están en el canal al 30 de septiembre y cumplirán 60 días en octubre. Es la entrada para predecir ese mes; la produce `scripts/exposicion_siguiente.py`. |
 
 Qué hay en cada columna del panel:
 

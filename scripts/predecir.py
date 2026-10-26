@@ -11,7 +11,7 @@ Dos usos:
    dias ese mes y siguen en el canal). Se entregan en un CSV con columnas `marca,en_riesgo` y se
    aplican las tasas guardadas en `modelo/modelo_final.json`::
 
-       python scripts/predecir.py --en-riesgo docs/muestra/en_riesgo_ejemplo.csv
+       python scripts/predecir.py --en-riesgo docs/muestra/en_riesgo_2026-10.csv
 
 La demo no necesita los datos del cliente: sin `data/processed/v6_panel_modelo.parquet` usa el panel
 de muestra `docs/muestra/panel_modelo_muestra.csv`, que solo trae totales por marca y mes.

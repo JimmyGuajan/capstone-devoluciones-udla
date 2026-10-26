@@ -1,0 +1,137 @@
+<header class="hero">
+  <p class="eyebrow">3 · La evidencia</p>
+  <h1>¿Funciona? Esto es lo que se midió</h1>
+  <p class="lead">Resultados en nueve meses que el modelo no vio, validación repetida mes a mes, qué tan fiables son sus intervalos, qué mira el modelo, a quién trata peor y qué todavía no hace bien.</p>
+</header>
+
+<section class="card" aria-labelledby="h-res">
+  <h2 id="h-res"><span class="paso">1</span>Resultados en el periodo de prueba</h2>
+  <p class="sub">Entrenado con mayo 2024 a diciembre 2025; evaluado sobre enero a septiembre de 2026. El criterio comprometido es un error porcentual medio (MAPE) de 15 % como máximo.</p>
+  <div class="pills" id="metrica" role="group" aria-label="Métrica"></div>
+  <div id="barras-res"></div>
+  <div class="callout ok" id="res-texto"></div>
+</section>
+
+<section class="card" aria-labelledby="h-wf">
+  <h2 id="h-wf"><span class="paso">2</span>Robustez: se repite mes a mes durante 21 meses</h2>
+  <p class="sub">Un solo periodo de prueba puede dar suerte. En la validación <i>walk-forward</i> el modelo se reentrena en cada mes con solo el pasado y predice el siguiente. Activa series para compararlas.</p>
+  <div class="pills" id="series" role="group" aria-label="Series"></div>
+  <svg class="chart" id="wf" viewBox="0 0 720 300" role="img" aria-label="Error de cada modelo en cada mes de evaluación"></svg>
+  <div class="tw"><table id="tabla-wf"></table></div>
+  <div class="callout info" id="wf-texto"></div>
+</section>
+
+<section class="card" aria-labelledby="h-int">
+  <h2 id="h-int"><span class="paso">3</span>Intervalos que se pueden creer</h2>
+  <p class="sub">Un Poisson puro supone que la variación es igual al promedio. En los datos reales es unas nueve veces mayor (φ = <span id="phi"></span>), así que los intervalos se corrigen. Se comprobó cuánto cubren.</p>
+  <div class="kpis tres" id="cob"></div>
+  <div class="callout info">Cubrir «95 %» significa que el valor real cayó dentro del intervalo en 95 de cada 100 meses. Con el Poisson puro cayó en solo 57.</div>
+</section>
+
+<section class="card" aria-labelledby="h-shap">
+  <h2 id="h-shap"><span class="paso">4</span>Qué mira el modelo</h2>
+  <p class="sub">Importancia de cada variable según SHAP en los dos modelos de comparación. Cambia de modelo.</p>
+  <div class="pills" id="shap-m" role="group" aria-label="Modelo"></div>
+  <div id="shap"></div>
+  <div class="callout info" id="shap-texto"></div>
+</section>
+
+<section class="card" aria-labelledby="h-eq">
+  <h2 id="h-eq"><span class="paso">5</span>A quién trata peor: equidad por ciudad</h2>
+  <p class="sub">El modelo asigna la tasa de la marca sin mirar el destino. Esta es la diferencia entre la tasa real y la que asigna, por ciudad, en los nueve meses de prueba (ciudades con 150 o más unidades).</p>
+  <div id="equidad"></div>
+  <div class="callout aviso" id="eq-texto"></div>
+</section>
+
+<section class="card" aria-labelledby="h-ing">
+  <h2 id="h-ing"><span class="paso">6</span>Calidad de la entrega</h2>
+  <div class="kpis" id="ing"></div>
+  <div class="grid3">
+    <div class="mini"><b>Sin fuga de información</b>Una prueba cambia lo que ocurre después del cierre y comprueba que el pronóstico no se mueve. Se verificó que detecta fugas inyectadas a propósito.</div>
+    <div class="mini"><b>Reproducible</b>Los ocho artefactos de la cadena se reconstruyen idénticos desde los scripts. XGBoost es idéntico al bit; Random Forest coincide hasta 10⁻¹³.</div>
+    <div class="mini"><b>Datos personales</b>El modelo opera sobre un panel agregado, sin identificadores. El módulo de seudonimización (HMAC-SHA256) está implementado y verificado: 13 de 13 comprobaciones.</div>
+  </div>
+  <p class="note">Código, pruebas e instrucciones en el repositorio: <a href="../../../README.md">README</a> · <a href="../../pruebas_finales.txt">salida de las pruebas</a> · <a href="../../../CHANGELOG.md">bitácora</a>.</p>
+</section>
+
+<section class="card" aria-labelledby="h-lim">
+  <h2 id="h-lim"><span class="paso">7</span>Lo que todavía no hace bien</h2>
+  <div class="grid3">
+    <div class="mini"><b>Modelos recién lanzados</b>Julio aporta 193 de las 369 unidades de error de los nueve meses. HONOR pone 151: un modelo de equipo nuevo, despachado en volumen, que no rota en sus primeros 60 días.</div>
+    <div class="mini"><b>Más allá de un mes</b>Noviembre y diciembre son escenarios: el error histórico a 2 y 3 meses es de <span id="h2"></span> y <span id="h3"></span>, frente a <span id="h1"></span> a un mes.</div>
+    <div class="mini"><b>Sesgo por ciudad</b>Subestima a las ciudades intermedias. Mientras no se incorpore el destino, conviene reportar el error desagregado y no usar la predicción para evaluar al canal.</div>
+  </div>
+  <div class="callout info"><b>Qué pediríamos al cliente para cerrarlo:</b> no el modelo de equipo en sí, que deja de existir al descontinuarse, sino atributos que persisten entre generaciones: fecha de lanzamiento al catálogo, precio y gama, y calendario de acciones comerciales.</div>
+  <div class="pie"><a href="solucion.html">← La solución</a><a class="sig" href="index.html">Volver al problema ↺</a></div>
+</section>
+=====SCRIPT=====
+/* ---------- 1 · resultados ---------- */
+const MET = [['MAPE %', 'MAPE (error porcentual medio)', v => pct(v, 1)], ['MAE', 'MAE (unidades)', v => fmt(v, 1)], ['RMSE', 'RMSE (unidades)', v => fmt(v, 1)]];
+let met = 0;
+function resultados() {
+  pastillas($('#metrica'), MET.map(m => m[1]), met, i => { met = i; resultados(); });
+  const [col, , f] = MET[met], orden = D.test.map(m => ({nombre: m.modelo, valor: m[col], k: m.modelo.startsWith('Tasa') ? 3 : m.modelo.startsWith('Random') ? 1 : 2, texto: f(m[col])}));
+  barras($('#barras-res'), orden, {max: Math.max(...orden.map(o => o.valor)) * 1.15, ref: met === 0 ? 15 : null});
+  const t = D.test[0];
+  $('#res-texto').innerHTML = met === 0
+    ? `<b>Los tres modelos cumplen el criterio de 15 %.</b> El elegido, la tasa de conversión, tiene el menor error: ${pct(t['MAPE %'], 1)}. La línea roja marca el máximo comprometido.`
+    : met === 1 ? `<b>El modelo elegido tiene el menor MAE:</b> ${fmt(t.MAE, 1)} unidades de error medio por mes, frente a ${fmt(D.test[1].MAE, 1)} de Random Forest.`
+    : `<b>En RMSE, Random Forest queda ligeramente mejor</b> (${fmt(D.test[1].RMSE, 1)} frente a ${fmt(t.RMSE, 1)}): esta métrica penaliza más los errores grandes de un solo mes, y ahí el modelo elegido tiene un mes malo (julio).`;
+}
+resultados();
+
+/* ---------- 2 · walk-forward ---------- */
+const SER = [['Tasa de conversión', 3, ''], ['Random Forest', 1, 'dash'], ['XGBoost Poisson', 2, 'dash'], ['Naive (mes anterior)', 4, 'punt'], ['Media móvil 3 meses', 5, 'punt'], ['Cero (no anticipa)', 6, 'punt']];
+const act = Object.fromEntries(SER.map(s => [s[0], s[1] <= 3]));
+function wf() {
+  $('#series').innerHTML = SER.map(s => `<button class="chip ser" type="button" data-n="${s[0]}" aria-pressed="${act[s[0]]}" style="color:var(--c${s[1]})"><span class="sw"></span><span style="color:var(--ink-2)">${s[0]}</span></button>`).join('');
+  $$('#series .chip').forEach(b => b.onclick = () => { act[b.dataset.n] = !act[b.dataset.n]; if (!Object.values(act).some(Boolean)) act[b.dataset.n] = true; wf(); });
+  lineas($('#wf'), {
+    etiquetas: D.wf.etiquetas.map(corta), yfmt: v => v + ' %', ref: {y: 15, texto: 'máximo comprometido 15 %'},
+    series: SER.filter(s => act[s[0]]).map(s => ({valores: D.wf.ape[s[0]], k: s[1], trazo: s[2], puntos: s[1] <= 3})),
+    titulo: i => `${etiqueta(D.wf.etiquetas[i])}: ` + SER.filter(s => act[s[0]]).map(s => `${s[0]} ${fmt(D.wf.ape[s[0]][i], 1)} %`).join(' · ')
+  });
+}
+registrar(wf);
+$('#tabla-wf').innerHTML = `<thead><tr><th>Modelo</th><th>Error medio</th><th>IC 95 %</th><th>Mediana</th><th>Peor mes</th></tr></thead><tbody>${
+  D.wf.resumen.map(r => `<tr><td>${r.modelo}</td><td>${pct(r.media, 2)}</td><td>${r.ic ? fmt(r.ic[0], 2) + ' – ' + fmt(r.ic[1], 2) : '–'}</td><td>${pct(r.mediana, 1)}</td><td>${pct(r.peor, 1)}</td></tr>`).join('')}</tbody>`;
+{
+  const r = Object.fromEntries(D.wf.resumen.map(x => [x.modelo, x]));
+  $('#wf-texto').innerHTML = `<b>${D.wf.sobre15} de ${D.wf.etiquetas.length} meses supera el 15 %</b> (el peor, ${etiqueta(D.wf.peor_mes)}, ${pct(r['Tasa de conversión'].peor, 1)}). El error medio, ${pct(r['Tasa de conversión'].media, 2)}, es ${fmt(r['Media móvil 3 meses'].media / r['Tasa de conversión'].media)} veces menor que el de promediar tres meses y ${fmt(100 / r['Tasa de conversión'].media)} veces menor que el de no anticipar nada. Sobre Random Forest la ventaja es consistente pero <b>no concluyente</b>: sus intervalos de confianza se solapan.`;
+}
+
+/* ---------- 3 · intervalos ---------- */
+$('#phi').textContent = fmt(D.phi, 1);
+$('#cob').innerHTML = `
+  <div class="kpi"><p class="l">Intervalo corregido (quasi-Poisson)</p><p class="v" style="color:var(--good)">${pct(D.cob.quasi * 100, 1)}</p><p class="n">de los ${D.wf.etiquetas.length} meses</p></div>
+  <div class="kpi"><p class="l">Poisson puro</p><p class="v" style="color:var(--bad)">${pct(D.cob.poisson * 100, 0)}</p><p class="n">de los ${D.wf.etiquetas.length} meses</p></div>
+  <div class="kpi"><p class="l">Meses de prueba dentro del intervalo</p><p class="v">${D.cob.prueba_dentro} de ${D.cob.prueba_n}</p><p class="n">ene–sep 2026</p></div>`;
+
+/* ---------- 4 · SHAP ---------- */
+let sm = 0;
+function shap() {
+  const nombres = {en_riesgo: 'Unidades en riesgo', desp_lag2: 'Despachos de hace 2 meses', marca: 'Marca', desp_lag1: 'Despachos del mes anterior', dev_lag1: 'Devoluciones del mes anterior', dev_mm3: 'Promedio de 3 meses', dev_lag2: 'Devoluciones de hace 2 meses'};
+  pastillas($('#shap-m'), ['XGBoost', 'Random Forest'], sm, i => { sm = i; shap(); });
+  const items = D.shap.map(r => ({nombre: nombres[r.v] || r.v, valor: r.vals[sm], texto: pct(r.vals[sm], 1), k: r.v === 'en_riesgo' ? 5 : 4}));
+  barras($('#shap'), items, {max: 100});
+  $('#shap-texto').innerHTML = `<b>${fmt(D.shap[0].vals[sm], 1)} % de la importancia es una sola variable: las unidades en riesgo.</b> Es lo que el modelo de tasa usa de forma explícita. Esto fue lo que redirigió el proyecto: el problema no era el algoritmo sino qué información se le daba.`;
+}
+shap();
+
+/* ---------- 5 · equidad ---------- */
+{
+  const ciu = D.equidad.map(c => ({nombre: c.ciudad, valor: c.dev * 100, k: c.dev > 0 ? 2 : 1, texto: sgn(c.dev * 100, 1) + ' pts'}));
+  barras($('#equidad'), ciu, {divergente: true, max: Math.max(...ciu.map(c => Math.abs(c.valor))) * 1.1, dec: 1});
+  const m = [...D.equidad].sort((a, b) => b.dev - a.dev).slice(0, 2);
+  $('#eq-texto').innerHTML = `<b>Barra a la derecha: la ciudad devuelve más de lo que el modelo supone.</b> Las más subestimadas son ${m.map(x => `${x.ciudad} (${sgn(x.dev * 100, 1)} pts)`).join(' y ')}; Quito y Guayaquil quedan cerca de −2 pts. El MAPE agregado no revela este patrón.`;
+}
+
+/* ---------- 7 · límites ---------- */
+D.hor.forEach((h, i) => $('#h' + (i + 1)).textContent = pct(h, 1));
+
+/* ---------- 6 · ingeniería ---------- */
+$('#ing').innerHTML = `
+  <div class="kpi"><p class="l">Pruebas automáticas</p><p class="v">${D.pruebas}</p><p class="n">todas en verde</p></div>
+  <div class="kpi"><p class="l">Artefactos reproducidos</p><p class="v">8 de 8</p><p class="n">idénticos</p></div>
+  <div class="kpi"><p class="l">Cuadernos</p><p class="v">8</p><p class="n">sin errores</p></div>
+  <div class="kpi"><p class="l">Scripts</p><p class="v">${D.scripts}</p><p class="n">ejecutables</p></div>`;
