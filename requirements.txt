@@ -1,13 +1,24 @@
+# Versiones exactas con las que se ejecutó y verificó todo el proyecto (Python 3.12.4, Windows 11).
+# Instalar con:  pip install -r requirements.txt
 pandas==2.2.3
 numpy==2.0.2
-pyarrow>=15.0
+pyarrow==25.0.0
 openpyxl==3.1.5
-python-calamine>=0.2
-scikit-learn>=1.5
+python-calamine==0.8.2
+scikit-learn==1.9.0
 xgboost==2.1.3
-shap>=0.46
-matplotlib>=3.8
-jupyterlab
-nbformat
-duckdb
-statsmodels>=0.14
+shap==0.52.0
+statsmodels==0.14.4
+matplotlib==3.11.1
+duckdb==1.5.5
+
+# Cuadernos (se ejecutan con `jupyter nbconvert --execute`; no hace falta JupyterLab)
+nbformat==5.11.1
+nbconvert==7.17.1
+ipykernel==6.29.5
+
+# Pruebas
+pytest==8.3.5
+
+# Opcional, solo para abrir los cuadernos de forma interactiva (no se usó en las verificaciones):
+#   pip install jupyterlab
