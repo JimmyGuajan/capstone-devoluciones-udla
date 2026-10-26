@@ -17,6 +17,10 @@ Data tesis/
 !docs/**/*.csv
 !sql/*.sql
 
+# Versiones del documento de entrega: viven fuera del repositorio (nombres largos que rompen
+# el clonado en rutas profundas de Windows, y versiones superadas que confunden)
+Documento_Capstone_*.pdf
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Artefactos generados — se regeneran ejecutando los notebooks
 # ─────────────────────────────────────────────────────────────────────────────

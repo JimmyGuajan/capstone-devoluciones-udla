@@ -1,0 +1,37 @@
+{
+  "modelo": "Poisson con offset de exposicion: en_riesgo x tasa(marca)",
+  "ventana_meses": 9,
+  "k_encogimiento": 300,
+  "nivel_confianza": 0.95,
+  "datos_hasta": "2026-09",
+  "tasas_para_el_mes": "2026-10",
+  "phi_dispersion": 8.86,
+  "intervalo": "pred +- 1.96 * sqrt(phi * pred), sobre el volumen mensual",
+  "tasa_global": 0.738556338028169,
+  "tasas": {
+    "APPLE": 0.8244358993708966,
+    "HONOR": 0.6754984292485599,
+    "HUAWEI": 0.738556338028169,
+    "INFINIX": 0.738556338028169,
+    "MOTOROLA": 0.7865099791574559,
+    "NOKIA": 0.738556338028169,
+    "OTRA": 0.7750382384806577,
+    "REALME": 0.7402877530081149,
+    "SAMSUNG": 0.7202766219134656,
+    "TCL": 0.738556338028169,
+    "XIAOMI": 0.7327445236791775
+  },
+  "unidades_en_riesgo_historicas": {
+    "APPLE": 1753,
+    "HONOR": 1991,
+    "HUAWEI": 0,
+    "INFINIX": 0,
+    "MOTOROLA": 592,
+    "NOKIA": 0,
+    "OTRA": 142,
+    "REALME": 2,
+    "SAMSUNG": 4063,
+    "TCL": 0,
+    "XIAOMI": 1681
+  }
+}
