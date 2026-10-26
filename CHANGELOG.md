@@ -42,3 +42,9 @@ Cada entrada corresponde a un commit del repositorio.
 | `804cde4` | 2026-10-19 | Versionar los reportes HTML vigentes y retirar los superados |
 | `af30818` | 2026-10-19 | Actualizar las cifras de volumen de «El camino hasta el modelo» |
 | `9becf41` | 2026-10-26 | Seudonimización de identificadores, con prueba de equivalencia |
+| `2d20910` | 2026-10-26 | Scripts que reconstruyen la cadena de datos y reproducen los artefactos |
+| `ba8dc8c` | 2026-10-26 | Modelo final guardado, walk-forward con líneas base, demo y pruebas |
+| `371e678` | 2026-10-26 | README con pipeline, pasos reales, demo y evidencias; versiones fijadas |
+| `0dd2d45` | 2026-10-26 | Publicar la auditoría por destino con alias y retirar el PDF superado |
+| `9ac9dcc` | 2026-10-26 | Aviso de derechos reservados con permiso de evaluación académica |
+| `9de56ca` | 2026-10-26 | Merge: entrega técnica del prototipo |
