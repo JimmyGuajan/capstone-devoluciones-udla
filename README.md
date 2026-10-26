@@ -382,6 +382,10 @@ en esta fase: la clasificación central/canal depende de ellos.
 | Interpretabilidad y ética (informe) | [`docs/Interpretabilidad_y_etica_Grupo5.docx`](docs/Interpretabilidad_y_etica_Grupo5.docx) |
 | Historia de los cambios | [`CHANGELOG.md`](CHANGELOG.md) · historial de Git |
 
+## Licencia
+
+Repositorio privado, **todos los derechos reservados** por los autores; se permite leerlo, ejecutarlo y evaluarlo con fines académicos (ver [`LICENSE`](LICENSE)). Los datos del cliente no se incluyen ni se conceden con el código.
+
 ## Control de versiones
 
 Git, con la rama `main` como línea estable. `CHANGELOG.md` resume el proyecto en ocho hitos (H1 a H8)
