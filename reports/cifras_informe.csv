@@ -1,0 +1,46 @@
+grupo,indicador,valor,nota
+volumen,filas de inventario diario,14007314.0,
+volumen,dias distintos con inventario,966.0,2024-01-01 a 2026-09-30
+volumen,filas de despachos,6383678.0,
+volumen,estadias,775024.0,
+volumen,compresion inventario -> estadias (veces),18.1,
+volumen,periodos en canal,314091.0,
+volumen,periodos con despacho asociado,258299.0,
+exclusion,periodos sin despacho asociado,55792.0,se excluyen del objetivo
+exclusion,% de periodos sin despacho,17.8,
+exclusion,IMEI de equipos despachados,260194.0,
+exclusion,IMEI despachados que nunca aparecen en el inventario,7259.0,
+exclusion,% de IMEI despachados no vistos en inventario,2.8,
+objetivo,eventos (unidades que cumplen 60 dias),39798.0,
+objetivo,meses con eventos,31.0,2024-03 a 2026-09
+panel,filas,319.0,
+panel,meses,29.0,2024-05 a 2026-09
+panel,marcas,11.0,
+panel,columnas,16.0,
+panel,devoluciones en el panel,37521.0,los dos primeros meses de eventos caen por los rezagos
+densidad,marca x mes: entidades,11.0,
+densidad,marca x mes: celdas con dato,217.0,
+densidad,marca x mes: densidad %,68.0,
+densidad,marca x mes: devoluciones por celda con dato,172.9,
+densidad,SKU x mes: entidades,344.0,
+densidad,SKU x mes: celdas con dato,2006.0,
+densidad,SKU x mes: densidad %,20.1,
+densidad,SKU x mes: devoluciones por celda con dato,18.7,
+densidad,distribuidor (RUC) x mes: entidades,64.0,
+densidad,distribuidor (RUC) x mes: celdas con dato,701.0,
+densidad,distribuidor (RUC) x mes: densidad %,37.8,"descarta 9,638 eventos sin ruc"
+densidad,distribuidor (RUC) x mes: devoluciones por celda con dato,39.8,
+densidad,distribuidor x SKU x mes: entidades,3765.0,
+densidad,distribuidor x SKU x mes: celdas con dato,8316.0,
+densidad,distribuidor x SKU x mes: densidad %,7.6,"descarta 9,638 eventos sin ruc/sku"
+densidad,distribuidor x SKU x mes: devoluciones por celda con dato,3.4,
+densidad,distribuidor x SKU x mes sobre la grilla completa %,1.4,64 RUC x 329 SKU x 29 meses
+densidad,% de eventos sin RUC (no asignables a un distribuidor),25.7,
+ruc,distribuidores en el archivo de cupos,44.0,
+ruc,cupos con RUC de persona natural,17.0,"tercer digito 0-5, o cedula de 10 digitos"
+ruc,RUC distintos con despacho,86.0,
+ruc,RUC de persona natural entre los receptores,54.0,
+ruc,% de periodos con RUC de persona natural,20.9,
+ruc,% de eventos con RUC de persona natural,28.3,
+ruc,% de periodos sin RUC,27.0,
+ruc,% de periodos con RUC de sociedad,52.1,

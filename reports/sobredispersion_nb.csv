@@ -1,0 +1,11 @@
+indicador,valor,grupo,meses_dentro,meses,amplitud_media
+"phi de Pearson (entrenamiento + validacion, GLM Poisson)",3.54,ajuste,,,
+filas del ajuste,167,ajuste,,,
+AIC Poisson,1580.2,ajuste,,,
+AIC binomial negativa,1307.9,ajuste,,,
+alfa estimado (NB2),0.0129,ajuste,,,
+estadistico LR (alfa = 0),274.3,ajuste,,,
+p del LR (mezcla chi2),6.59e-62,ajuste,,,
+Poisson puro,,cobertura_prueba,7.0,9.0,110.0
+Quasi-Poisson (phi = 8.86),,cobertura_prueba,9.0,9.0,327.0
+Binomial negativa (alfa = 0.013),,cobertura_prueba,8.0,9.0,227.0
