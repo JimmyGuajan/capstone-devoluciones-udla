@@ -125,3 +125,11 @@ function pastillas(el, etiquetas, sel, alSel) {
   if (sis.addEventListener) sis.addEventListener('change', () => { if (!raiz.getAttribute('data-theme')) pintar(); });
   pintar();
 })();
+
+
+/* Ayuda de la pagina: abre y cierra el panel «¿Cómo usar esta página?». */
+(function(){
+  const b = document.getElementById('ayuda-btn'), p = document.getElementById('ayuda-panel');
+  if (!b || !p) return;
+  b.addEventListener('click', function(){ const abre = p.hidden; p.hidden = !abre; b.setAttribute('aria-expanded', abre ? 'true' : 'false'); });
+})();

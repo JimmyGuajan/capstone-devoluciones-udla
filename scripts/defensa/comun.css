@@ -1,9 +1,9 @@
 :root{
   color-scheme: light;
-  --paper:#F4F6F8; --surface:#FFFFFF; --surface-2:#EDF0F4;
+  --paper:#EFF1F4; --surface:#FFFFFF; --surface-2:#EDF0F4;
   --ink:#191B21; --ink-2:#464A54; --muted:#6E727C;
   --line:#D9DEE5; --line-2:#C3CAD4;
-  --accent:#4A3AA7; --accent-soft:#EAE8F9;
+  --accent:#7A1535; --accent-soft:#F8E9EE;
   --c1:#2a78d6; --c2:#eb6834; --c3:#12795A; --c4:#7d7f86; --c5:#7b61c9; --c6:#d03b3b;
   --good:#12795A; --good-soft:#E2F2EC; --warn:#8A5B00; --warn-soft:#FBF0DB; --bad:#B03030; --bad-soft:#FBE9E9;
   --shadow:0 1px 2px rgba(20,25,40,.05), 0 8px 22px rgba(20,25,40,.06);
@@ -13,7 +13,7 @@
   --paper:#121419; --surface:#1A1D24; --surface-2:#232730;
   --ink:#E7E9ED; --ink-2:#B6BAC4; --muted:#8A8F9A;
   --line:#2C313B; --line-2:#3B414D;
-  --accent:#9085E9; --accent-soft:#25233C;
+  --accent:#C4506E; --accent-soft:#33202A;
   --c1:#4b93e8; --c2:#e8703d; --c3:#4BBF95; --c4:#9a9ca3; --c5:#a18ee8; --c6:#e66a6a;
   --good:#4BBF95; --good-soft:#123028; --warn:#D9A742; --warn-soft:#332916; --bad:#E07070; --bad-soft:#331D1D;
   --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 22px rgba(0,0,0,.25);
@@ -32,8 +32,8 @@ nav.top a:hover{border-color:var(--line-2)}
 nav.top a[aria-current="page"]{background:var(--accent); color:#fff}
 header.hero{padding:40px 0 10px}
 .eyebrow{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); margin:0 0 8px}
-h1{font-family:Spectral,Georgia,serif; font-weight:700; font-size:clamp(28px,5vw,42px); line-height:1.1; letter-spacing:-.018em; margin:0 0 10px; text-wrap:balance}
-h2{font-family:Spectral,Georgia,serif; font-weight:600; font-size:clamp(21px,3vw,25px); margin:0 0 4px; line-height:1.2}
+h1{font-family:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif; font-weight:700; font-size:clamp(28px,5vw,42px); line-height:1.1; letter-spacing:-.018em; margin:0 0 10px; text-wrap:balance}
+h2{font-family:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif; font-weight:650; font-size:clamp(21px,3vw,25px); margin:0 0 4px; line-height:1.2}
 h3{font-size:15px; margin:0 0 4px}
 .lead{color:var(--ink-2); font-size:16.5px; margin:0; max-width:66ch}
 section{margin-top:30px}
@@ -171,3 +171,29 @@ details.mas > :not(summary){margin-top:10px}
 @media (max-width:760px){ .fork,.dos{grid-template-columns:1fr} .rail .t{display:none} }
 
 @media (max-width:900px){ nav.top .marca{display:none} nav.top{justify-content:flex-end} }
+
+/* ---- Banner institucional (granate UDLA) ---- */
+header.hero.banner{position:relative; margin:18px 0 0; padding:22px 26px 24px; border-radius:16px; color:#fff; overflow:hidden;
+  background:
+    repeating-linear-gradient(135deg, rgba(255,255,255,.04) 0 2px, transparent 2px 8px),
+    linear-gradient(100deg,#85183f 0%,#78122f 55%,#6b0f2c 100%);
+  box-shadow:0 10px 26px rgba(107,15,44,.28)}
+.banner .logo{height:40px; width:auto; display:block; margin:0 0 16px}
+.banner .fila{display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+.banner h1{color:#fff; margin:0; font-size:clamp(26px,4.4vw,38px); letter-spacing:-.02em}
+.banner .tag{font-size:13px; font-weight:500; padding:2px 12px; border:1px solid rgba(255,255,255,.75); border-radius:999px; color:#fff; white-space:nowrap}
+.banner .lead{color:rgba(255,255,255,.93); margin:12px 0 0; max-width:74ch; font-size:15.5px}
+.banner .lead b{color:#fff}
+.banner .ayuda{position:absolute; right:24px; bottom:22px; font:inherit; font-size:13.5px; font-weight:600; color:#fff; cursor:pointer;
+  padding:9px 18px; border-radius:10px; border:1px solid rgba(255,255,255,.55); background:rgba(255,255,255,.08)}
+.banner .ayuda:hover,.banner .ayuda[aria-expanded="true"]{background:rgba(255,255,255,.2)}
+.banner .ayuda:focus-visible{outline:2px solid #fff; outline-offset:2px}
+.ayuda-panel{margin-top:10px; border-left:4px solid var(--accent); background:var(--surface); border-radius:10px; padding:12px 16px; font-size:14px; color:var(--ink-2); box-shadow:var(--shadow)}
+.ayuda-panel[hidden]{display:none}
+.ayuda-panel b{color:var(--ink)}
+@media (max-width:860px){ .banner .ayuda{position:static; margin-top:16px} .banner .lead{max-width:none} }
+nav.top .marca{display:flex; align-items:center; gap:8px}
+nav.top .marca::before{content:""; width:9px; height:9px; border-radius:50%; background:var(--accent)}
+.card h2 .paso{box-shadow:0 0 0 3px var(--accent-soft)}
+.kpi{border:1px solid var(--line)}
+@media print{ nav.top,.banner .ayuda{display:none} header.hero.banner{box-shadow:none; -webkit-print-color-adjust:exact; print-color-adjust:exact} }

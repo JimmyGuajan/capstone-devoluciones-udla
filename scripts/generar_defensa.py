@@ -30,6 +30,7 @@ from src import proyeccion as PR
 from src import validacion as V
 
 PLANTILLAS = RAIZ / "scripts" / "defensa"
+LOGO_BLANCO = PLANTILLAS / "udla_blanco.png"
 PANEL = RAIZ / "docs" / "muestra" / "panel_modelo_muestra.csv"
 EXPOSICION = RAIZ / "docs" / "muestra" / "en_riesgo_2026-10.csv"
 SALIDA = RAIZ / "reports" / "html" / "defensa"
@@ -250,11 +251,38 @@ def datos_camino(panel: pd.DataFrame, comun: dict) -> dict:
                         for _, r in pd.read_csv(REPORTES / "cuadro_v6.csv").iterrows() if r.mes in ("2026-08", "2026-09")]}
 
 
+AYUDA = {
+    "index.html": "Pulsa <b>▶ Reproducir</b> o arrastra el reloj para ver cuándo una unidad cuenta como devolución. Toca una columna del gráfico mensual para ver su detalle y activa o desactiva las tres líneas para compararlas con lo ocurrido. El menú de arriba lleva al camino, la solución y la evidencia; el botón de la derecha cambia entre modo claro y oscuro.",
+    "camino.html": "Avanza con <b>Siguiente</b> y <b>Anterior</b>, o toca una parada en la barra de arriba. Cada parada trae sus controles: deslizadores, botones para elegir un camino y desplegables con el detalle. <b>Abrir agosto y septiembre</b> revela el tramo que no se usó para decidir nada.",
+    "solucion.html": "Toca cada etapa del flujo para ver qué hace, elige un mes de prueba, mueve el peso <b>k</b> para ver cómo se «encogen» las tasas y cambia el supuesto de despachos para ver cómo se mueven noviembre y diciembre. En el desplegable puedes probar tus propias unidades en riesgo.",
+    "evidencia.html": "Activa y desactiva las series de la validación, cambia de modelo en la importancia de variables y lee cada cifra junto a su interpretación. Todo sale del código y de los reportes del repositorio.",
+}
+
+
+def banner(cuerpo: str, archivo: str) -> str:
+    """Convierte la cabecera de cada pagina en el banner institucional (logo UDLA, etiqueta y ayuda)."""
+    import base64
+    logo = base64.b64encode(LOGO_BLANCO.read_bytes()).decode()
+    m = re.search(r'<header class="hero">\s*<p class="eyebrow">(.*?)</p>\s*<h1>(.*?)</h1>\s*<p class="lead">(.*?)</p>\s*</header>', cuerpo, re.S)
+    assert m, f"{archivo}: la cabecera no tiene la forma esperada"
+    etiqueta_, h1, lead = m.groups()
+    nuevo = "\n".join([
+        '<header class="hero banner">',
+        f'  <img class="logo" alt="Universidad de Las Américas" src="data:image/png;base64,{logo}">',
+        f'  <div class="fila"><h1>{h1}</h1><span class="tag">{etiqueta_}</span></div>',
+        f'  <p class="lead">{lead}</p>',
+        '  <button class="ayuda" id="ayuda-btn" type="button" aria-expanded="false" aria-controls="ayuda-panel">¿Cómo usar esta página?</button>',
+        '</header>',
+        f'<div class="ayuda-panel" id="ayuda-panel" hidden>{AYUDA[archivo]}</div>'])
+    return cuerpo.replace(m.group(0), nuevo)
+
+
 def render(archivo: str, titulo: str, fuente: str, datos: dict) -> str:
     esqueleto = (PLANTILLAS / "pagina.html").read_text(encoding="utf-8")
     cuerpo, script = (PLANTILLAS / fuente).read_text(encoding="utf-8").split("=====SCRIPT=====")
     # un SVG no tiene offsetParent: usarlo para decidir si dibujar deja el grafico en blanco sin avisar
     assert ".offsetParent" not in cuerpo + script, f"{fuente}: use visible(el), no el.offsetParent"
+    cuerpo = banner(cuerpo, archivo)
     nav = "".join(f'<a href="{a}"{" aria-current=\"page\"" if a == archivo else ""}>{n}</a>' for a, n, _ in PAGINAS)
     js = json.dumps(datos, ensure_ascii=False, default=lambda o: o.item() if hasattr(o, "item") else str(o))
     css = (PLANTILLAS / "comun.css").read_text(encoding="utf-8")
