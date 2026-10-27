@@ -103,8 +103,12 @@ def ruc_tipo(ruc: pd.Series) -> pd.Series:
     - 13 digitos, tercer digito 9    -> sociedad_privada
     - 10 digitos (cedula)            -> persona_natural
     - cualquier otro caso            -> desconocido
+
+    Los RUC que pasaron por una hoja de calculo como numero pierden el cero inicial y quedan de 12
+    digitos; se les repone antes de clasificar (en los cupos de distribuidores son 22 de 44).
     """
     s = ruc.astype("object").map(lambda v: None if v is None or pd.isna(v) else str(v))
+    s = s.map(lambda v: "0" + v if isinstance(v, str) and v.isdigit() and len(v) == 12 else v)
     tipo = pd.Series("desconocido", index=s.index, dtype="object")
     t13 = s.map(lambda v: isinstance(v, str) and v.isdigit() and len(v) == 13)
     t10 = s.map(lambda v: isinstance(v, str) and v.isdigit() and len(v) == 10)

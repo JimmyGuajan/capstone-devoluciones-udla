@@ -68,6 +68,13 @@ def test_acepta_una_clave_valida(monkeypatch):
 
 
 # --- tipo de RUC -------------------------------------------------------------
+def test_un_ruc_al_que_excel_le_quito_el_cero_inicial_se_clasifica_bien():
+    r = pd.Series(["102000000001",    # 12 digitos: era 0102000000001 -> tercer digito 0 -> persona natural
+                   "990000000001",    # 12 digitos: era 0990000000001 -> tercer digito 9 -> sociedad privada
+                   "12345678901"])    # 11 digitos: no se puede reponer -> desconocido
+    assert S.ruc_tipo(r).tolist() == ["persona_natural", "sociedad_privada", "desconocido"]
+
+
 def test_clasifica_el_ruc_por_su_tercer_digito():
     r = pd.Series(["0990000000001",   # 9 -> sociedad privada
                    "1710000000001",   # 1 -> persona natural

@@ -114,7 +114,7 @@ identificadores); **código** en `src/` y `scripts/`; **cuadernos** en `notebook
 │   ├── 07_validacion_estadistica.ipynb      walk-forward, bootstrap e incertidumbre
 │   └── 08_interpretabilidad_y_equidad.ipynb SHAP y auditoría de trato por territorio
 ├── modelo/modelo_final.json    el modelo entrenado: tasas por marca, ventana, k y φ
-├── tests/                      48 pruebas (modelo, pronóstico, ausencia de fuga, seudonimización)
+├── tests/                      49 pruebas (modelo, pronóstico, ausencia de fuga, seudonimización)
 ├── sql/                        consultas.sql · antiguedad.sql
 ├── docs/                       informes de entrega (Word y PDF) · solicitud de datos · muestra/
 ├── reports/                    métricas en CSV, figuras y reportes HTML navegables
@@ -163,7 +163,7 @@ prueba de reproducibilidad, no un riesgo para los resultados (`--forzar` reempla
 | 6 | cuadernos **07** y **08** | validación estadística; SHAP y equidad | — |
 | 7 | `python scripts/entrenar_y_evaluar.py` | evaluación en la prueba y `modelo/modelo_final.json` | 2 s |
 | 8 | `python scripts/predecir.py --mes 2026-09` | la demo | 1 s |
-| 9 | `python -m pytest tests` | 48 pruebas | 27 s |
+| 9 | `python -m pytest tests` | 49 pruebas | 27 s |
 | 10 | `python scripts/exposicion_siguiente.py` | unidades en riesgo observadas del mes siguiente (necesita los datos) | 1 s |
 | 11 | `python scripts/pronostico_trimestre.py` | pronóstico de oct–dic y `reports/pronostico_*.csv` | 2 s |
 | 12 | `python scripts/generar_defensa.py` | sitio de defensa en `reports/html/defensa/` | 21 s |
@@ -264,7 +264,7 @@ reportes o de las salidas de los cuadernos. Se regenera con `python scripts/gene
 
 ## Pruebas
 
-`python -m pytest tests` ejecuta 48 pruebas, todas con el panel de muestra o datos sintéticos:
+`python -m pytest tests` ejecuta 49 pruebas, todas con el panel de muestra o datos sintéticos:
 
 - **Lógica del estimador:** el encogimiento acerca las tasas a la global, una marca sin historia usa la
   global, la ventana descarta lo antiguo, la predicción es unidades en riesgo × tasa.
@@ -419,7 +419,7 @@ en esta fase: la clasificación central/canal depende de ellos.
 | Robustez: walk-forward, intervalos de confianza, cobertura | [`reports/walkforward.csv`](reports/walkforward.csv) · [`ic_bootstrap.csv`](reports/ic_bootstrap.csv) · [`intervalos_prueba.csv`](reports/intervalos_prueba.csv) · [`walkforward_con_lineas_base.csv`](reports/walkforward_con_lineas_base.csv) |
 | Qué variables pesan en cada modelo (SHAP) | [`reports/shap_dos_ensambles.csv`](reports/shap_dos_ensambles.csv) · cuaderno `08` |
 | Equidad por ciudad y distribuidor | [`reports/equidad_ciudad.csv`](reports/equidad_ciudad.csv) · [`reports/equidad_destino.csv`](reports/equidad_destino.csv) (los destinos son clientes identificables: se publican con alias `DEST_01…` ordenados por desviación) |
-| Pruebas automáticas | `python -m pytest tests` — 48 pruebas · salida de la última corrida en [`reports/pruebas_finales.txt`](reports/pruebas_finales.txt) |
+| Pruebas automáticas | `python -m pytest tests` — 49 pruebas · salida de la última corrida en [`reports/pruebas_finales.txt`](reports/pruebas_finales.txt) |
 | Resumen de la entrega técnica (3 páginas) | [`docs/Entrega_tecnica_prototipo_Grupo5.pdf`](docs/Entrega_tecnica_prototipo_Grupo5.pdf) · [`.docx`](docs/Entrega_tecnica_prototipo_Grupo5.docx) |
 | Sitio de defensa interactivo (problema, camino, solución, evidencia) | [`reports/html/defensa/index.html`](reports/html/defensa/index.html) |
 | Pronóstico de octubre a diciembre y su backtest | [`reports/pronostico_oct_dic_2026.csv`](reports/pronostico_oct_dic_2026.csv) · [`reports/pronostico_horizontes.csv`](reports/pronostico_horizontes.csv) |
